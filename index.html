@@ -142,7 +142,7 @@
           <input type="password" id="loginPasswordInput" required autocomplete="current-password" placeholder="Zadej heslo"
             class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
         </div>
-        <p id="authErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2"></p>
+        <p id="authErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2 break-words"></p>
         <button type="submit" id="loginSubmitBtn" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-extrabold text-sm transition shadow-lg shadow-emerald-500/20">
           Přihlásit se do účtu
         </button>
@@ -170,7 +170,7 @@
           <input type="password" id="registerPasswordConfirmInput" required minlength="6" autocomplete="new-password" placeholder="Zopakuj heslo"
             class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
         </div>
-        <p id="registerErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2"></p>
+        <p id="registerErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2 break-words"></p>
         <button type="submit" id="registerSubmitBtn" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-extrabold text-sm transition shadow-lg shadow-emerald-500/20">
           Registrovat a odeslat potvrzovací e-mail
         </button>
@@ -202,7 +202,7 @@
           </button>
         </form>
 
-        <p id="verifyEmailErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2"></p>
+        <p id="verifyEmailErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2 break-words"></p>
 
         <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
           <button type="button" onclick="resendVerificationCode()" class="text-xs font-semibold text-zinc-300 hover:text-emerald-300 underline transition">
@@ -240,7 +240,7 @@
             <input type="text" id="forgotIdentifierInput" placeholder="napr. honza@email.cz"
               class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-sky-400" />
           </div>
-          <p id="forgotErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2"></p>
+          <p id="forgotErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2 break-words"></p>
           <p id="forgotSuccessText" class="hidden text-xs text-emerald-300 font-medium bg-emerald-950/50 border border-emerald-500/30 rounded-xl px-3 py-2"></p>
           <div class="flex items-center justify-between gap-2">
             <button type="button" onclick="setAuthMode('login')" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition">
@@ -1046,16 +1046,19 @@
 
     function mapFirebaseAuthError(err, fallbackText) {
       const code = err?.code || '';
+      const rawMsg = err?.message || '';
       if (code === 'auth/email-already-in-use') return 'Tento e-mail už je zaregistrovaný. Přepni na „Přihlásit se“.';
       if (code === 'auth/invalid-email') return 'E-mailová adresa nemá platný formát.';
       if (code === 'auth/weak-password') return 'Heslo musí mít alespoň 6 znaků.';
-      if (code === 'auth/operation-not-allowed') return 'Ve Firebase není zapnuté přihlašování Email/Password (Authentication → Sign-in method).';
+      if (code === 'auth/operation-not-allowed') return 'Ve Firebase není zapnuté přihlašování Email/Password (Authentication → Sign-in method → Email/Password → Enable).';
       if (code === 'auth/too-many-requests') return 'Příliš mnoho pokusů (nebo limit e-mailů). Zkus to prosím za chvíli.';
       if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
         return 'Nesprávný e-mail nebo heslo.';
       }
       if (code === 'auth/network-request-failed') return 'Chyba sítě při komunikaci s Firebase.';
-      return `${fallbackText} (${code || err?.message || 'neznámá chyba'})`;
+      const cfg = resolveFirebaseConfig();
+      const projInfo = cfg?.projectId ? `projectId=${cfg.projectId}` : 'chybí projectId';
+      return `${fallbackText} [${code || 'no-code'} | ${projInfo}] ${rawMsg}`;
     }
 
     function escapeHtmlAttr(str) {
