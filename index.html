@@ -39,7 +39,6 @@
       font-family: 'Inter', sans-serif;
       overflow-x: hidden;
     }
-    /* Custom scrollbar */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -72,10 +71,10 @@
 </head>
 <body class="min-h-screen flex flex-col lg:flex-row bg-zinc-950 text-zinc-100">
 
-  <!-- Toast Notifikace (nahrazuje alert) -->
+  <!-- Toast Notifikace -->
   <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- Potvrzovací Modální Okno (nahrazuje confirm) -->
+  <!-- Potvrzovací Modální Okno -->
   <div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
     <div class="glass-card rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-700">
       <h3 id="confirmTitle" class="text-lg font-bold text-white mb-2">Potvrdit akci</h3>
@@ -99,16 +98,21 @@
   </div>
 
   <!-- Přihlášení / Registrace uživatelských účtů -->
-  <div id="authModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-zinc-950/95 backdrop-blur-md p-4">
-    <div class="glass-card rounded-2xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-zinc-700/80 space-y-5">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-zinc-950 font-extrabold text-xl shadow-lg shadow-emerald-500/20">
-          <i class="fa-solid fa-dumbbell"></i>
+  <div id="authModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-zinc-950/95 backdrop-blur-md p-4 overflow-y-auto">
+    <div class="glass-card rounded-2xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-zinc-700/80 space-y-5 my-auto">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-zinc-950 font-extrabold text-xl shadow-lg shadow-emerald-500/20">
+            <i class="fa-solid fa-dumbbell"></i>
+          </div>
+          <div>
+            <h2 class="font-extrabold text-xl tracking-tight text-white">Naloženo <span class="text-emerald-400">Cloud</span></h2>
+            <p class="text-xs text-zinc-400">Synchronizace tréninků a stravy mezi mobilem a PC</p>
+          </div>
         </div>
-        <div>
-          <h2 class="font-extrabold text-xl tracking-tight text-white">Naloženo <span class="text-emerald-400">Účty</span></h2>
-          <p class="text-xs text-zinc-400">Každý účet má vlastní tréninky, váhu, fotky i jídelníček</p>
-        </div>
+        <span id="authCloudStatusPill" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+          Lokální režim
+        </span>
       </div>
 
       <!-- Přepínač Přihlášení / Registrace -->
@@ -124,8 +128,8 @@
       <!-- Formulář přihlášení -->
       <form id="loginAccountForm" onsubmit="handleLoginSubmit(event)" class="space-y-3.5">
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Přezdívka (Nick) nebo E-mail</label>
-          <input type="text" id="loginNicknameInput" required autocomplete="username" placeholder="Např. honza_fit nebo honza@email.cz"
+          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">E-mail (nebo přezdívka)</label>
+          <input type="text" id="loginNicknameInput" required autocomplete="email" placeholder="napr. honza@email.cz"
             class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
         </div>
         <div>
@@ -139,7 +143,7 @@
             class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
         </div>
         <p id="authErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2"></p>
-        <button type="submit" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-extrabold text-sm transition shadow-lg shadow-emerald-500/20">
+        <button type="submit" id="loginSubmitBtn" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-extrabold text-sm transition shadow-lg shadow-emerald-500/20">
           Přihlásit se do účtu
         </button>
       </form>
@@ -147,32 +151,32 @@
       <!-- Formulář registrace -->
       <form id="registerAccountForm" onsubmit="handleRegisterSubmit(event)" class="hidden space-y-3.5">
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Nová přezdívka (Nick)</label>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Přezdívka (Nick)</label>
           <input type="text" id="registerNicknameInput" required minlength="2" maxlength="30" autocomplete="username" placeholder="Např. petra_gym"
             class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">E-mail pro potvrzení účtu</label>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">E-mail (přijde na něj potvrzení)</label>
           <input type="email" id="registerEmailInput" required autocomplete="email" placeholder="napr. petra@domena.cz"
             class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Heslo (min. 4 znaky)</label>
-          <input type="password" id="registerPasswordInput" required minlength="4" autocomplete="new-password" placeholder="Vytvoř heslo"
+          <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Heslo (min. 6 znaků)</label>
+          <input type="password" id="registerPasswordInput" required minlength="6" autocomplete="new-password" placeholder="Vytvoř silné heslo"
             class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
         </div>
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Potvrzení hesla</label>
-          <input type="password" id="registerPasswordConfirmInput" required minlength="4" autocomplete="new-password" placeholder="Zopakuj heslo"
+          <input type="password" id="registerPasswordConfirmInput" required minlength="6" autocomplete="new-password" placeholder="Zopakuj heslo"
             class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
         </div>
         <p id="registerErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2"></p>
-        <button type="submit" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-extrabold text-sm transition shadow-lg shadow-emerald-500/20">
-          Registrovat a odeslat potvrzení e-mailu
+        <button type="submit" id="registerSubmitBtn" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-extrabold text-sm transition shadow-lg shadow-emerald-500/20">
+          Registrovat a odeslat potvrzovací e-mail
         </button>
       </form>
 
-      <!-- Krokové potvrzení e-mailu po registraci -->
+      <!-- Panel čekající na potvrzení e-mailu -->
       <div id="verifyEmailPanel" class="hidden space-y-3.5 bg-zinc-900/90 border border-emerald-500/30 rounded-xl p-4">
         <div class="flex items-start gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
@@ -180,36 +184,39 @@
           </div>
           <div>
             <h3 class="text-sm font-extrabold text-white">Potvrď svou e-mailovou adresu</h3>
-            <p class="text-xs text-zinc-400 mt-0.5">
-              Potvrzovací e-mail byl odeslán na <strong id="verifyEmailTargetText" class="text-emerald-300">--</strong>.
+            <p class="text-xs text-zinc-300 mt-1">
+              Odeslali jsme potvrzovací odkaz na <strong id="verifyEmailTargetText" class="text-emerald-300">--</strong>.
             </p>
-            <p id="verifyEmailDemoCodeHint" class="text-[11px] text-amber-300/90 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2.5 py-1.5 mt-2">
-              <!-- Dynamicky zobrazený potvrzovací kód -->
+            <p class="text-[11px] text-zinc-400 mt-1">
+              Otevři svou e-mailovou schránku (zkontroluj i složku Spam/Hromadné), klikni na ověřovací odkaz a poté potvrď níže.
             </p>
+            <p id="verifyEmailDemoCodeHint" class="hidden text-[11px] text-amber-300/90 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2.5 py-1.5 mt-2"></p>
           </div>
         </div>
 
-        <form onsubmit="handleConfirmEmailSubmit(event)" class="space-y-3">
-          <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">6místný potvrzovací kód</label>
-            <input type="text" id="verifyEmailCodeInput" required maxlength="6" placeholder="Např. 123456"
-              class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white tracking-widest font-bold focus:outline-none focus:border-emerald-500" />
-          </div>
-          <p id="verifyEmailErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2"></p>
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <button type="button" onclick="resendVerificationCode()" class="text-xs font-semibold text-zinc-300 hover:text-emerald-300 underline transition">
-              Poslat kód znovu
-            </button>
-            <div class="flex items-center gap-2">
-              <button type="button" onclick="setAuthMode('login')" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition">
-                Zpět
-              </button>
-              <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-extrabold text-xs transition">
-                Potvrdit e-mail
-              </button>
-            </div>
-          </div>
+        <form id="localVerifyCodeForm" onsubmit="handleConfirmEmailSubmit(event)" class="hidden space-y-2.5">
+          <input type="text" id="verifyEmailCodeInput" maxlength="6" placeholder="6místný kód"
+            class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white tracking-widest font-bold focus:outline-none focus:border-emerald-500" />
+          <button type="submit" class="w-full py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-extrabold text-xs transition">
+            Potvrdit kód
+          </button>
         </form>
+
+        <p id="verifyEmailErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2"></p>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <button type="button" onclick="resendVerificationCode()" class="text-xs font-semibold text-zinc-300 hover:text-emerald-300 underline transition">
+            Odeslat e-mail znovu
+          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="setAuthMode('login')" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition">
+              Zpět
+            </button>
+            <button type="button" id="checkCloudVerificationBtn" onclick="recheckCloudEmailVerification()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-extrabold text-xs transition">
+              Mám potvrzeno → Vstoupit
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Obnovení zapomenutého hesla -->
@@ -220,23 +227,24 @@
           </div>
           <div>
             <h3 class="text-sm font-extrabold text-white">Obnovení zapomenutého hesla</h3>
-            <p class="text-xs text-zinc-400 mt-0.5">Zadej svůj e-mail nebo přezdívku. Pošleme ti kód pro nastavení nového hesla.</p>
+            <p class="text-xs text-zinc-400 mt-0.5">Zadej svůj registrační e-mail. Pošleme ti odkaz pro nastavení nového hesla přímo do schránky.</p>
           </div>
         </div>
 
         <div id="forgotStepRequestBox" class="space-y-3">
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">E-mail nebo přezdívka účtu</label>
-            <input type="text" id="forgotIdentifierInput" placeholder="napr. honza@email.cz nebo honza_fit"
+            <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">E-mail účtu</label>
+            <input type="text" id="forgotIdentifierInput" placeholder="napr. honza@email.cz"
               class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-sky-400" />
           </div>
           <p id="forgotErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2"></p>
+          <p id="forgotSuccessText" class="hidden text-xs text-emerald-300 font-medium bg-emerald-950/50 border border-emerald-500/30 rounded-xl px-3 py-2"></p>
           <div class="flex items-center justify-between gap-2">
             <button type="button" onclick="setAuthMode('login')" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition">
               Zpět na přihlášení
             </button>
             <button type="button" onclick="sendPasswordResetCode()" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-zinc-950 font-extrabold text-xs transition">
-              Odeslat kód pro obnovení
+              Poslat odkaz na e-mail
             </button>
           </div>
         </div>
@@ -245,12 +253,12 @@
           <p id="forgotCodeHint" class="text-[11px] text-sky-300 bg-sky-500/10 border border-sky-500/25 rounded-lg px-2.5 py-1.5"></p>
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Kód pro obnovení hesla</label>
-            <input type="text" id="resetCodeInput" required maxlength="6" placeholder="6místný kód"
+            <input type="text" id="resetCodeInput" maxlength="6" placeholder="6místný kód"
               class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white tracking-widest font-bold focus:outline-none focus:border-sky-400" />
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Nové heslo (min. 4 znaky)</label>
-            <input type="password" id="newResetPasswordInput" required minlength="4" placeholder="Zadej nové heslo"
+            <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1">Nové heslo (min. 6 znaků)</label>
+            <input type="password" id="newResetPasswordInput" minlength="6" placeholder="Zadej nové heslo"
               class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-sky-400" />
           </div>
           <p id="resetPasswordErrorText" class="hidden text-xs text-rose-400 font-medium bg-rose-950/50 border border-rose-500/30 rounded-xl px-3 py-2"></p>
@@ -265,15 +273,43 @@
         </form>
       </div>
 
-      <!-- Seznam existujících účtů v prohlížeči -->
-      <div id="registeredAccountsBox" class="pt-4 border-t border-zinc-800 space-y-2">
+      <!-- Jednoduché nastavení Firebase Cloudu přímo v okně -->
+      <div class="pt-3 border-t border-zinc-800">
+        <button type="button" onclick="toggleFirebaseConfigBox()" class="w-full flex items-center justify-between text-xs text-zinc-400 hover:text-emerald-300 transition py-1">
+          <span><i class="fa-solid fa-cloud mr-1.5 text-emerald-400"></i> Nastavení Firebase Cloudu (pro synchronizaci mobil + PC)</span>
+          <i id="firebaseConfigChevron" class="fa-solid fa-chevron-down text-[10px]"></i>
+        </button>
+        <div id="firebaseConfigPanel" class="hidden mt-2.5 space-y-2.5 bg-zinc-950/90 border border-zinc-800 rounded-xl p-3">
+          <p class="text-[11px] text-zinc-400 leading-relaxed">
+            Zkopíruj sem z konzole Firebase svůj objekt <code class="text-emerald-300">firebaseConfig</code> (nebo čistý JSON) a klikni na <strong>Uložit a připojit Cloud</strong>:
+          </p>
+          <textarea id="firebaseConfigJsonInput" rows="5" placeholder='const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "...",
+  projectId: "...",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "..."
+};'
+            class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-[11px] font-mono text-zinc-200 focus:outline-none focus:border-emerald-500"></textarea>
+          <div class="flex items-center justify-end gap-2">
+            <button type="button" onclick="clearSavedFirebaseConfig()" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 text-[11px] font-semibold">
+              Vymazat
+            </button>
+            <button type="button" onclick="saveCustomFirebaseConfig()" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-[11px] font-extrabold">
+              Uložit a připojit Cloud
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seznam lokálních účtů -->
+      <div id="registeredAccountsBox" class="pt-3 border-t border-zinc-800 space-y-2">
         <div class="flex items-center justify-between text-[11px] text-zinc-400">
-          <span>Registrované účty na tomto zařízení:</span>
+          <span>Lokální účty na tomto zařízení:</span>
           <span id="registeredAccountsCount" class="font-semibold text-zinc-300">0</span>
         </div>
-        <div id="registeredAccountsChips" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
-          <!-- Dynamicky -->
-        </div>
+        <div id="registeredAccountsChips" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto"></div>
       </div>
     </div>
   </div>
@@ -281,7 +317,6 @@
   <!-- Desktop Boční Panel (Sidebar) -->
   <aside class="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 bg-zinc-900/90 border-r border-zinc-800 p-6 justify-between z-30">
     <div>
-      <!-- Logo -->
       <div class="flex items-center gap-3 mb-6">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-zinc-950 font-extrabold text-xl shadow-lg shadow-emerald-500/20">
           <i class="fa-solid fa-dumbbell"></i>
@@ -292,18 +327,17 @@
         </div>
       </div>
 
-      <!-- Aktivní uživatel + přepnutí / odhlášení účtu -->
       <div class="mb-6 p-3 rounded-xl bg-zinc-950/90 border border-zinc-800 flex items-center justify-between gap-2">
         <div class="min-w-0">
           <span class="block text-[10px] uppercase tracking-wider text-zinc-500">Přihlášený účet</span>
           <span id="sidebarActiveUserNick" class="block text-sm font-extrabold text-emerald-400 truncate">--</span>
+          <span id="sidebarActiveUserEmail" class="block text-[10px] text-zinc-500 truncate"></span>
         </div>
         <button type="button" onclick="logoutCurrentAccount()" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-semibold transition shrink-0" title="Odhlásit nebo přepnout účet">
-          <i class="fa-solid fa-right-from-bracket mr-1"></i> Účty
+          <i class="fa-solid fa-right-from-bracket mr-1"></i> Odhlásit
         </button>
       </div>
 
-      <!-- Navigace -->
       <nav class="space-y-2" id="desktopNav">
         <button onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-btn tab-active w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-transparent text-left font-medium transition">
           <i class="fa-solid fa-chart-line w-5 text-center"></i>
@@ -328,10 +362,9 @@
       </nav>
     </div>
 
-    <!-- Stav synchronizace a rychlé akce -->
     <div class="space-y-3 pt-6 border-t border-zinc-800">
       <div class="flex items-center justify-between text-xs px-2">
-        <span class="text-zinc-400">Stav úložiště:</span>
+        <span class="text-zinc-400">Synchronizace:</span>
         <span id="syncStatusBadge" class="flex items-center gap-1.5 text-emerald-400 font-medium">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           Připojeno
@@ -339,7 +372,7 @@
       </div>
       <button onclick="confirmClearSampleData()" id="clearSampleBtn" class="w-full py-2.5 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 border border-zinc-700/70 text-xs text-zinc-300 hover:text-white transition flex items-center justify-center gap-2">
         <i class="fa-solid fa-eraser text-amber-400"></i>
-        <span>Vymazat ukázková data</span>
+        <span>Vymazat všechna data</span>
       </button>
     </div>
   </aside>
@@ -356,7 +389,7 @@
     <div class="flex items-center gap-1.5 shrink-0">
       <span id="mobileSyncDot" class="w-2 h-2 rounded-full bg-emerald-400" title="Data synchronizována"></span>
       <button type="button" onclick="logoutCurrentAccount()" class="text-xs px-2.5 py-1.5 rounded-lg bg-zinc-800 text-zinc-200 border border-zinc-700 font-semibold">
-        Účty
+        Odhlásit
       </button>
       <button type="button" onclick="confirmClearSampleData()" class="text-xs px-2.5 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 border border-zinc-700">
         Reset
@@ -368,9 +401,7 @@
   <main class="flex-1 lg:pl-72 pb-24 lg:pb-10">
     <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
 
-      <!-- ========================================================= -->
-      <!-- SEKCE 1: PŘEHLED & GRAFY (DASHBOARD)                      -->
-      <!-- ========================================================= -->
+      <!-- SEKCE 1: PŘEHLED & GRAFY -->
       <section id="tab-dashboard" class="tab-content space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -387,12 +418,8 @@
           </div>
         </div>
 
-        <!-- Karta dnešního naplánovaného tréninku na Dashboardu -->
-        <div id="dashboardTodayPlanCard" class="glass-card rounded-2xl p-5 border-emerald-500/30 bg-gradient-to-r from-emerald-950/25 via-zinc-900/90 to-zinc-900/90">
-          <!-- Dynamicky naplněno podle aktivního plánu a dne v týdnu -->
-        </div>
+        <div id="dashboardTodayPlanCard" class="glass-card rounded-2xl p-5 border-emerald-500/30 bg-gradient-to-r from-emerald-950/25 via-zinc-900/90 to-zinc-900/90"></div>
 
-        <!-- KPI Karty -->
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
             <div class="flex justify-between items-start">
@@ -426,11 +453,9 @@
                 <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">Dnešní příjem</p>
                 <div class="flex items-baseline justify-between gap-2 mt-1">
                   <h3 id="kpiTodayKcal" class="text-2xl sm:text-3xl font-extrabold text-white">0 kcal</h3>
-                  <span id="kpiTodayKcalTarget" class="text-[11px] font-semibold text-zinc-400">/ 2 800 kcal</span>
+                  <span id="kpiTodayKcalTarget" class="text-[11px] font-semibold text-zinc-400">/ 2 500 kcal</span>
                 </div>
-                <div id="kpiTodayMacrosBreakdown" class="mt-2.5 pt-2.5 border-t border-zinc-800/80 space-y-1.5 text-xs">
-                  <!-- Dynamicky: Bílkoviny, Sacharidy, Tuky vs cíle -->
-                </div>
+                <div id="kpiTodayMacrosBreakdown" class="mt-2.5 pt-2.5 border-t border-zinc-800/80 space-y-1.5 text-xs"></div>
               </div>
               <div class="w-11 h-11 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-lg shrink-0">
                 <i class="fa-solid fa-fire-flame-curved"></i>
@@ -452,9 +477,7 @@
           </div>
         </div>
 
-        <!-- Hlavní Grafy: Řádek 1 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Graf nazvedaných kg za trénink v čase -->
           <div class="glass-card rounded-2xl p-5 sm:p-6">
             <div class="flex items-center justify-between mb-4">
               <div>
@@ -468,7 +491,6 @@
             </div>
           </div>
 
-          <!-- Graf tělesné váhy v čase -->
           <div class="glass-card rounded-2xl p-5 sm:p-6">
             <div class="flex items-center justify-between mb-4">
               <div>
@@ -483,25 +505,20 @@
           </div>
         </div>
 
-        <!-- Grafy: Řádek 2 -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Silový progres konkrétního cviku -->
           <div class="glass-card rounded-2xl p-5 sm:p-6 lg:col-span-2">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div>
                 <h3 class="text-base font-bold text-white">Silový progres podle cviku</h3>
                 <p class="text-xs text-zinc-400">Maximální váha na sérii a odhad 1RM (maximálky)</p>
               </div>
-              <select id="exerciseChartSelect" onchange="updateExerciseChart()" class="bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500">
-                <!-- Naplní se dynamicky -->
-              </select>
+              <select id="exerciseChartSelect" onchange="updateExerciseChart()" class="bg-zinc-800 border border-zinc-700 text-white text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500"></select>
             </div>
             <div class="relative h-64 w-full">
               <canvas id="exerciseProgressChart"></canvas>
             </div>
           </div>
 
-          <!-- Denní makroživiny (Doughnut + přehled) -->
           <div class="glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
             <div>
               <h3 class="text-base font-bold text-white">Dnešní rozložení maker</h3>
@@ -510,16 +527,12 @@
             <div class="relative h-48 w-full flex items-center justify-center">
               <canvas id="macrosChart"></canvas>
             </div>
-            <div id="dashboardMacroLegend" class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-zinc-800 text-center text-xs">
-              <!-- Dynamicky -->
-            </div>
+            <div id="dashboardMacroLegend" class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-zinc-800 text-center text-xs"></div>
           </div>
         </div>
       </section>
 
-      <!-- ========================================================= -->
-      <!-- SEKCE 1.5: TVORBA TRÉNINKOVÉHO PLÁNU (PLAN / SPLIT)       -->
-      <!-- ========================================================= -->
+      <!-- SEKCE 2: TRÉNINKOVÝ PLÁN -->
       <section id="tab-plan" class="tab-content hidden space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -527,9 +540,7 @@
             <p class="text-sm text-zinc-400 mt-1">Nastav si počet tréninků týdně, vyber konkrétní dny a sestav cviky pro každý tréninkový den.</p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
-            <select id="savedPlansSelect" onchange="switchActivePlan(this.value)" class="bg-zinc-900 border border-zinc-700 text-white text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-emerald-500">
-              <!-- Dynamicky -->
-            </select>
+            <select id="savedPlansSelect" onchange="switchActivePlan(this.value)" class="bg-zinc-900 border border-zinc-700 text-white text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-emerald-500"></select>
             <button type="button" onclick="createNewBlankPlan()" class="px-3.5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-sm font-medium transition flex items-center gap-1.5">
               <i class="fa-solid fa-file-circle-plus text-emerald-400"></i> Nový plán
             </button>
@@ -539,7 +550,6 @@
           </div>
         </div>
 
-        <!-- Krok 1: Název plánu, počet tréninků týdně a výběr dnů -->
         <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-6">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-end">
             <div class="lg:col-span-5">
@@ -564,7 +574,6 @@
             </div>
           </div>
 
-          <!-- Rychlé šablony splitů -->
           <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-zinc-800/80">
             <span class="text-xs text-zinc-400 mr-1">Rychlé předvolby splitu:</span>
             <button type="button" onclick="applySplitPreset('fullbody3')" class="text-xs px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition">3× Fullbody (Po, St, Pá)</button>
@@ -573,44 +582,28 @@
             <button type="button" onclick="applySplitPreset('ppl6')" class="text-xs px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition">6× Push / Pull / Legs</button>
           </div>
 
-          <!-- Krok 2: Interaktivní výběr dnů v týdnu (Po - Ne) -->
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2.5">Kliknutím vyber tréninkové dny v týdnu (zbytek = den volna)</label>
-            <div id="weekDaysSelectorGrid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
-              <!-- Dynamicky generované karty Po - Ne -->
-            </div>
+            <div id="weekDaysSelectorGrid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5"></div>
           </div>
         </div>
 
-        <!-- Krok 3: Konfigurace jednotlivých tréninkových dnů -->
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-          <!-- Levý seznam dnů v týdnu -->
-          <div class="xl:col-span-4 space-y-2.5" id="planDaysSidebarList">
-            <!-- Dynamicky generovaný přehled dnů -->
-          </div>
-
-          <!-- Pravý editor vybraného tréninkového dne -->
-          <div class="xl:col-span-8 glass-card rounded-2xl p-5 sm:p-6" id="planDayEditorPanel">
-            <!-- Dynamicky generovaný editor cviků pro vybraný den -->
-          </div>
+          <div class="xl:col-span-4 space-y-2.5" id="planDaysSidebarList"></div>
+          <div class="xl:col-span-8 glass-card rounded-2xl p-5 sm:p-6" id="planDayEditorPanel"></div>
         </div>
       </section>
 
-      <!-- ========================================================= -->
-      <!-- SEKCE 2: TRÉNINKOVÝ DENÍK (WORKOUTS)                      -->
-      <!-- ========================================================= -->
+      <!-- SEKCE 3: TRÉNINKOVÝ DENÍK -->
       <section id="tab-workouts" class="tab-content hidden space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Tréninkový deník</h2>
             <p class="text-sm text-zinc-400 mt-1">Zapisuj cviky, série, váhy a opakování. Aplikace automaticky spočítá nazvedané kg.</p>
           </div>
-          <!-- Rychlé načtení z tréninkového plánu -->
           <div class="flex flex-wrap items-center gap-2 bg-zinc-900 border border-zinc-800 p-2 rounded-xl">
             <span class="text-xs text-zinc-400 pl-1"><i class="fa-solid fa-calendar-check text-emerald-400 mr-1"></i> Z plánu:</span>
-            <select id="workoutPlanDayQuickSelect" class="bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
-              <!-- Dynamicky -->
-            </select>
+            <select id="workoutPlanDayQuickSelect" class="bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"></select>
             <button type="button" onclick="loadSelectedPlanDayIntoWorkout()" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition">
               Načíst trénink
             </button>
@@ -618,9 +611,7 @@
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-          <!-- Formulář pro nový / upravovaný trénink (Levý sloupec) -->
           <div class="xl:col-span-7 glass-card rounded-2xl p-5 sm:p-6 space-y-5">
-            <!-- Banner při úpravě existujícího tréninku -->
             <div id="editingWorkoutBanner" class="hidden rounded-xl bg-amber-500/10 border border-amber-500/40 px-4 py-3 flex items-center justify-between gap-3">
               <div class="flex items-center gap-2.5 text-xs text-amber-200 font-medium">
                 <i class="fa-solid fa-pen-to-square text-amber-400 text-sm"></i>
@@ -631,7 +622,6 @@
               </button>
             </div>
 
-            <!-- Stav dnešního splněného tréninku -->
             <div id="todayCompletedNotice" class="hidden rounded-xl bg-emerald-500/10 border border-emerald-500/35 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div class="flex items-center gap-2.5 text-xs text-emerald-200 font-medium">
                 <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
@@ -654,7 +644,6 @@
               </div>
             </div>
 
-            <!-- Základní info o tréninku -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-medium text-zinc-400 mb-1.5">Datum tréninku</label>
@@ -674,14 +663,12 @@
               </div>
             </div>
 
-            <!-- Přidání cviku -->
             <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 space-y-3">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400">Přidat cvik do tréninku (Databáze strojů & činek)</label>
                 <span id="exerciseDbCountBadge" class="text-[11px] text-emerald-400 font-medium">100+ cviků v databázi</span>
               </div>
 
-              <!-- Filtr podle partie a vyhledávání -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <select id="exerciseCategoryFilter" onchange="populateExerciseDropdowns()" class="bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-emerald-500">
                   <option value="ALL">Všechny svalové partie</option>
@@ -700,17 +687,13 @@
                 </div>
               </div>
 
-              <!-- Výběr z databáze cviků (seskupené podle partií) -->
               <div class="flex flex-col sm:flex-row gap-2">
-                <select id="exerciseDatabaseSelect" class="flex-1 bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
-                  <!-- Naplní se dynamicky pomocí <optgroup> -->
-                </select>
+                <select id="exerciseDatabaseSelect" class="flex-1 bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"></select>
                 <button type="button" onclick="addSelectedDbExercise()" class="px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-semibold text-sm border border-emerald-500/40 transition flex items-center justify-center gap-2 whitespace-nowrap">
                   <i class="fa-solid fa-plus"></i> Vybrat cvik
                 </button>
               </div>
 
-              <!-- Vlastní cvik mimo databázi -->
               <div class="flex flex-col sm:flex-row gap-2 pt-2 border-t border-zinc-800/80">
                 <input type="text" id="newExerciseInput" placeholder="Nebo napiš libovolný vlastní cvik..." class="flex-1 bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
                 <button type="button" onclick="addExerciseToBuilder()" class="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-xs border border-zinc-700 transition flex items-center justify-center gap-1.5 whitespace-nowrap">
@@ -718,7 +701,6 @@
                 </button>
               </div>
 
-              <!-- Rychlé tagy oblíbených cviků (včetně strojů) -->
               <div class="flex flex-wrap gap-1.5 pt-1">
                 <button type="button" onclick="quickAddExercise('Bench Press (Velká činka)')" class="text-xs px-2.5 py-1 rounded-lg bg-zinc-800/70 hover:bg-zinc-700 text-zinc-300 transition">+ Bench Press</button>
                 <button type="button" onclick="quickAddExercise('Stahování horní kladky na široko (Lat Pulldown)')" class="text-xs px-2.5 py-1 rounded-lg bg-zinc-800/70 hover:bg-zinc-700 text-zinc-300 transition">+ Horní kladka</button>
@@ -729,12 +711,8 @@
               </div>
             </div>
 
-            <!-- Seznam rozpracovaných cviků a sérií -->
-            <div id="builderExercisesList" class="space-y-4">
-              <!-- Dynamicky generované cviky se sériemi -->
-            </div>
+            <div id="builderExercisesList" class="space-y-4"></div>
 
-            <!-- Poznámka k tréninku a uložení -->
             <div>
               <label class="block text-xs font-medium text-zinc-400 mb-1.5">Poznámka k tréninku (volitelné)</label>
               <input type="text" id="workoutNote" placeholder="Např. Skvělá energie, nový osobní rekord na bench..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" />
@@ -745,22 +723,17 @@
             </button>
           </div>
 
-          <!-- Historie tréninků (Pravý sloupec) -->
           <div class="xl:col-span-5 space-y-4">
             <div class="flex items-center justify-between">
               <h3 class="text-lg font-bold text-white">Historie tréninků</h3>
               <input type="text" id="workoutSearchInput" oninput="renderWorkoutHistory()" placeholder="Hledat cvik nebo split..." class="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500 w-44 sm:w-56" />
             </div>
-            <div id="workoutHistoryList" class="space-y-4 max-h-[820px] overflow-y-auto pr-1">
-              <!-- Dynamicky naplněná historie tréninků -->
-            </div>
+            <div id="workoutHistoryList" class="space-y-4 max-h-[820px] overflow-y-auto pr-1"></div>
           </div>
         </div>
       </section>
 
-      <!-- ========================================================= -->
-      <!-- SEKCE 3: JÍDELNÍČEK, MAKRA & DOPLŇKY STRAVY (NUTRITION)    -->
-      <!-- ========================================================= -->
+      <!-- SEKCE 4: JÍDELNÍČEK, MAKRA & DOPLŇKY -->
       <section id="tab-nutrition" class="tab-content hidden space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -773,7 +746,6 @@
           </div>
         </div>
 
-        <!-- Souhrn denních maker (Progress bary) -->
         <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-5">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-4">
             <div>
@@ -785,7 +757,6 @@
             </button>
           </div>
 
-          <!-- Skryté nastavení denních cílů -->
           <div id="macroTargetsPanel" class="hidden bg-zinc-900/90 border border-zinc-800 rounded-xl p-4">
             <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">Nastavení denních cílů</h4>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -811,14 +782,10 @@
             </div>
           </div>
 
-          <!-- 4 Progress Bary -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="macroProgressGrid">
-            <!-- Dynamicky generováno -->
-          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="macroProgressGrid"></div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Jídelníček (7 sloupců) -->
           <div class="lg:col-span-7 glass-card rounded-2xl p-5 sm:p-6 space-y-5">
             <h3 class="text-lg font-bold text-white flex items-center gap-2">
               <i class="fa-solid fa-bowl-food text-amber-400"></i> Zapsat jídlo
@@ -854,16 +821,12 @@
               </button>
             </form>
 
-            <!-- Seznam jídel pro vybraný den -->
             <div>
               <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">Zapsaná jídla za vybraný den</h4>
-              <div id="mealsList" class="space-y-2.5">
-                <!-- Dynamicky -->
-              </div>
+              <div id="mealsList" class="space-y-2.5"></div>
             </div>
           </div>
 
-          <!-- Doplňky výživy (5 sloupců) -->
           <div class="lg:col-span-5 glass-card rounded-2xl p-5 sm:p-6 space-y-5 flex flex-col justify-between">
             <div class="space-y-4">
               <div class="flex items-center justify-between">
@@ -874,13 +837,9 @@
               </div>
               <p class="text-xs text-zinc-400">Odškrtni si suplementy, které jsi dnes užil.</p>
 
-              <!-- Checklist doplňků -->
-              <div id="supplementsChecklist" class="space-y-2">
-                <!-- Dynamicky -->
-              </div>
+              <div id="supplementsChecklist" class="space-y-2"></div>
             </div>
 
-            <!-- Přidání vlastního doplňku -->
             <form onsubmit="addSupplementItem(event)" class="pt-4 border-t border-zinc-800 flex gap-2">
               <input type="text" id="newSupplementInput" required placeholder="Nový doplněk (např. Zinek 15mg)..." class="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-400" />
               <button type="submit" class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition">
@@ -891,9 +850,7 @@
         </div>
       </section>
 
-      <!-- ========================================================= -->
-      <!-- SEKCE 4: TĚLESNÁ VÁHA & KONTROLA FORMY (PHYSIQUE)          -->
-      <!-- ========================================================= -->
+      <!-- SEKCE 5: TĚLESNÁ VÁHA & KONTROLA FORMY -->
       <section id="tab-physique" class="tab-content hidden space-y-6">
         <div>
           <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Tělesná váha & Kontrola formy</h2>
@@ -901,7 +858,6 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <!-- Zápis tělesné váhy (5 sloupců) -->
           <div class="lg:col-span-5 glass-card rounded-2xl p-5 sm:p-6 space-y-5">
             <h3 class="text-lg font-bold text-white flex items-center gap-2">
               <i class="fa-solid fa-scale-balanced text-sky-400"></i> Zapsat tělesnou váhu
@@ -933,16 +889,12 @@
               </button>
             </form>
 
-            <!-- Historie vážení -->
             <div>
               <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">Historie měření váhy</h4>
-              <div id="weightHistoryList" class="space-y-2 max-h-80 overflow-y-auto pr-1">
-                <!-- Dynamicky -->
-              </div>
+              <div id="weightHistoryList" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
             </div>
           </div>
 
-          <!-- Fotky na kontrolu formy (7 sloupců) -->
           <div class="lg:col-span-7 glass-card rounded-2xl p-5 sm:p-6 space-y-5">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <h3 class="text-lg font-bold text-white flex items-center gap-2">
@@ -953,7 +905,6 @@
               </button>
             </div>
 
-            <!-- Nahrání nové fotky -->
             <form onsubmit="addProgressPhoto(event)" class="bg-zinc-900/70 p-4 rounded-xl border border-zinc-800 space-y-3">
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
@@ -987,7 +938,6 @@
               </div>
             </form>
 
-            <!-- Režim porovnání dvou fotek vedle sebe -->
             <div id="photoComparePanel" class="hidden bg-zinc-900/90 border border-emerald-500/30 rounded-xl p-4 space-y-4">
               <div class="flex items-center justify-between">
                 <h4 class="text-sm font-bold text-emerald-400">Porovnání formy (Před / Po)</h4>
@@ -1005,10 +955,7 @@
               </div>
             </div>
 
-            <!-- Galerie fotek -->
-            <div id="photosGalleryGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              <!-- Dynamicky -->
-            </div>
+            <div id="photosGalleryGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
           </div>
         </div>
       </section>
@@ -1040,15 +987,60 @@
     </button>
   </nav>
 
-  <!-- Firebase + Aplikační Logika -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      sendEmailVerification,
+      sendPasswordResetEmail,
+      updateProfile,
+      signOut,
+      onAuthStateChanged,
+      reload
+    } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { getFirestore, doc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
     // =========================================================================
-    // 1. ZÁKLADNÍ KONSTANTY, DATABÁZE CVIKŮ A ÚLOŽIŠTĚ ÚČTŮ
+    // START: HARDCODED_FIREBASE_CONFIG (můžeš vyplnit zde, nebo v okně v aplikaci)
     // =========================================================================
+    const HARDCODED_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyAuWpgLIGkU650FoL77X_Fdb6K8NaUif0g",
+      authDomain: "nalozeno.firebaseapp.com",
+      projectId: "nalozeno",
+      storageBucket: "nalozeno.firebasestorage.app",
+      messagingSenderId: "301075980963",
+      appId: "1:301075980963:web:f86c4698be61a56ac99516"
+    };
+    // =========================================================================
+    // KONEC: HARDCODED_FIREBASE_CONFIG
+    // =========================================================================
+
+    const CUSTOM_FB_CONFIG_STORAGE_KEY = 'nalozono_custom_firebase_config_v1';
+
+    function resolveFirebaseConfig() {
+      if (HARDCODED_FIREBASE_CONFIG && HARDCODED_FIREBASE_CONFIG.apiKey && HARDCODED_FIREBASE_CONFIG.projectId) {
+        return HARDCODED_FIREBASE_CONFIG;
+      }
+      try {
+        const savedRaw = localStorage.getItem(CUSTOM_FB_CONFIG_STORAGE_KEY);
+        if (savedRaw) {
+          const parsed = JSON.parse(savedRaw);
+          if (parsed && parsed.apiKey && parsed.projectId) {
+            return parsed;
+          }
+        }
+      } catch (e) {}
+      if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+        try {
+          const envCfg = JSON.parse(__firebase_config);
+          if (envCfg && envCfg.apiKey && envCfg.projectId) return envCfg;
+        } catch (e) {}
+      }
+      return null;
+    }
+
     function getLocalTodayIso() {
       const now = new Date();
       const year = now.getFullYear();
@@ -1211,7 +1203,6 @@
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed) ? parsed : [];
       } catch (e) {
-        console.warn('Nelze načíst registr účtů:', e);
         return [];
       }
     }
@@ -1219,9 +1210,7 @@
     function saveAccountsRegistry(list) {
       try {
         localStorage.setItem(ACCOUNTS_REGISTRY_KEY, JSON.stringify(list));
-      } catch (e) {
-        console.warn('Nelze uložit registr účtů:', e);
-      }
+      } catch (e) {}
     }
 
     function getActiveSessionAccountId() {
@@ -1234,14 +1223,9 @@
 
     function setActiveSessionAccountId(id) {
       try {
-        if (id) {
-          localStorage.setItem(ACTIVE_ACCOUNT_SESSION_KEY, id);
-        } else {
-          localStorage.removeItem(ACTIVE_ACCOUNT_SESSION_KEY);
-        }
-      } catch (e) {
-        console.warn('Nelze uložit aktivní relaci:', e);
-      }
+        if (id) localStorage.setItem(ACTIVE_ACCOUNT_SESSION_KEY, id);
+        else localStorage.removeItem(ACTIVE_ACCOUNT_SESSION_KEY);
+      } catch (e) {}
     }
 
     function createDefaultTrainingPlans() {
@@ -1301,176 +1285,24 @@
                 { name: 'Zkracovačky na horní kladce vkleče (Cable Crunches)', sets: 3, reps: '15' }
               ]
             },
-            sat: {
-              active: false,
-              title: 'Den volna (Aktivita / Procházka)',
-              focus: 'Lehká regenerace',
-              exercises: []
-            },
-            sun: {
-              active: false,
-              title: 'Den volna (Příprava na týden)',
-              focus: 'Odpočinek',
-              exercises: []
-            }
+            sat: { active: false, title: 'Den volna (Aktivita / Procházka)', focus: 'Lehká regenerace', exercises: [] },
+            sun: { active: false, title: 'Den volna (Příprava na týden)', focus: 'Odpočinek', exercises: [] }
           }
         }
       ];
     }
 
-    function offsetIsoDate(daysOffset) {
-      const d = new Date();
-      d.setDate(d.getDate() + daysOffset);
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
-    }
-
-    function createSampleData() {
-      const d1 = offsetIsoDate(-14);
-      const d2 = offsetIsoDate(-10);
-      const d3 = offsetIsoDate(-6);
-      const d4 = offsetIsoDate(-3);
+    function createCleanUserState() {
       const defaultPlans = createDefaultTrainingPlans();
-
       return {
-        isSample: true,
+        isSample: false,
         activePlanId: defaultPlans[0].id,
         trainingPlans: defaultPlans,
-        workouts: [
-          {
-            id: 'w_sample_1',
-            date: d1,
-            name: 'Push A (Prsa, Ramena, Triceps)',
-            note: 'Startovací trénink',
-            totalVolume: 5620,
-            exercises: [
-              {
-                name: 'Bench Press (Velká činka)',
-                sets: [
-                  { weight: 75, reps: 10 },
-                  { weight: 80, reps: 8 },
-                  { weight: 80, reps: 7 }
-                ]
-              },
-              {
-                name: 'Upažování na stroji (Lateral Raise Machine)',
-                sets: [
-                  { weight: 30, reps: 14 },
-                  { weight: 35, reps: 12 }
-                ]
-              },
-              {
-                name: 'Tricepsové stahování horní kladky s lanem (Rope Pushdown)',
-                sets: [
-                  { weight: 25, reps: 12 },
-                  { weight: 25, reps: 12 }
-                ]
-              }
-            ]
-          },
-          {
-            id: 'w_sample_2',
-            date: d2,
-            name: 'Pull A (Záda, Biceps)',
-            note: 'Dobré procítění kladek',
-            totalVolume: 6180,
-            exercises: [
-              {
-                name: 'Stahování horní kladky na široko (Lat Pulldown)',
-                sets: [
-                  { weight: 65, reps: 10 },
-                  { weight: 70, reps: 9 },
-                  { weight: 70, reps: 8 }
-                ]
-              },
-              {
-                name: 'Veslování na spodní kladce vsedě (Seated Cable Row)',
-                sets: [
-                  { weight: 60, reps: 12 },
-                  { weight: 65, reps: 10 }
-                ]
-              }
-            ]
-          },
-          {
-            id: 'w_sample_3',
-            date: d3,
-            name: 'Legs (Nohy & Lýtka)',
-            note: 'Těžké nohy',
-            totalVolume: 8450,
-            exercises: [
-              {
-                name: 'Dřep s velkou činkou (Back Squat)',
-                sets: [
-                  { weight: 90, reps: 8 },
-                  { weight: 100, reps: 8 },
-                  { weight: 100, reps: 6 }
-                ]
-              },
-              {
-                name: 'Leg Press (Stroj 45°)',
-                sets: [
-                  { weight: 140, reps: 12 },
-                  { weight: 150, reps: 10 }
-                ]
-              }
-            ]
-          },
-          {
-            id: 'w_sample_4',
-            date: d4,
-            name: 'Push B (Prsa, Ramena, Triceps)',
-            note: 'Navýšení váhy na bench pressu',
-            totalVolume: 6340,
-            exercises: [
-              {
-                name: 'Bench Press (Velká činka)',
-                sets: [
-                  { weight: 80, reps: 10 },
-                  { weight: 85, reps: 8 },
-                  { weight: 85, reps: 7 }
-                ]
-              },
-              {
-                name: 'Upažování na stroji (Lateral Raise Machine)',
-                sets: [
-                  { weight: 35, reps: 14 },
-                  { weight: 35, reps: 13 }
-                ]
-              }
-            ]
-          }
-        ],
-        weights: [
-          { id: 'wt_1', date: d1, weight: 83.4, bodyFat: 15.8, note: 'Ráno nalačno' },
-          { id: 'wt_2', date: d2, weight: 83.1, bodyFat: 15.6, note: '' },
-          { id: 'wt_3', date: d3, weight: 82.8, bodyFat: 15.4, note: '' },
-          { id: 'wt_4', date: d4, weight: 82.5, bodyFat: 15.2, note: 'Stabilní trend' }
-        ],
+        workouts: [],
+        weights: [],
         photos: [],
-        macroTargets: { kcal: 2800, protein: 190, carbs: 310, fat: 80 },
-        mealsByDate: {
-          [todayStr]: [
-            {
-              id: 'm_1',
-              name: 'Ovesná kaše s odměrkou proteinu a borůvkami',
-              protein: 38,
-              carbs: 72,
-              fat: 12,
-              kcal: Math.round(38 * 4 + 72 * 4 + 12 * 9)
-            },
-            {
-              id: 'm_2',
-              name: 'Kuřecí prsa s jasmínovou rýží a olivovým olejem',
-              protein: 52,
-              carbs: 85,
-              fat: 15,
-              kcal: Math.round(52 * 4 + 85 * 4 + 15 * 9)
-            }
-          ]
-        },
+        macroTargets: { kcal: 2500, protein: 180, carbs: 260, fat: 75 },
+        mealsByDate: {},
         supplementsList: [
           'Kreatin Monohydrát (5 g)',
           'Syrovátkový Protein (30 g)',
@@ -1478,14 +1310,12 @@
           'Vitamín D3 + K2',
           'Hořčík'
         ],
-        supplementLogs: {
-          [todayStr]: ['Kreatin Monohydrát (5 g)', 'Omega-3']
-        }
+        supplementLogs: {}
       };
     }
 
     function loadStateForAccount(accountId) {
-      const defaults = createSampleData();
+      const defaults = createCleanUserState();
       if (!accountId) return defaults;
       try {
         const raw = localStorage.getItem(getAccountStorageKey(accountId));
@@ -1502,7 +1332,6 @@
           macroTargets: { ...defaults.macroTargets, ...(parsed.macroTargets || {}) }
         };
       } catch (e) {
-        console.warn('Nelze načíst data účtu:', e);
         return defaults;
       }
     }
@@ -1513,34 +1342,225 @@
       ? accountsRegistry.find((a) => a.id === sessionAccountId) || null
       : null;
 
-    let appState = activeAccount ? loadStateForAccount(activeAccount.id) : createSampleData();
-    let currentBuilderExercises =
-      appState.workouts && appState.workouts.length > 0
-        ? []
-        : [
-            {
-              name: 'Bench Press (Velká činka)',
-              sets: [
-                { weight: 80, reps: 10 },
-                { weight: 90, reps: 8 }
-              ]
-            }
-          ];
+    let appState = activeAccount ? loadStateForAccount(activeAccount.id) : createCleanUserState();
+    let currentBuilderExercises = [];
     let editingWorkoutId = null;
     let selectedPlanDayId = getTodayWeekDayId();
     let pendingPhotoBase64 = null;
-    let charts = {
-      volume: null,
-      weight: null,
-      exercise: null,
-      macros: null
-    };
+    let charts = { volume: null, weight: null, exercise: null, macros: null };
 
-    // =========================================================================
-    // 1.6 SPRÁVA ÚČTŮ (REGISTRACE, E-MAIL POTVRZENÍ, ZAPOMENUTÉ HESLO)
-    // =========================================================================
+    let db = null;
+    let auth = null;
+    let currentFirebaseUser = null;
+    let isCloudEnabled = false;
+    let unsubscribeUserSnapshot = null;
     let pendingVerificationAccountId = null;
     let activePasswordResetState = { accountId: null, code: null };
+
+    function isCloudModeActive() {
+      return Boolean(isCloudEnabled && auth && db);
+    }
+
+    function updateCloudModeBadges() {
+      const pill = document.getElementById('authCloudStatusPill');
+      const regAccountsBox = document.getElementById('registeredAccountsBox');
+      if (isCloudModeActive()) {
+        if (pill) {
+          pill.className = 'text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/35';
+          pill.innerHTML = '<i class="fa-solid fa-cloud mr-1"></i>Cloud aktivní';
+        }
+        regAccountsBox?.classList.add('hidden');
+      } else {
+        if (pill) {
+          pill.className = 'text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30';
+          pill.textContent = 'Lokální režim';
+        }
+        regAccountsBox?.classList.remove('hidden');
+      }
+    }
+
+    window.toggleFirebaseConfigBox = function () {
+      const panel = document.getElementById('firebaseConfigPanel');
+      const chev = document.getElementById('firebaseConfigChevron');
+      if (!panel) return;
+      panel.classList.toggle('hidden');
+      if (chev) {
+        chev.className = panel.classList.contains('hidden') ? 'fa-solid fa-chevron-down text-[10px]' : 'fa-solid fa-chevron-up text-[10px]';
+      }
+      const existing = resolveFirebaseConfig();
+      const textarea = document.getElementById('firebaseConfigJsonInput');
+      if (textarea && existing && !textarea.value) {
+        textarea.value = JSON.stringify(existing, null, 2);
+      }
+    };
+
+    window.saveCustomFirebaseConfig = function () {
+      const raw = (document.getElementById('firebaseConfigJsonInput')?.value || '').trim();
+      try {
+        const cleaned = raw
+          .replace(/const\s+firebaseConfig\s*=\s*/g, '')
+          .replace(/;\s*$/g, '')
+          .replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
+          .replace(/'/g, '"');
+        const parsed = JSON.parse(cleaned);
+        if (!parsed.apiKey || !parsed.projectId) {
+          showToast('Chybí apiKey nebo projectId v konfiguraci.', 'error');
+          return;
+        }
+        localStorage.setItem(CUSTOM_FB_CONFIG_STORAGE_KEY, JSON.stringify(parsed));
+        showToast('Firebase Cloud uložen! Obnovuji připojení...');
+        setTimeout(() => window.location.reload(), 600);
+      } catch (e) {
+        showToast('Neplatný formát konfigurace. Zkopíruj objekt firebaseConfig z Firebase konzole.', 'error');
+      }
+    };
+
+    window.clearSavedFirebaseConfig = function () {
+      localStorage.removeItem(CUSTOM_FB_CONFIG_STORAGE_KEY);
+      showToast('Vlastní Firebase konfigurace odstraněna.');
+      setTimeout(() => window.location.reload(), 500);
+    };
+
+    async function initFirebase() {
+      const fbConfig = resolveFirebaseConfig();
+      if (!fbConfig) {
+        isCloudEnabled = false;
+        updateCloudModeBadges();
+        updateSyncUI('Lokální režim', 'text-amber-400');
+        if (!activeAccount) {
+          openAuthModal(accountsRegistry.length > 0 ? 'login' : 'register');
+        }
+        return;
+      }
+
+      try {
+        const app = initializeApp(fbConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        isCloudEnabled = true;
+        updateCloudModeBadges();
+        updateSyncUI('Cloud připojen', 'text-emerald-400');
+
+        onAuthStateChanged(auth, async (user) => {
+          currentFirebaseUser = user;
+          if (!user) {
+            if (typeof unsubscribeUserSnapshot === 'function') {
+              unsubscribeUserSnapshot();
+              unsubscribeUserSnapshot = null;
+            }
+            activeAccount = null;
+            updateActiveAccountBadges();
+            openAuthModal('login');
+            return;
+          }
+
+          if (!user.emailVerified) {
+            activeAccount = null;
+            updateActiveAccountBadges();
+            openAuthModal('login');
+            openEmailVerificationView({
+              id: user.uid,
+              nickname: user.displayName || user.email?.split('@')[0] || 'Uživatel',
+              email: user.email || ''
+            });
+            return;
+          }
+
+          activeAccount = {
+            id: user.uid,
+            nickname: user.displayName || user.email?.split('@')[0] || 'Sportovec',
+            email: user.email || ''
+          };
+          updateActiveAccountBadges();
+          closeAuthModal();
+          appState = loadStateForAccount(user.uid);
+          renderAll();
+          subscribeToCloudUserData(user.uid);
+        });
+      } catch (err) {
+        console.error('Chyba připojení k Firebase:', err);
+        isCloudEnabled = false;
+        updateCloudModeBadges();
+        updateSyncUI('Chyba cloudu (Lokálně)', 'text-rose-400');
+        if (!activeAccount) {
+          openAuthModal('login');
+        }
+      }
+    }
+
+    function subscribeToCloudUserData(uid) {
+      if (!db || !uid) return;
+      if (typeof unsubscribeUserSnapshot === 'function') {
+        unsubscribeUserSnapshot();
+        unsubscribeUserSnapshot = null;
+      }
+
+      const userDocRef = doc(db, 'users', uid);
+      updateSyncUI('Synchronizuji...', 'text-amber-400');
+
+      unsubscribeUserSnapshot = onSnapshot(
+        userDocRef,
+        async (docSnap) => {
+          updateSyncUI('Cloud synchronizován', 'text-emerald-400');
+          if (docSnap.exists()) {
+            const remoteData = docSnap.data();
+            const defaults = createCleanUserState();
+            appState = {
+              ...defaults,
+              ...remoteData,
+              trainingPlans:
+                Array.isArray(remoteData.trainingPlans) && remoteData.trainingPlans.length > 0
+                  ? remoteData.trainingPlans
+                  : defaults.trainingPlans,
+              activePlanId: remoteData.activePlanId || defaults.activePlanId,
+              macroTargets: { ...defaults.macroTargets, ...(remoteData.macroTargets || {}) }
+            };
+            saveToLocalStorage();
+            renderAll();
+          } else {
+            await persistState();
+          }
+        },
+        (error) => {
+          console.error('Chyba čtení z Firestore:', error);
+          updateSyncUI('Zkontroluj Firestore pravidla', 'text-rose-400');
+          showToast('Firestore odmítl přístup. Zkontroluj bezpečnostní pravidla v Firebase.', 'error');
+        }
+      );
+    }
+
+    function saveToLocalStorage() {
+      try {
+        if (activeAccount) {
+          localStorage.setItem(getAccountStorageKey(activeAccount.id), JSON.stringify(appState));
+        } else {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appState));
+        }
+      } catch (e) {}
+    }
+
+    async function persistState() {
+      saveToLocalStorage();
+      if (!isCloudModeActive() || !currentFirebaseUser) return;
+      try {
+        updateSyncUI('Ukládám do cloudu...', 'text-amber-400');
+        const userDocRef = doc(db, 'users', currentFirebaseUser.uid);
+        await setDoc(userDocRef, appState);
+        updateSyncUI('Cloud synchronizován', 'text-emerald-400');
+      } catch (err) {
+        console.error('Chyba zápisu do Firestore:', err);
+        updateSyncUI('Chyba ukládání', 'text-rose-400');
+        showToast('Nepodařilo se uložit data do cloudu.', 'error');
+      }
+    }
+
+    function updateSyncUI(text, colorClass) {
+      const badge = document.getElementById('syncStatusBadge');
+      if (badge) {
+        badge.className = `flex items-center gap-1.5 font-medium ${colorClass}`;
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-current"></span> ${text}`;
+      }
+    }
 
     function generateSixDigitCode() {
       return String(Math.floor(100000 + Math.random() * 900000));
@@ -1548,9 +1568,12 @@
 
     function updateActiveAccountBadges() {
       const nick = activeAccount ? activeAccount.nickname : 'Nepřihlášen';
+      const email = activeAccount && activeAccount.email ? activeAccount.email : '';
       const sideNick = document.getElementById('sidebarActiveUserNick');
+      const sideEmail = document.getElementById('sidebarActiveUserEmail');
       const mobBadge = document.getElementById('mobileActiveUserBadge');
       if (sideNick) sideNick.textContent = nick;
+      if (sideEmail) sideEmail.textContent = email;
       if (mobBadge) mobBadge.textContent = nick;
     }
 
@@ -1563,6 +1586,7 @@
       document.getElementById('registerErrorText')?.classList.add('hidden');
       document.getElementById('verifyEmailErrorText')?.classList.add('hidden');
       document.getElementById('forgotErrorText')?.classList.add('hidden');
+      document.getElementById('forgotSuccessText')?.classList.add('hidden');
       document.getElementById('resetPasswordErrorText')?.classList.add('hidden');
     }
 
@@ -1589,30 +1613,82 @@
 
     window.openEmailVerificationView = function (account) {
       pendingVerificationAccountId = account.id;
-      if (!account.verificationCode) {
-        account.verificationCode = generateSixDigitCode();
-        saveAccountsRegistry(accountsRegistry);
-      }
       hideAllAuthPanels();
       document.getElementById('verifyEmailPanel')?.classList.remove('hidden');
       const targetEl = document.getElementById('verifyEmailTargetText');
-      const hintEl = document.getElementById('verifyEmailDemoCodeHint');
-      const codeInput = document.getElementById('verifyEmailCodeInput');
       if (targetEl) targetEl.textContent = account.email || account.nickname;
-      if (hintEl) hintEl.textContent = `Ověřovací kód pro ${account.email}: ${account.verificationCode}`;
-      if (codeInput) {
-        codeInput.value = '';
-        codeInput.focus();
+
+      const localCodeForm = document.getElementById('localVerifyCodeForm');
+      const demoHint = document.getElementById('verifyEmailDemoCodeHint');
+      const checkCloudBtn = document.getElementById('checkCloudVerificationBtn');
+
+      if (isCloudModeActive()) {
+        localCodeForm?.classList.add('hidden');
+        demoHint?.classList.add('hidden');
+        checkCloudBtn?.classList.remove('hidden');
+      } else {
+        if (!account.verificationCode) {
+          account.verificationCode = generateSixDigitCode();
+          saveAccountsRegistry(accountsRegistry);
+        }
+        localCodeForm?.classList.remove('hidden');
+        checkCloudBtn?.classList.add('hidden');
+        if (demoHint) {
+          demoHint.classList.remove('hidden');
+          demoHint.textContent = `Lokální testovací režim – kód pro ${account.email}: ${account.verificationCode}`;
+        }
       }
     };
 
-    window.resendVerificationCode = function () {
+    window.recheckCloudEmailVerification = async function () {
+      const errEl = document.getElementById('verifyEmailErrorText');
+      if (!isCloudModeActive() || !auth.currentUser) return;
+      try {
+        await reload(auth.currentUser);
+        if (auth.currentUser.emailVerified) {
+          errEl?.classList.add('hidden');
+          activeAccount = {
+            id: auth.currentUser.uid,
+            nickname: auth.currentUser.displayName || auth.currentUser.email?.split('@')[0] || 'Sportovec',
+            email: auth.currentUser.email || ''
+          };
+          updateActiveAccountBadges();
+          closeAuthModal();
+          appState = loadStateForAccount(auth.currentUser.uid);
+          renderAll();
+          subscribeToCloudUserData(auth.currentUser.uid);
+          showToast('E-mail úspěšně ověřen! Vítej v Naloženo.');
+        } else {
+          if (errEl) {
+            errEl.textContent = 'E-mail ještě není potvrzený. Klikni nejdříve na odkaz v e-mailové schránce.';
+            errEl.classList.remove('hidden');
+          }
+        }
+      } catch (e) {
+        if (errEl) {
+          errEl.textContent = 'Nepodařilo se ověřit stav účtu. Zkus to prosím znovu.';
+          errEl.classList.remove('hidden');
+        }
+      }
+    };
+
+    window.resendVerificationCode = async function () {
+      if (isCloudModeActive() && auth.currentUser) {
+        try {
+          await sendEmailVerification(auth.currentUser);
+          showToast(`Potvrzovací e-mail znovu odeslán na ${auth.currentUser.email}.`);
+        } catch (e) {
+          showToast('Počkej chvíli před dalším odesláním e-mailu.', 'error');
+        }
+        return;
+      }
+
       const acc = accountsRegistry.find((a) => a.id === pendingVerificationAccountId);
       if (!acc) return;
       acc.verificationCode = generateSixDigitCode();
       saveAccountsRegistry(accountsRegistry);
       openEmailVerificationView(acc);
-      showToast(`Nový potvrzovací kód odeslán na ${acc.email}.`);
+      showToast(`Nový kód vygenerován pro ${acc.email}.`);
     };
 
     window.handleConfirmEmailSubmit = function (event) {
@@ -1621,17 +1697,9 @@
       const enteredCode = (document.getElementById('verifyEmailCodeInput')?.value || '').trim();
       const acc = accountsRegistry.find((a) => a.id === pendingVerificationAccountId);
 
-      if (!acc) {
+      if (!acc || enteredCode !== String(acc.verificationCode || '').trim()) {
         if (errEl) {
-          errEl.textContent = 'Účet pro ověření nebyl nalezen.';
-          errEl.classList.remove('hidden');
-        }
-        return;
-      }
-
-      if (enteredCode !== String(acc.verificationCode || '').trim()) {
-        if (errEl) {
-          errEl.textContent = 'Nesprávný potvrzovací kód. Zkontroluj kód a zkus to znovu.';
+          errEl.textContent = 'Nesprávný potvrzovací kód.';
           errEl.classList.remove('hidden');
         }
         return;
@@ -1642,7 +1710,7 @@
       pendingVerificationAccountId = null;
       saveAccountsRegistry(accountsRegistry);
       errEl?.classList.add('hidden');
-      activateAccountSession(acc);
+      activateLocalAccountSession(acc);
     };
 
     window.openForgotPasswordView = function () {
@@ -1659,27 +1727,47 @@
       }
     };
 
-    window.sendPasswordResetCode = function () {
+    window.sendPasswordResetCode = async function () {
       const errEl = document.getElementById('forgotErrorText');
-      const identifier = (document.getElementById('forgotIdentifierInput')?.value || '').trim().toLowerCase();
+      const okEl = document.getElementById('forgotSuccessText');
+      const identifier = (document.getElementById('forgotIdentifierInput')?.value || '').trim();
 
       if (!identifier) {
         if (errEl) {
-          errEl.textContent = 'Zadej e-mail nebo přezdívku účtu.';
+          errEl.textContent = 'Zadej e-mail účtu.';
           errEl.classList.remove('hidden');
         }
         return;
       }
 
-      const found = accountsRegistry.find(
-        (a) =>
-          a.nickname.toLowerCase() === identifier ||
-          (a.email && a.email.toLowerCase() === identifier)
-      );
+      if (isCloudModeActive()) {
+        try {
+          await sendPasswordResetEmail(auth, identifier);
+          errEl?.classList.add('hidden');
+          if (okEl) {
+            okEl.textContent = `Odkaz pro obnovení hesla byl odeslán na ${identifier}. Zkontroluj svou e-mailovou schránku (i Spam).`;
+            okEl.classList.remove('hidden');
+          }
+          showToast('E-mail pro obnovení hesla byl odeslán!');
+        } catch (err) {
+          if (errEl) {
+            errEl.textContent =
+              err.code === 'auth/user-not-found'
+                ? 'Účet s tímto e-mailem neexistuje.'
+                : 'Nepodařilo se odeslat e-mail. Zkontroluj správnost adresy.';
+            errEl.classList.remove('hidden');
+          }
+        }
+        return;
+      }
 
+      const lower = identifier.toLowerCase();
+      const found = accountsRegistry.find(
+        (a) => a.nickname.toLowerCase() === lower || (a.email && a.email.toLowerCase() === lower)
+      );
       if (!found) {
         if (errEl) {
-          errEl.textContent = 'Účet s tímto e-mailem nebo přezdívkou nebyl nalezen.';
+          errEl.textContent = 'Účet nenalezen.';
           errEl.classList.remove('hidden');
         }
         return;
@@ -1688,19 +1776,10 @@
       const code = generateSixDigitCode();
       activePasswordResetState = { accountId: found.id, code };
       errEl?.classList.add('hidden');
-
       document.getElementById('forgotStepRequestBox')?.classList.add('hidden');
       document.getElementById('forgotStepResetBox')?.classList.remove('hidden');
       const hintEl = document.getElementById('forgotCodeHint');
-      if (hintEl) {
-        hintEl.textContent = `Kód pro obnovení hesla pro ${found.email || found.nickname}: ${code}`;
-      }
-      const codeInput = document.getElementById('resetCodeInput');
-      if (codeInput) {
-        codeInput.value = '';
-        codeInput.focus();
-      }
-      showToast('Kód pro obnovení hesla byl odeslán.');
+      if (hintEl) hintEl.textContent = `Lokální kód pro ${found.email || found.nickname}: ${code}`;
     };
 
     window.handleResetPasswordSubmit = function (event) {
@@ -1711,15 +1790,14 @@
 
       if (!activePasswordResetState.accountId || enteredCode !== activePasswordResetState.code) {
         if (errEl) {
-          errEl.textContent = 'Neplatný kód pro obnovení hesla.';
+          errEl.textContent = 'Neplatný kód.';
           errEl.classList.remove('hidden');
         }
         return;
       }
-
-      if (newPassword.length < 4) {
+      if (newPassword.length < 6) {
         if (errEl) {
-          errEl.textContent = 'Nové heslo musí mít alespoň 4 znaky.';
+          errEl.textContent = 'Nové heslo musí mít alespoň 6 znaků.';
           errEl.classList.remove('hidden');
         }
         return;
@@ -1739,32 +1817,29 @@
       errEl?.classList.add('hidden');
       setAuthMode('login');
       prefillLoginNickname(targetNick);
-      showToast(`Heslo pro účet ${targetNick} bylo úspěšně změněno.`);
+      showToast(`Heslo pro účet ${targetNick} bylo změněno.`);
     };
 
     function renderRegisteredAccountsList() {
+      if (isCloudModeActive()) return;
       const countEl = document.getElementById('registeredAccountsCount');
       const chipsEl = document.getElementById('registeredAccountsChips');
       if (countEl) countEl.textContent = String(accountsRegistry.length);
       if (!chipsEl) return;
 
       if (accountsRegistry.length === 0) {
-        chipsEl.innerHTML = `<span class="text-[11px] text-zinc-500">Zatím není registrován žádný účet. Přepni na „Registrovat nový účet“.</span>`;
+        chipsEl.innerHTML = `<span class="text-[11px] text-zinc-500">Zatím žádný lokální účet.</span>`;
         return;
       }
 
       chipsEl.innerHTML = accountsRegistry
         .map((acc) => {
           const safeNick = acc.nickname.replace(/"/g, '&quot;');
-          const verifiedBadge = acc.emailVerified
-            ? `<i class="fa-solid fa-circle-check text-[10px] text-emerald-400" title="E-mail potvrzen"></i>`
-            : `<i class="fa-solid fa-envelope text-[10px] text-amber-400" title="Čeká na potvrzení e-mailu"></i>`;
           return `
             <button type="button" onclick="prefillLoginNickname('${safeNick}')"
               class="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-xs font-semibold text-zinc-200 hover:text-emerald-300 transition flex items-center gap-1.5">
               <i class="fa-solid fa-user text-[10px] text-emerald-400"></i>
               <span>${acc.nickname}</span>
-              ${verifiedBadge}
             </button>
           `;
         })
@@ -1797,70 +1872,80 @@
       modal.classList.remove('flex');
     }
 
-    function activateAccountSession(account) {
+    function activateLocalAccountSession(account) {
       activeAccount = account;
       setActiveSessionAccountId(account.id);
       editingWorkoutId = null;
       appState = loadStateForAccount(account.id);
-      currentBuilderExercises =
-        appState.workouts && appState.workouts.length > 0
-          ? []
-          : [
-              {
-                name: 'Bench Press (Velká činka)',
-                sets: [
-                  { weight: 80, reps: 10 },
-                  { weight: 90, reps: 8 }
-                ]
-              }
-            ];
+      currentBuilderExercises = [];
       updateActiveAccountBadges();
       closeAuthModal();
       renderAll();
       showToast(`Přihlášen jako ${account.nickname}`);
     }
 
-    window.handleLoginSubmit = function (event) {
+    window.handleLoginSubmit = async function (event) {
       event.preventDefault();
       const errEl = document.getElementById('authErrorText');
       const rawIdentifier = (document.getElementById('loginNicknameInput')?.value || '').trim();
       const password = document.getElementById('loginPasswordInput')?.value || '';
+
+      if (isCloudModeActive()) {
+        const btn = document.getElementById('loginSubmitBtn');
+        if (btn) btn.disabled = true;
+        try {
+          const cred = await signInWithEmailAndPassword(auth, rawIdentifier, password);
+          errEl?.classList.add('hidden');
+          document.getElementById('loginPasswordInput').value = '';
+          if (!cred.user.emailVerified) {
+            openEmailVerificationView({
+              id: cred.user.uid,
+              nickname: cred.user.displayName || rawIdentifier,
+              email: cred.user.email || rawIdentifier
+            });
+          } else {
+            showToast(`Vítej zpět, ${cred.user.displayName || cred.user.email}!`);
+          }
+        } catch (err) {
+          if (errEl) {
+            if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+              errEl.textContent = 'Nesprávný e-mail nebo heslo.';
+            } else if (err.code === 'auth/invalid-email') {
+              errEl.textContent = 'V cloudovém režimu se přihlašuj svou e-mailovou adresou.';
+            } else {
+              errEl.textContent = `Chyba přihlášení: ${err.message}`;
+            }
+            errEl.classList.remove('hidden');
+          }
+        } finally {
+          if (btn) btn.disabled = false;
+        }
+        return;
+      }
 
       const found = accountsRegistry.find(
         (a) =>
           a.nickname.toLowerCase() === rawIdentifier.toLowerCase() ||
           (a.email && a.email.toLowerCase() === rawIdentifier.toLowerCase())
       );
-      if (!found) {
+      if (!found || hashPasswordSimple(password, found.salt) !== found.passwordHash) {
         if (errEl) {
-          errEl.textContent = 'Účet s touto přezdívkou nebo e-mailem neexistuje. Nejprve se zaregistruj.';
+          errEl.textContent = 'Nesprávný e-mail/přezdívka nebo heslo.';
           errEl.classList.remove('hidden');
         }
         return;
       }
-
-      const computedHash = hashPasswordSimple(password, found.salt);
-      if (computedHash !== found.passwordHash) {
-        if (errEl) {
-          errEl.textContent = 'Nesprávné heslo.';
-          errEl.classList.remove('hidden');
-        }
-        return;
-      }
-
       if (found.email && found.emailVerified === false) {
         errEl?.classList.add('hidden');
         openEmailVerificationView(found);
-        showToast('Nejdříve prosím potvrď svou e-mailovou adresu.');
         return;
       }
-
       errEl?.classList.add('hidden');
       document.getElementById('loginPasswordInput').value = '';
-      activateAccountSession(found);
+      activateLocalAccountSession(found);
     };
 
-    window.handleRegisterSubmit = function (event) {
+    window.handleRegisterSubmit = async function (event) {
       event.preventDefault();
       const errEl = document.getElementById('registerErrorText');
       const nickname = (document.getElementById('registerNicknameInput')?.value || '').trim();
@@ -1868,51 +1953,53 @@
       const password = document.getElementById('registerPasswordInput')?.value || '';
       const confirmPass = document.getElementById('registerPasswordConfirmInput')?.value || '';
 
-      if (nickname.length < 2) {
-        if (errEl) {
-          errEl.textContent = 'Přezdívka musí mít alespoň 2 znaky.';
-          errEl.classList.remove('hidden');
-        }
-        return;
-      }
-
-      if (!email || !email.includes('@') || !email.includes('.')) {
-        if (errEl) {
-          errEl.textContent = 'Zadej platnou e-mailovou adresu.';
-          errEl.classList.remove('hidden');
-        }
-        return;
-      }
-
-      const nickExists = accountsRegistry.some((a) => a.nickname.toLowerCase() === nickname.toLowerCase());
-      if (nickExists) {
-        if (errEl) {
-          errEl.textContent = 'Tato přezdívka už je zaregistrovaná. Zvol jinou nebo se přihlas.';
-          errEl.classList.remove('hidden');
-        }
-        return;
-      }
-
-      const emailExists = accountsRegistry.some((a) => a.email && a.email.toLowerCase() === email);
-      if (emailExists) {
-        if (errEl) {
-          errEl.textContent = 'Tento e-mail už je u jiného účtu zaregistrován.';
-          errEl.classList.remove('hidden');
-        }
-        return;
-      }
-
-      if (password.length < 4) {
-        if (errEl) {
-          errEl.textContent = 'Heslo musí mít alespoň 4 znaky.';
-          errEl.classList.remove('hidden');
-        }
-        return;
-      }
-
       if (password !== confirmPass) {
         if (errEl) {
           errEl.textContent = 'Hesla se neshodují.';
+          errEl.classList.remove('hidden');
+        }
+        return;
+      }
+
+      if (isCloudModeActive()) {
+        const btn = document.getElementById('registerSubmitBtn');
+        if (btn) btn.disabled = true;
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          await updateProfile(cred.user, { displayName: nickname });
+          await sendEmailVerification(cred.user);
+
+          const cleanState = createCleanUserState();
+          await setDoc(doc(db, 'users', cred.user.uid), cleanState);
+
+          errEl?.classList.add('hidden');
+          document.getElementById('registerAccountForm')?.reset();
+          openEmailVerificationView({
+            id: cred.user.uid,
+            nickname,
+            email
+          });
+          showToast(`Účet vytvořen! Potvrzovací e-mail odeslán na ${email}.`);
+        } catch (err) {
+          if (errEl) {
+            if (err.code === 'auth/email-already-in-use') {
+              errEl.textContent = 'Tento e-mail už je zaregistrovaný. Přihlas se.';
+            } else if (err.code === 'auth/weak-password') {
+              errEl.textContent = 'Heslo musí mít alespoň 6 znaků.';
+            } else {
+              errEl.textContent = `Chyba registrace: ${err.message}`;
+            }
+            errEl.classList.remove('hidden');
+          }
+        } finally {
+          if (btn) btn.disabled = false;
+        }
+        return;
+      }
+
+      if (accountsRegistry.some((a) => a.nickname.toLowerCase() === nickname.toLowerCase() || a.email === email)) {
+        if (errEl) {
+          errEl.textContent = 'Přezdívka nebo e-mail už existuje.';
           errEl.classList.remove('hidden');
         }
         return;
@@ -1930,161 +2017,27 @@
         passwordHash: hashPasswordSimple(password, salt),
         createdAt: new Date().toISOString()
       };
-
       accountsRegistry.push(newAccount);
       saveAccountsRegistry(accountsRegistry);
-
-      // Každý nově registrovaný účet dostane čistý startovní profil
-      const freshState = {
-        ...createSampleData(),
-        isSample: false,
-        workouts: [],
-        weights: [],
-        photos: [],
-        mealsByDate: {},
-        supplementLogs: {}
-      };
-      try {
-        localStorage.setItem(getAccountStorageKey(newAccount.id), JSON.stringify(freshState));
-      } catch (e) {
-        console.warn('Nelze inicializovat data nového účtu:', e);
-      }
+      localStorage.setItem(getAccountStorageKey(newAccount.id), JSON.stringify(createCleanUserState()));
 
       errEl?.classList.add('hidden');
       document.getElementById('registerAccountForm')?.reset();
       openEmailVerificationView(newAccount);
-      showToast(`Potvrzovací e-mail odeslán na ${email}.`);
     };
 
-    window.logoutCurrentAccount = function () {
+    window.logoutCurrentAccount = async function () {
+      if (isCloudModeActive() && auth.currentUser) {
+        try {
+          await signOut(auth);
+        } catch (e) {}
+      }
       activeAccount = null;
       setActiveSessionAccountId(null);
       updateActiveAccountBadges();
       openAuthModal('login');
     };
 
-    // =========================================================================
-    // 2. FIREBASE CLOUD STORAGE + LOCALSTORAGE PERZISTENCE
-    // =========================================================================
-    let db = null;
-    let auth = null;
-    let currentUser = null;
-    let unsubscribeUserSnapshot = null;
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'nalozono-fitness-app';
-
-    function saveToLocalStorage() {
-      try {
-        if (activeAccount) {
-          localStorage.setItem(getAccountStorageKey(activeAccount.id), JSON.stringify(appState));
-        } else {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appState));
-        }
-      } catch (e) {
-        console.warn('LocalStorage je plný nebo nedostupný:', e);
-      }
-    }
-
-    async function initFirebase() {
-      try {
-        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-          const firebaseConfig = JSON.parse(__firebase_config);
-          const app = initializeApp(firebaseConfig);
-          auth = getAuth(app);
-          db = getFirestore(app);
-
-          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-          } else {
-            await signInAnonymously(auth);
-          }
-
-          onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-              subscribeToUserData(user.uid);
-            }
-          });
-        } else {
-          updateSyncUI('Uloženo lokálně', 'text-emerald-400');
-        }
-      } catch (err) {
-        console.error('Chyba při inicializaci cloudu:', err);
-        updateSyncUI('Lokální režim', 'text-amber-400');
-      }
-    }
-
-    function subscribeToUserData(uid) {
-      if (!db) return;
-      if (typeof unsubscribeUserSnapshot === 'function') {
-        unsubscribeUserSnapshot();
-        unsubscribeUserSnapshot = null;
-      }
-
-      const userDocRef = doc(db, 'artifacts', appId, 'users', uid, 'fitnessData', 'mainState');
-
-      unsubscribeUserSnapshot = onSnapshot(
-        userDocRef,
-        async (docSnap) => {
-          updateSyncUI('Cloud & Lokálně', 'text-emerald-400');
-          if (docSnap.exists()) {
-            const remoteData = docSnap.data();
-            const defaults = createSampleData();
-            appState = {
-              ...defaults,
-              ...remoteData,
-              trainingPlans: remoteData.trainingPlans && remoteData.trainingPlans.length > 0 ? remoteData.trainingPlans : appState.trainingPlans,
-              activePlanId: remoteData.activePlanId || appState.activePlanId,
-              isSample: remoteData.isSample ?? false
-            };
-            saveToLocalStorage();
-          } else {
-            await persistState();
-          }
-          renderAll();
-        },
-        (error) => {
-          if (typeof unsubscribeUserSnapshot === 'function') {
-            unsubscribeUserSnapshot();
-            unsubscribeUserSnapshot = null;
-          }
-          db = null;
-          if (error?.code === 'permission-denied') {
-            updateSyncUI('Lokální úložiště', 'text-emerald-400');
-            return;
-          }
-          console.warn('Cloudové čtení nedostupné, používám lokální úložiště:', error?.message || error);
-          updateSyncUI('Lokální úložiště', 'text-amber-400');
-        }
-      );
-    }
-
-    async function persistState() {
-      saveToLocalStorage();
-      if (!db || !currentUser) return;
-      try {
-        updateSyncUI('Ukládám...', 'text-amber-400');
-        const userDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'fitnessData', 'mainState');
-        await setDoc(userDocRef, appState);
-        updateSyncUI('Cloud & Lokálně', 'text-emerald-400');
-      } catch (err) {
-        if (err?.code === 'permission-denied') {
-          db = null;
-        }
-        updateSyncUI('Uloženo lokálně', 'text-emerald-400');
-      }
-    }
-
-    function updateSyncUI(text, colorClass) {
-      const badge = document.getElementById('syncStatusBadge');
-      if (badge) {
-        badge.className = `flex items-center gap-1.5 font-medium ${colorClass}`;
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-current"></span> ${text}`;
-      }
-    }
-
-    // =========================================================================
-    // 3. UI NOTIFIKACE A POTVRZOVACÍ DIALOGY
-    // =========================================================================
     window.showToast = function (message, type = 'success') {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -2105,7 +2058,7 @@
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(-10px)';
         setTimeout(() => toast.remove(), 300);
-      }, 3200);
+      }, 3400);
     };
 
     function askConfirm(title, message, onConfirm) {
@@ -2135,44 +2088,22 @@
     window.confirmClearSampleData = function () {
       askConfirm(
         'Vymazat všechna data a začít s čistým štítem?',
-        'Tato akce smaže ukázkové tréninky, vážení, jídelníček i fotky, abys mohl zapisovat čistě své vlastní výsledky.',
+        'Tato akce smaže všechny tvé zapsané tréninky, vážení, jídelníček i fotky v tomto účtu.',
         async () => {
-          const defaultPlans = createDefaultTrainingPlans();
           editingWorkoutId = null;
-          appState = {
-            isSample: false,
-            activePlanId: defaultPlans[0].id,
-            trainingPlans: defaultPlans,
-            workouts: [],
-            weights: [],
-            photos: [],
-            macroTargets: { kcal: 2500, protein: 180, carbs: 260, fat: 75 },
-            mealsByDate: {},
-            supplementsList: [
-              'Kreatin Monohydrát (5 g)',
-              'Syrovátkový Protein (30 g)',
-              'Omega-3',
-              'Vitamín D3 + K2',
-              'Hořčík'
-            ],
-            supplementLogs: {}
-          };
+          appState = createCleanUserState();
           await persistState();
           renderAll();
-          showToast('Všechna data byla vymazána. Můžeš začít zapisovat!');
+          showToast('Všechna data byla vymazána.');
         }
       );
     };
 
-    // =========================================================================
-    // 4. NAVIGACE MEZI ZÁLOŽKAMI
-    // =========================================================================
     window.switchTab = function (tabName) {
       document.querySelectorAll('.tab-content').forEach((el) => el.classList.add('hidden'));
       const activeSection = document.getElementById(`tab-${tabName}`);
       if (activeSection) activeSection.classList.remove('hidden');
 
-      // Desktop nav
       document.querySelectorAll('.nav-btn').forEach((btn) => {
         if (btn.dataset.tab === tabName) {
           btn.classList.add('tab-active');
@@ -2183,7 +2114,6 @@
         }
       });
 
-      // Mobile nav
       document.querySelectorAll('.mobile-nav-btn').forEach((btn) => {
         if (btn.dataset.tab === tabName) {
           btn.classList.add('text-emerald-400');
@@ -2194,25 +2124,17 @@
         }
       });
 
-      if (tabName === 'dashboard') {
-        renderDashboard();
-      } else if (tabName === 'plan') {
-        renderPlanTab();
-      } else if (tabName === 'workouts') {
+      if (tabName === 'dashboard') renderDashboard();
+      else if (tabName === 'plan') renderPlanTab();
+      else if (tabName === 'workouts') {
         populateWorkoutPlanQuickSelect();
         renderWorkoutStatusNotices();
         renderBuilderExercises();
         renderWorkoutHistory();
-      } else if (tabName === 'nutrition') {
-        renderNutritionTab();
-      } else if (tabName === 'physique') {
-        renderPhysiqueTab();
-      }
+      } else if (tabName === 'nutrition') renderNutritionTab();
+      else if (tabName === 'physique') renderPhysiqueTab();
     };
 
-    // =========================================================================
-    // 4.5 TVORBA VLASTNÍHO TRÉNINKOVÉHO PLÁNU (SPLIT BUILDER)
-    // =========================================================================
     function getActivePlan() {
       if (!appState.trainingPlans || appState.trainingPlans.length === 0) {
         appState.trainingPlans = createDefaultTrainingPlans();
@@ -2232,18 +2154,13 @@
 
     window.handleDashboardWorkoutAction = function () {
       const completedToday = getTodayCompletedWorkout();
-      if (completedToday) {
-        editWorkoutEntry(completedToday.id);
-      } else {
-        switchTab('workouts');
-      }
+      if (completedToday) editWorkoutEntry(completedToday.id);
+      else switchTab('workouts');
     };
 
     window.editTodayWorkout = function () {
       const completedToday = getTodayCompletedWorkout();
-      if (completedToday) {
-        editWorkoutEntry(completedToday.id);
-      }
+      if (completedToday) editWorkoutEntry(completedToday.id);
     };
 
     window.syncWorkoutFormForDate = function () {
@@ -2743,7 +2660,6 @@
       }
     }
 
-    // Propojení plánu s tréninkovým deníkem
     window.startPlannedWorkout = function (dayId) {
       const plan = getActivePlan();
       const dayObj = plan.days[dayId];
@@ -3041,9 +2957,6 @@
       filterPlanExerciseDropdown();
     }
 
-    // =========================================================================
-    // 5. TRÉNINKOVÝ DENÍK & VÝPOČET NAZVEDANÝCH KG
-    // =========================================================================
     window.populateExerciseDropdowns = function () {
       const dbSelect = document.getElementById('exerciseDatabaseSelect');
       if (!dbSelect) return;
@@ -3432,9 +3345,6 @@
         .join('');
     };
 
-    // =========================================================================
-    // 6. JÍDELNÍČEK, MAKRA & DOPLŇKY VÝŽIVY
-    // =========================================================================
     window.toggleMacroTargetsModal = function () {
       const panel = document.getElementById('macroTargetsPanel');
       panel.classList.toggle('hidden');
@@ -3629,9 +3539,6 @@
         .join('');
     };
 
-    // =========================================================================
-    // 7. TĚLESNÁ VÁHA & FOTKY NA KONTROLU FORMY
-    // =========================================================================
     window.addWeightEntry = async function (e) {
       e.preventDefault();
       const date = document.getElementById('weightDateInput').value || todayStr;
@@ -3677,13 +3584,13 @@
         const img = new Image();
         img.onload = function () {
           const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 700;
+          const MAX_WIDTH = 650;
           const scale = Math.min(1, MAX_WIDTH / img.width);
           canvas.width = img.width * scale;
           canvas.height = img.height * scale;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          pendingPhotoBase64 = canvas.toDataURL('image/jpeg', 0.72);
+          pendingPhotoBase64 = canvas.toDataURL('image/jpeg', 0.68);
         };
         img.src = e.target.result;
       };
@@ -3841,9 +3748,6 @@
       }
     };
 
-    // =========================================================================
-    // 8. DASHBOARD & INTERAKTIVNÍ GRAFY V ČASE (CHART.JS)
-    // =========================================================================
     function analyzeProgressionAgainstPrevious(workout) {
       if (!workout || !Array.isArray(workout.exercises) || workout.exercises.length === 0) {
         return { weightIncreased: false, repsIncreased: false };
@@ -3867,7 +3771,6 @@
         const curMaxWeight = Math.max(...currentSets.map((s) => parseFloat(s.weight) || 0));
         const curMaxReps = Math.max(...currentSets.map((s) => parseInt(s.reps, 10) || 0));
 
-        // Najdeme poslední předchozí záznam stejného cviku
         let prevMaxWeight = null;
         let prevMaxReps = null;
 
@@ -4238,9 +4141,6 @@
       });
     }
 
-    // =========================================================================
-    // 9. POMOCNÉ FORMÁTOVÁNÍ A START APLIKACE
-    // =========================================================================
     function formatDateCz(isoDate) {
       if (!isoDate) return '';
       const [y, m, d] = isoDate.split('-');
@@ -4268,10 +4168,6 @@
       updateActiveAccountBadges();
       renderAll();
       initFirebase();
-
-      if (!activeAccount) {
-        openAuthModal(accountsRegistry.length > 0 ? 'login' : 'register');
-      }
     });
   </script>
 </body>
