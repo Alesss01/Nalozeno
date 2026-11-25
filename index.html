@@ -764,71 +764,40 @@
               <h3 class="text-lg font-bold text-white flex items-center gap-2">
                 <i class="fa-solid fa-bowl-food text-amber-400"></i> Zapsat jídlo
               </h3>
-              <span id="foodDbCountBadge" class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                Databáze potravin aktivní
+              <span id="foodDbCountBadge" class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30">
+                <i class="fa-solid fa-globe mr-1"></i> Open Food Facts (online)
               </span>
             </div>
 
-            <!-- Databáze potravin (vestavěná + online Open Food Facts) -->
-            <div class="bg-zinc-900/90 border border-amber-500/25 rounded-xl p-4 space-y-3">
-              <div class="flex items-center justify-between gap-2">
-                <label class="block text-xs font-bold uppercase tracking-wider text-amber-300">
-                  <i class="fa-solid fa-database mr-1.5"></i> Vybrat z databáze potravin (hodnoty na 100 g)
+            <!-- Online databáze potravin (Open Food Facts) -->
+            <div class="bg-zinc-900/90 border border-sky-500/25 rounded-xl p-4 space-y-3">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <label class="block text-xs font-bold uppercase tracking-wider text-sky-300">
+                  <i class="fa-solid fa-globe mr-1.5"></i> Vyhledat potravinu online (hodnoty na 100 g)
                 </label>
-                <span id="foodDbPer100Preview" class="text-[11px] text-zinc-400 hidden sm:inline">B: -- | S: -- | T: --</span>
+                <span id="foodDbPer100Preview" class="text-[11px] text-zinc-400">100g → B: -- | S: -- | T: --</span>
               </div>
 
-              <!-- Online vyhledávání v Open Food Facts -->
-              <div class="flex flex-col sm:flex-row gap-2 pb-3 border-b border-zinc-800/80">
+              <div class="flex flex-col sm:flex-row gap-2">
                 <div class="relative flex-1">
-                  <i class="fa-solid fa-globe absolute left-3 top-1/2 -translate-y-1/2 text-sky-400 text-xs"></i>
+                  <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-sky-400 text-xs"></i>
                   <input type="text" id="onlineFoodQueryInput" onkeydown="if(event.key==='Enter'){event.preventDefault();searchOpenFoodFacts();}"
-                    placeholder="Hledat online v Open Food Facts (např. Madeta tvaroh, Skyr, Racio)..."
-                    class="w-full bg-zinc-950 border border-zinc-700 rounded-xl pl-8 pr-3 py-2 text-xs text-white focus:outline-none focus:border-sky-400" />
+                    placeholder="Zadej potravinu nebo produkt (např. tvaroh, skyr, ovesné vločky, rýže)..."
+                    class="w-full bg-zinc-950 border border-zinc-700 rounded-xl pl-8 pr-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-sky-400" />
                 </div>
-                <button type="button" id="onlineFoodSearchBtn" onclick="searchOpenFoodFacts()"
-                  class="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-xs font-bold transition whitespace-nowrap flex items-center justify-center gap-1.5">
-                  <i class="fa-solid fa-magnifying-glass"></i> Hledat online
-                </button>
-              </div>
-              <div id="onlineFoodResultsBox" class="hidden space-y-1.5 max-h-44 overflow-y-auto pr-1"></div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <select id="foodCategoryFilter" onchange="populateFoodDropdown()" class="bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-amber-400">
-                  <option value="ALL">Všechny vestavěné kategorie</option>
-                  <option value="Maso & Ryby">Maso & Ryby</option>
-                  <option value="Mléčné výrobky & Vejce">Mléčné výrobky & Vejce</option>
-                  <option value="Přílohy & Pečivo">Přílohy & Pečivo</option>
-                  <option value="Ovoce & Zelenina">Ovoce & Zelenina</option>
-                  <option value="Ořechy, Tuky & Sladké">Ořechy, Tuky & Sladké</option>
-                  <option value="Suplementy & Fitness">Suplementy & Fitness</option>
-                  <option value="Hotová jídla">Hotová jídla</option>
-                </select>
-                <div class="relative">
-                  <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
-                  <input type="text" id="foodDbSearch" oninput="populateFoodDropdown()" placeholder="Filtrovat vestavěný seznam..." class="w-full bg-zinc-950 border border-zinc-700 rounded-xl pl-8 pr-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400" />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
-                <select id="foodDatabaseSelect" onchange="applySelectedFoodFromDb()" class="sm:col-span-7 bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-amber-400"></select>
-                <div class="sm:col-span-3 relative">
-                  <input type="number" id="foodGramsInput" value="100" min="1" max="5000" step="1" oninput="applySelectedFoodFromDb()"
-                    class="w-full bg-zinc-950 border border-zinc-700 rounded-xl pl-3 pr-7 py-2 text-xs sm:text-sm font-bold text-amber-300 focus:outline-none focus:border-amber-400" />
+                <div class="relative w-full sm:w-28 shrink-0">
+                  <input type="number" id="foodGramsInput" value="100" min="1" max="5000" step="1" oninput="reapplyLastOnlineFoodGrams()"
+                    title="Gramáž porce"
+                    class="w-full bg-zinc-950 border border-zinc-700 rounded-xl pl-3 pr-7 py-2 text-xs sm:text-sm font-bold text-amber-300 focus:outline-none focus:border-sky-400" />
                   <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] text-zinc-500">g</span>
                 </div>
-                <button type="button" onclick="applySelectedFoodFromDb(true)" class="sm:col-span-2 py-2 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition whitespace-nowrap">
-                  Vyplnit
+                <button type="button" id="onlineFoodSearchBtn" onclick="searchOpenFoodFacts()"
+                  class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-zinc-950 text-xs font-extrabold transition whitespace-nowrap flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-magnifying-glass"></i> Hledat
                 </button>
               </div>
 
-              <div class="flex flex-wrap gap-1.5 pt-0.5">
-                <button type="button" onclick="quickPickFood('Kuřecí prsa syrová', 200)" class="text-[11px] px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 transition">+ 200g Kuřecí prsa</button>
-                <button type="button" onclick="quickPickFood('Rýže basmati / jasmínová (suchá)', 100)" class="text-[11px] px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 transition">+ 100g Rýže</button>
-                <button type="button" onclick="quickPickFood('Tvaroh polotučný (vanička)', 250)" class="text-[11px] px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 transition">+ 250g Tvaroh</button>
-                <button type="button" onclick="quickPickFood('Vejce slepičí celé (1 ks ≈ 60g)', 180)" class="text-[11px] px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 transition">+ 3× Vejce (180g)</button>
-                <button type="button" onclick="quickPickFood('Syrovátkový Whey Protein (80%)', 30)" class="text-[11px] px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 transition">+ 30g Whey Protein</button>
-              </div>
+              <div id="onlineFoodResultsBox" class="hidden space-y-1.5 max-h-52 overflow-y-auto pr-1"></div>
             </div>
 
             <form onsubmit="addMeal(event)" class="space-y-3 bg-zinc-900/70 p-4 rounded-xl border border-zinc-800">
@@ -3526,107 +3495,8 @@
       document.getElementById('mealKcalPreview').textContent = `${kcal} kcal`;
     };
 
-    function findFoodItemByName(name) {
-      for (const items of Object.values(FOOD_DATABASE)) {
-        const found = items.find((item) => item.name === name);
-        if (found) return found;
-      }
-      return null;
-    }
-
-    window.populateFoodDropdown = function () {
-      const selectEl = document.getElementById('foodDatabaseSelect');
-      if (!selectEl) return;
-
-      const catFilter = document.getElementById('foodCategoryFilter')?.value || 'ALL';
-      const query = (document.getElementById('foodDbSearch')?.value || '').toLowerCase().trim();
-
-      let html = '';
-      let totalCount = 0;
-
-      Object.entries(FOOD_DATABASE).forEach(([category, items]) => {
-        if (catFilter !== 'ALL' && catFilter !== category) return;
-        const filtered = items.filter(
-          (item) => item.name.toLowerCase().includes(query) || category.toLowerCase().includes(query)
-        );
-        if (filtered.length > 0) {
-          totalCount += filtered.length;
-          html += `<optgroup label="── ${escapeHtmlAttr(category)} (${filtered.length}) ──">`;
-          filtered.forEach((item) => {
-            const kcal100 = Math.round(item.p * 4 + item.c * 4 + item.f * 9);
-            html += `<option value="${escapeHtmlAttr(item.name)}">${escapeHtmlAttr(item.name)} (${kcal100} kcal/100g)</option>`;
-          });
-          html += `</optgroup>`;
-        }
-      });
-
-      selectEl.innerHTML = html || `<option value="">Žádná potravina neodpovídá hledání...</option>`;
-      const badge = document.getElementById('foodDbCountBadge');
-      if (badge) badge.textContent = `${totalCount} potravin v databázi`;
-      updateFoodPer100Hint();
-    };
-
-    function updateFoodPer100Hint() {
-      const selectEl = document.getElementById('foodDatabaseSelect');
-      const hintEl = document.getElementById('foodDbPer100Preview');
-      if (!selectEl || !hintEl) return;
-      const item = findFoodItemByName(selectEl.value);
-      if (!item) {
-        hintEl.textContent = 'B: -- | S: -- | T: --';
-        return;
-      }
-      hintEl.textContent = `100g → B: ${item.p}g | S: ${item.c}g | T: ${item.f}g`;
-    }
-
-    window.applySelectedFoodFromDb = function (notify = false) {
-      const selectEl = document.getElementById('foodDatabaseSelect');
-      const gramsInput = document.getElementById('foodGramsInput');
-      if (!selectEl) return;
-
-      updateFoodPer100Hint();
-      const item = findFoodItemByName(selectEl.value);
-      if (!item) return;
-
-      const grams = Math.max(1, parseFloat(gramsInput?.value) || 100);
-      const isWholeMealPortion = item.name.includes('(porce)') && grams === 100;
-      const factor = isWholeMealPortion ? 1 : grams / 100;
-
-      const calcP = Math.round(item.p * factor * 10) / 10;
-      const calcC = Math.round(item.c * factor * 10) / 10;
-      const calcF = Math.round(item.f * factor * 10) / 10;
-
-      const nameEl = document.getElementById('mealNameInput');
-      const pEl = document.getElementById('mealProteinInput');
-      const cEl = document.getElementById('mealCarbsInput');
-      const fEl = document.getElementById('mealFatInput');
-
-      if (nameEl) nameEl.value = isWholeMealPortion ? item.name : `${item.name} (${grams} g)`;
-      if (pEl) pEl.value = calcP;
-      if (cEl) cEl.value = calcC;
-      if (fEl) fEl.value = calcF;
-
-      previewMealKcal();
-      if (notify) {
-        showToast(`Vyplněno: ${item.name} (${grams} g)`);
-      }
-    };
-
-    window.quickPickFood = function (foodName, grams) {
-      const catEl = document.getElementById('foodCategoryFilter');
-      const searchEl = document.getElementById('foodDbSearch');
-      const selectEl = document.getElementById('foodDatabaseSelect');
-      const gramsEl = document.getElementById('foodGramsInput');
-
-      if (catEl) catEl.value = 'ALL';
-      if (searchEl) searchEl.value = '';
-      populateFoodDropdown();
-
-      if (selectEl) selectEl.value = foodName;
-      if (gramsEl) gramsEl.value = grams;
-      applySelectedFoodFromDb(true);
-    };
-
     let onlineFoodResultsCache = [];
+    let selectedOnlineFoodItem = null;
 
     window.searchOpenFoodFacts = async function () {
       const queryInput = document.getElementById('onlineFoodQueryInput');
@@ -3635,7 +3505,7 @@
       const query = (queryInput?.value || '').trim();
 
       if (!query) {
-        showToast('Zadej název potraviny pro online vyhledávání.', 'error');
+        showToast('Zadej název potraviny pro vyhledání.', 'error');
         return;
       }
 
@@ -3649,7 +3519,7 @@
       }
 
       try {
-        const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=12&fields=product_name,product_name_cs,brands,nutriments`;
+        const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15&fields=product_name,product_name_cs,brands,nutriments`;
         const response = await fetch(url);
         if (!response.ok) throw new Error('Chyba odpovědi serveru');
         const data = await response.json();
@@ -3678,7 +3548,7 @@
 
         if (!resultsBox) return;
         if (validProducts.length === 0) {
-          resultsBox.innerHTML = `<div class="text-xs text-zinc-500 py-2 px-2">V Open Food Facts nebyly nalezeny žádné shody s nutričními hodnotami.</div>`;
+          resultsBox.innerHTML = `<div class="text-xs text-zinc-500 py-2 px-2">Žádné shody s nutričními hodnotami nenalezeny. Zkus jiný výraz.</div>`;
           return;
         }
 
@@ -3699,20 +3569,19 @@
           .join('');
       } catch (err) {
         if (resultsBox) {
-          resultsBox.innerHTML = `<div class="text-xs text-rose-400 py-2 px-2">Online databáze je momentálně nedostupná. Použij prosím vestavěnou databázi níže.</div>`;
+          resultsBox.innerHTML = `<div class="text-xs text-rose-400 py-2 px-2">Online databáze je momentálně nedostupná. Zkus to prosím za chvíli znovu.</div>`;
         }
       } finally {
         if (searchBtn) {
           searchBtn.disabled = false;
-          searchBtn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Hledat online`;
+          searchBtn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Hledat`;
         }
       }
     };
 
-    window.selectOnlineFoodItem = function (idx) {
-      const item = onlineFoodResultsCache[idx];
+    function applyFoodItemToForm(item) {
       if (!item) return;
-
+      selectedOnlineFoodItem = item;
       const grams = Math.max(1, parseFloat(document.getElementById('foodGramsInput')?.value) || 100);
       const factor = grams / 100;
 
@@ -3729,7 +3598,20 @@
       if (hintEl) hintEl.textContent = `100g → B: ${item.p}g | S: ${item.c}g | T: ${item.f}g`;
 
       previewMealKcal();
-      showToast(`Načteno z Open Food Facts: ${item.name} (${grams} g)`);
+    }
+
+    window.selectOnlineFoodItem = function (idx) {
+      const item = onlineFoodResultsCache[idx];
+      if (!item) return;
+      applyFoodItemToForm(item);
+      const grams = Math.max(1, parseFloat(document.getElementById('foodGramsInput')?.value) || 100);
+      showToast(`Načteno: ${item.name} (${grams} g)`);
+    };
+
+    window.reapplyLastOnlineFoodGrams = function () {
+      if (selectedOnlineFoodItem) {
+        applyFoodItemToForm(selectedOnlineFoodItem);
+      }
     };
 
     window.addMeal = async function (e) {
@@ -3750,6 +3632,10 @@
         fat,
         kcal
       });
+
+      selectedOnlineFoodItem = null;
+      const hintEl = document.getElementById('foodDbPer100Preview');
+      if (hintEl) hintEl.textContent = '100g → B: -- | S: -- | T: --';
 
       e.target.reset();
       previewMealKcal();
@@ -4652,7 +4538,6 @@
       document.getElementById('photoDateInput').value = todayStr;
 
       populateExerciseDropdowns();
-      populateFoodDropdown();
       updateActiveAccountBadges();
       renderAll();
       initFirebase();
