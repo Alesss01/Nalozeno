@@ -975,14 +975,6 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="glass-card rounded-2xl p-5">
-            <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">Aktivní položky</p>
-            <h3 id="pedsActiveCount" class="text-2xl sm:text-3xl font-extrabold text-white mt-1">0</h3>
-            <p class="text-xs text-zinc-400 mt-2">V tvém protokolu</p>
-          </div>
-        </div>
-
         <div class="space-y-6">
           <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-5 w-full">
             <h3 class="text-lg font-bold text-white flex items-center gap-2">
@@ -1044,6 +1036,10 @@
                 <div>
                   <label id="pedsDoseInputLabel" class="block text-xs text-zinc-400 mb-1">Týdenní dávka</label>
                   <input type="text" id="pedsDoseInput" required placeholder="Např. 250" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div>
+                  <label class="block text-xs text-zinc-400 mb-1">Half-life (poločas rozpadu)</label>
+                  <input type="text" id="pedsHalfLifeInput" placeholder="Např. cca 5–8 dní" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
                 </div>
               </div>
               <div id="pedsScheduleFieldWrapper" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1189,90 +1185,90 @@
     const PEDS_DATABASE = {
       injectable: {
         'Testosteron a jeho estery': [
-          { compound: 'Testosterone (suspension)', knownName: 'Test Suspension', schedule: 'Dle protokolu', note: 'Vodní suspenze • Injekčně (Gluteus / Delt)' },
-          { compound: 'Testosterone Propionate', knownName: 'Test P', schedule: 'Každý 2. den (EOD)', note: 'Krátký ester • Injekčně (Gluteus / Delt)' },
-          { compound: 'Testosterone Phenylpropionate', knownName: 'Test PP', schedule: 'Každý 2.–3. den', note: 'Středně krátký ester • Injekčně' },
-          { compound: 'Testosterone Isocaproate', knownName: 'Test I', schedule: '2× týdně', note: 'Středně dlouhý ester • Injekčně' },
-          { compound: 'Testosterone Enanthate', knownName: 'Test E', schedule: '2× týdně', note: 'Dlouhý ester • Injekčně (Gluteus / Delt)' },
-          { compound: 'Testosterone Cypionate', knownName: 'Test C', schedule: '2× týdně', note: 'Dlouhý ester • Injekčně (Gluteus / Delt)' },
-          { compound: 'Testosterone Decanoate', knownName: 'Test D', schedule: '1–2× týdně', note: 'Velmi dlouhý ester • Injekčně' },
-          { compound: 'Testosterone Undecanoate', knownName: 'Nebido', schedule: 'Dle protokolu', note: 'Extrémně dlouhý ester • Injekčně' },
-          { compound: 'Testosterone Acetate', knownName: 'Test Acetate', schedule: 'Každý 2. den', note: 'Velmi krátký ester • Injekčně' },
-          { compound: 'Testosterone blends', knownName: 'Sustanon 250, Omnadren', schedule: '2× týdně', note: 'Směs esterů testosteronu • Injekčně' }
+          { compound: 'Testosterone (suspension)', knownName: 'Test Suspension', halfLife: 'cca 1 den', schedule: 'Dle protokolu', note: 'Vodní suspenze • Injekčně (Gluteus / Delt)' },
+          { compound: 'Testosterone Propionate', knownName: 'Test P', halfLife: 'cca 2–3 dny', schedule: 'Každý 2. den (EOD)', note: 'Krátký ester • Injekčně (Gluteus / Delt)' },
+          { compound: 'Testosterone Phenylpropionate', knownName: 'Test PP', halfLife: 'cca 4–5 dní', schedule: 'Každý 2.–3. den', note: 'Středně krátký ester • Injekčně' },
+          { compound: 'Testosterone Isocaproate', knownName: 'Test I', halfLife: 'cca 4–9 dní', schedule: '2× týdně', note: 'Středně dlouhý ester • Injekčně' },
+          { compound: 'Testosterone Enanthate', knownName: 'Test E', halfLife: 'cca 5–8 dní', schedule: '2× týdně', note: 'Dlouhý ester • Injekčně (Gluteus / Delt)' },
+          { compound: 'Testosterone Cypionate', knownName: 'Test C', halfLife: 'cca 5–8 dní', schedule: '2× týdně', note: 'Dlouhý ester • Injekčně (Gluteus / Delt)' },
+          { compound: 'Testosterone Decanoate', knownName: 'Test D', halfLife: 'cca 10–15 dní', schedule: '1–2× týdně', note: 'Velmi dlouhý ester • Injekčně' },
+          { compound: 'Testosterone Undecanoate', knownName: 'Nebido', halfLife: 'cca 16–20+ dní', schedule: 'Dle protokolu', note: 'Extrémně dlouhý ester • Injekčně' },
+          { compound: 'Testosterone Acetate', knownName: 'Test Acetate', halfLife: 'cca 1–2 dny', schedule: 'Každý 2. den', note: 'Velmi krátký ester • Injekčně' },
+          { compound: 'Testosterone blends', knownName: 'Sustanon 250, Omnadren', halfLife: 'cca 5–9 dní', schedule: '2× týdně', note: 'Směs esterů testosteronu • Injekčně' }
         ],
         'Nandrolon a jeho estery': [
-          { compound: 'Nandrolone Decanoate', knownName: 'Deca-Durabolin', schedule: '1–2× týdně', note: '19-nor derivát (dlouhý ester) • Injekčně' },
-          { compound: 'Nandrolone Phenylpropionate', knownName: 'NPP', schedule: 'Každý 2.–3. den', note: '19-nor derivát (krátký ester) • Injekčně' },
-          { compound: 'Nandrolone Laurate', knownName: 'Laurabolin', schedule: 'Dle protokolu', note: '19-nor derivát (laurátový ester) • Historický/veterinární' }
+          { compound: 'Nandrolone Decanoate', knownName: 'Deca-Durabolin', halfLife: 'cca 6–12 dní', schedule: '1–2× týdně', note: '19-nor derivát (dlouhý ester) • Injekčně' },
+          { compound: 'Nandrolone Phenylpropionate', knownName: 'NPP', halfLife: 'cca 2,5–4,5 dne', schedule: 'Každý 2.–3. den', note: '19-nor derivát (krátký ester) • Injekčně' },
+          { compound: 'Nandrolone Laurate', knownName: 'Laurabolin', halfLife: 'cca 10–15 dní', schedule: 'Dle protokolu', note: '19-nor derivát (laurátový ester) • Historický/veterinární' }
         ],
         'Trenbolon a jeho estery': [
-          { compound: 'Trenbolone Acetate', knownName: 'Tren A', schedule: 'Každý 2. den (EOD)', note: '19-nor derivát (krátký ester) • Injekčně' },
-          { compound: 'Trenbolone Enanthate', knownName: 'Tren E', schedule: '2× týdně', note: '19-nor derivát (dlouhý ester) • Injekčně' },
-          { compound: 'Trenbolone Hexahydrobenzylcarbonate', knownName: 'Parabolan', schedule: '2× týdně', note: '19-nor derivát (hexahydrobenzylkarbonát) • Injekčně' }
+          { compound: 'Trenbolone Acetate', knownName: 'Tren A', halfLife: 'cca 1–3 dny', schedule: 'Každý 2. den (EOD)', note: '19-nor derivát (krátký ester) • Injekčně' },
+          { compound: 'Trenbolone Enanthate', knownName: 'Tren E', halfLife: 'cca 5–7 dní', schedule: '2× týdně', note: '19-nor derivát (dlouhý ester) • Injekčně' },
+          { compound: 'Trenbolone Hexahydrobenzylcarbonate', knownName: 'Parabolan', halfLife: 'cca 6–8 dní', schedule: '2× týdně', note: '19-nor derivát (hexahydrobenzylkarbonát) • Injekčně' }
         ],
         'DHT deriváty a další injekční látky': [
-          { compound: 'Drostanolone Propionate', knownName: 'Masteron P', schedule: 'Každý 2. den (EOD)', note: 'DHT derivát (krátký ester) • Injekčně' },
-          { compound: 'Drostanolone Enanthate', knownName: 'Masteron E', schedule: '2× týdně', note: 'DHT derivát (dlouhý ester) • Injekčně' },
-          { compound: 'Methenolone Enanthate', knownName: 'Primobolan Depot', schedule: '1–2× týdně', note: 'DHT derivát (enanthát) • Injekčně' },
-          { compound: 'Stanozolol injectable suspension', knownName: 'Winstrol Depot', schedule: 'Každý 2. den', note: 'DHT derivát (vodní suspenze) • Injekčně' },
-          { compound: 'Boldenone Undecylenate', knownName: 'Equipoise', schedule: '1–2× týdně', note: 'Dlouhý ester • Injekčně' },
-          { compound: 'Boldenone Acetate', knownName: 'Boldenone Acetate', schedule: 'Každý 2. den', note: 'Krátký ester • Injekčně' },
-          { compound: 'Clostebol Acetate', knownName: 'Steranabol', schedule: 'Každý 2. den', note: '4-chlortestosteron acetát • Injekčně' }
+          { compound: 'Drostanolone Propionate', knownName: 'Masteron P', halfLife: 'cca 2–3 dny', schedule: 'Každý 2. den (EOD)', note: 'DHT derivát (krátký ester) • Injekčně' },
+          { compound: 'Drostanolone Enanthate', knownName: 'Masteron E', halfLife: 'cca 5–7 dní', schedule: '2× týdně', note: 'DHT derivát (dlouhý ester) • Injekčně' },
+          { compound: 'Methenolone Enanthate', knownName: 'Primobolan Depot', halfLife: 'cca 5–10 dní', schedule: '1–2× týdně', note: 'DHT derivát (enanthát) • Injekčně' },
+          { compound: 'Stanozolol injectable suspension', knownName: 'Winstrol Depot', halfLife: 'cca 1 den', schedule: 'Každý 2. den', note: 'DHT derivát (vodní suspenze) • Injekčně' },
+          { compound: 'Boldenone Undecylenate', knownName: 'Equipoise', halfLife: 'cca 10–14 dní', schedule: '1–2× týdně', note: 'Dlouhý ester • Injekčně' },
+          { compound: 'Boldenone Acetate', knownName: 'Boldenone Acetate', halfLife: 'cca 2–3 dny', schedule: 'Každý 2. den', note: 'Krátký ester • Injekčně' },
+          { compound: 'Clostebol Acetate', knownName: 'Steranabol', halfLife: 'cca 1–3 dny', schedule: 'Každý 2. den', note: '4-chlortestosteron acetát • Injekčně' }
         ]
       },
       oral: {
         'Klasická orální anabolika': [
-          { compound: 'Methandienone (Metandienone)', knownName: 'Dianabol, Dbol', schedule: 'Každý den (rozděleně)', note: '17α-alkylovaný orální AAS • S jídlem' },
-          { compound: 'Oxymetholone', knownName: 'Anadrol, Anapolon', schedule: 'Každý den', note: '17α-alkylovaný orální AAS • S jídlem' },
-          { compound: 'Oxandrolone', knownName: 'Anavar', schedule: 'Každý den (2× denně)', note: 'DHT derivát • Orálně' },
-          { compound: 'Stanozolol', knownName: 'Winstrol, Stromba', schedule: 'Každý den', note: 'DHT derivát • Orálně' },
-          { compound: 'Chlorodehydromethyltestosterone', knownName: 'Turinabol, Tbol', schedule: 'Každý den', note: '4-chlor-derivát • Orálně' },
-          { compound: 'Fluoxymesterone', knownName: 'Halotestin', schedule: 'Každý den', note: 'Silný androgenní derivát • Orálně' },
-          { compound: 'Methyltestosterone', knownName: 'Android, Metandren', schedule: 'Každý den', note: 'Methylovaný testosteron • Orálně' },
-          { compound: 'Mesterolone', knownName: 'Proviron', schedule: 'Každý den', note: 'DHT derivát • Orálně' },
-          { compound: 'Methenolone Acetate', knownName: 'Primobolan Oral', schedule: 'Každý den', note: 'DHT derivát (acetát) • Orálně' },
-          { compound: 'Testosterone Undecanoate', knownName: 'Andriol, Undestor', schedule: 'Každý den s jídlem', note: 'Tukem vázané podání • S jídlem s tukem' },
-          { compound: 'Methandriol', knownName: 'Methandriol', schedule: 'Každý den', note: 'Historický orální derivát • Orálně' },
-          { compound: 'Norethandrolone', knownName: 'Nilevar', schedule: 'Každý den', note: '19-nor orální derivát • Orálně' },
-          { compound: 'Mestanolone', knownName: 'Androstanolone methyl derivative', schedule: 'Každý den', note: 'Methylovaný DHT • Orálně' },
-          { compound: 'Oxymesterone', knownName: 'Oranabol', schedule: 'Každý den', note: '4-hydroxy derivát • Orálně' },
-          { compound: 'Ethylestrenol', knownName: 'Maxibolin', schedule: 'Každý den', note: '19-nor orální derivát • Orálně' },
-          { compound: 'Quinbolone', knownName: 'Anabolicum Vister', schedule: 'Každý den', note: 'Cyklopentenolový enol ether • Orálně' }
+          { compound: 'Methandienone (Metandienone)', knownName: 'Dianabol, Dbol', halfLife: 'cca 3–6 hodin', schedule: 'Každý den (rozděleně)', note: '17α-alkylovaný orální AAS • S jídlem' },
+          { compound: 'Oxymetholone', knownName: 'Anadrol, Anapolon', halfLife: 'cca 8–9 hodin', schedule: 'Každý den', note: '17α-alkylovaný orální AAS • S jídlem' },
+          { compound: 'Oxandrolone', knownName: 'Anavar', halfLife: 'cca 9–12 hodin', schedule: 'Každý den (2× denně)', note: 'DHT derivát • Orálně' },
+          { compound: 'Stanozolol', knownName: 'Winstrol, Stromba', halfLife: 'cca 9 hodin', schedule: 'Každý den', note: 'DHT derivát • Orálně' },
+          { compound: 'Chlorodehydromethyltestosterone', knownName: 'Turinabol, Tbol', halfLife: 'cca 16 hodin', schedule: 'Každý den', note: '4-chlor-derivát • Orálně' },
+          { compound: 'Fluoxymesterone', knownName: 'Halotestin', halfLife: 'cca 6–9 hodin', schedule: 'Každý den', note: 'Silný androgenní derivát • Orálně' },
+          { compound: 'Methyltestosterone', knownName: 'Android, Metandren', halfLife: 'cca 3–5 hodin', schedule: 'Každý den', note: 'Methylovaný testosteron • Orálně' },
+          { compound: 'Mesterolone', knownName: 'Proviron', halfLife: 'cca 12 hodin', schedule: 'Každý den', note: 'DHT derivát • Orálně' },
+          { compound: 'Methenolone Acetate', knownName: 'Primobolan Oral', halfLife: 'cca 4–6 hodin', schedule: 'Každý den', note: 'DHT derivát (acetát) • Orálně' },
+          { compound: 'Testosterone Undecanoate', knownName: 'Andriol, Undestor', halfLife: 'cca 4–12 hodin', schedule: 'Každý den s jídlem', note: 'Tukem vázané podání • S jídlem s tukem' },
+          { compound: 'Methandriol', knownName: 'Methandriol', halfLife: 'cca 4–8 hodin', schedule: 'Každý den', note: 'Historický orální derivát • Orálně' },
+          { compound: 'Norethandrolone', knownName: 'Nilevar', halfLife: 'cca 6–12 hodin', schedule: 'Každý den', note: '19-nor orální derivát • Orálně' },
+          { compound: 'Mestanolone', knownName: 'Androstanolone methyl derivative', halfLife: 'cca 6–10 hodin', schedule: 'Každý den', note: 'Methylovaný DHT • Orálně' },
+          { compound: 'Oxymesterone', knownName: 'Oranabol', halfLife: 'cca 6–8 hodin', schedule: 'Každý den', note: '4-hydroxy derivát • Orálně' },
+          { compound: 'Ethylestrenol', knownName: 'Maxibolin', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: '19-nor orální derivát • Orálně' },
+          { compound: 'Quinbolone', knownName: 'Anabolicum Vister', halfLife: 'orientačně v řádu hodin', schedule: 'Každý den', note: 'Cyklopentenolový enol ether • Orálně' }
         ],
         'Designérské a méně známé orální steroidy': [
-          { compound: 'Methasterone', knownName: 'Superdrol', schedule: 'Každý den', note: 'Designérský DHT derivát • S jídlem' },
-          { compound: 'Methyl-1-Testosterone', knownName: 'M1T', schedule: 'Každý den', note: 'Designérský 1-testosteron derivát • Orálně' },
-          { compound: 'Methylstenbolone', knownName: 'M-Sten', schedule: 'Každý den', note: 'Designérský dimerický/methylovaný AAS • Orálně' },
-          { compound: 'Desoxymethyltestosterone', knownName: 'DMT, Madol', schedule: 'Každý den', note: 'Designérský AAS • Orálně' },
-          { compound: 'Methyldienolone', knownName: 'M-Dien', schedule: 'Každý den', note: 'Designérský 19-nor derivát • Orálně' },
-          { compound: 'Metribolone', knownName: 'Methyltrienolone', schedule: 'Dle protokolu', note: 'Silný 19-nor derivát • Orálně' },
-          { compound: 'Furazabol', knownName: 'Miotolan', schedule: 'Každý den', note: 'Furazanový DHT derivát • Orálně' },
-          { compound: 'Prostanozol', knownName: 'Prostanozol', schedule: 'Každý den', note: 'Pyrazolový derivát • Orálně' },
-          { compound: 'Epistane', knownName: 'Epistane', schedule: 'Každý den', note: '2α,3α-epithio-17α-methyl-5α-androstan-17β-ol • Orálně' },
-          { compound: 'Methylnortestosterone', knownName: 'MENT methyl derivative', schedule: 'Každý den', note: '7α-methyl-19-nortestosteron derivát • Orálně' },
-          { compound: 'Mibolerone', knownName: 'Cheque Drops', schedule: 'Dle potřeby', note: 'Silný androgenní derivát • Sublingválně / Orálně' },
-          { compound: 'Norboletone', knownName: 'Norbolethone', schedule: 'Každý den', note: '19-nor derivát • Orálně' },
-          { compound: 'Bolasterone', knownName: 'Bolasterone', schedule: 'Každý den', note: '7α,17α-dimethyltestosteron • Orálně' },
-          { compound: 'Calusterone', knownName: 'Calusterone', schedule: 'Každý den', note: '7β,17α-dimethyltestosteron • Orálně' },
-          { compound: 'Formebolone', knownName: 'Esiclene', schedule: 'Každý den', note: '2-formyl derivát • Orálně' }
+          { compound: 'Methasterone', knownName: 'Superdrol', halfLife: 'cca 6–12 hodin', schedule: 'Každý den', note: 'Designérský DHT derivát • S jídlem' },
+          { compound: 'Methyl-1-Testosterone', knownName: 'M1T', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: 'Designérský 1-testosteron derivát • Orálně' },
+          { compound: 'Methylstenbolone', knownName: 'M-Sten', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: 'Designérský dimerický/methylovaný AAS • Orálně' },
+          { compound: 'Desoxymethyltestosterone', knownName: 'DMT, Madol', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: 'Designérský AAS • Orálně' },
+          { compound: 'Methyldienolone', knownName: 'M-Dien', halfLife: 'cca 6–10 hodin', schedule: 'Každý den', note: 'Designérský 19-nor derivát • Orálně' },
+          { compound: 'Metribolone', knownName: 'Methyltrienolone', halfLife: 'cca 4–8 hodin', schedule: 'Dle protokolu', note: 'Silný 19-nor derivát • Orálně' },
+          { compound: 'Furazabol', knownName: 'Miotolan', halfLife: 'cca 6–10 hodin', schedule: 'Každý den', note: 'Furazanový DHT derivát • Orálně' },
+          { compound: 'Prostanozol', knownName: 'Prostanozol', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: 'Pyrazolový derivát • Orálně' },
+          { compound: 'Epistane', knownName: 'Epistane', halfLife: 'cca 6–8 hodin', schedule: 'Každý den', note: '2α,3α-epithio-17α-methyl-5α-androstan-17β-ol • Orálně' },
+          { compound: 'Methylnortestosterone', knownName: 'MENT methyl derivative', halfLife: 'velmi krátký (hodiny)', schedule: 'Každý den', note: '7α-methyl-19-nortestosteron derivát • Orálně' },
+          { compound: 'Mibolerone', knownName: 'Cheque Drops', halfLife: 'cca 2–4 hodiny', schedule: 'Dle potřeby', note: 'Silný androgenní derivát • Sublingválně / Orálně' },
+          { compound: 'Norboletone', knownName: 'Norbolethone', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: '19-nor derivát • Orálně' },
+          { compound: 'Bolasterone', knownName: 'Bolasterone', halfLife: 'cca 6–12 hodin', schedule: 'Každý den', note: '7α,17α-dimethyltestosteron • Orálně' },
+          { compound: 'Calusterone', knownName: 'Calusterone', halfLife: 'cca 6–12 hodin', schedule: 'Každý den', note: '7β,17α-dimethyltestosteron • Orálně' },
+          { compound: 'Formebolone', knownName: 'Esiclene', halfLife: 'cca 4–8 hodin', schedule: 'Každý den', note: '2-formyl derivát • Orálně' }
         ]
       },
       peptides: {
         'Regenerace a tkáně': [
-          { compound: 'BPC-157', knownName: 'Body Protection Compound-157', schedule: '1–2× denně', note: 'Subkutánně nebo lokálně u úponu' },
-          { compound: 'TB-500', knownName: 'Thymosin Beta-4 fragment', schedule: '2× týdně', note: 'Subkutánně • Regenerace tkání' }
+          { compound: 'BPC-157', knownName: 'Body Protection Compound-157', halfLife: 'cca 4–6 hodin', schedule: '1–2× denně', note: 'Subkutánně nebo lokálně u úponu' },
+          { compound: 'TB-500', knownName: 'Thymosin Beta-4 fragment', halfLife: 'cca 2–3 dny', schedule: '2× týdně', note: 'Subkutánně • Regenerace tkání' }
         ],
         'GH osy a metabolické peptidy': [
-          { compound: 'CJC-1295 (no DAC)', knownName: 'Mod GRF (1-29)', schedule: '1–3× denně nalačno', note: 'Subkutánně (30 min před/po jídle)' },
-          { compound: 'Ipamorelin', knownName: 'Ipamorelin', schedule: '1–3× denně nalačno', note: 'Subkutánně (často v kombinaci s CJC)' },
-          { compound: 'Somatropin (HGH)', knownName: 'Growth Hormone', schedule: 'Každý den', note: 'Subkutánně (ráno nebo po tréninku)' }
+          { compound: 'CJC-1295 (no DAC)', knownName: 'Mod GRF (1-29)', halfLife: 'cca 30 minut', schedule: '1–3× denně nalačno', note: 'Subkutánně (30 min před/po jídle)' },
+          { compound: 'Ipamorelin', knownName: 'Ipamorelin', halfLife: 'cca 2 hodiny', schedule: '1–3× denně nalačno', note: 'Subkutánně (často v kombinaci s CJC)' },
+          { compound: 'Somatropin (HGH)', knownName: 'Growth Hormone', halfLife: 'cca 2–4 hodiny', schedule: 'Každý den', note: 'Subkutánně (ráno nebo po tréninku)' }
         ]
       },
       ai: {
         'Inhibitory aromatázy (IA)': [
-          { compound: 'Anastrozol', knownName: 'Arimidex', schedule: 'Dle krevních testů / E2', note: 'Nevratný/kompetitivní nesteroidní IA • Orálně' },
-          { compound: 'Exemestan', knownName: 'Aromasin', schedule: 'Dle krevních testů / E2', note: 'Steroidní sebevražedný IA • S jídlem' },
-          { compound: 'Letrozol', knownName: 'Femara', schedule: 'Dle krevních testů / E2', note: 'Silný nesteroidní IA • Orálně' }
+          { compound: 'Anastrozol', knownName: 'Arimidex', halfLife: 'cca 40–50 hodin', schedule: 'Dle krevních testů / E2', note: 'Nevratný/kompetitivní nesteroidní IA • Orálně' },
+          { compound: 'Exemestan', knownName: 'Aromasin', halfLife: 'cca 24–27 hodin', schedule: 'Dle krevních testů / E2', note: 'Steroidní sebevražedný IA • S jídlem' },
+          { compound: 'Letrozol', knownName: 'Femara', halfLife: 'cca 2–4 dny', schedule: 'Dle krevních testů / E2', note: 'Silný nesteroidní IA • Orálně' }
         ]
       }
     };
@@ -1381,11 +1377,14 @@
 
       if (matched.length === 0) {
         selectEl.innerHTML = `<option value="">Žádná látka v této podsložce...</option>`;
+        const halfLifeInp = document.getElementById('pedsHalfLifeInput');
+        if (halfLifeInp) halfLifeInp.value = '';
         return;
       }
 
       selectEl.innerHTML = html;
       selectEl.selectedIndex = 0;
+      applySelectedPedCompound(false);
     };
 
     window.applySelectedPedCompound = function (showFeedbackToast = false) {
@@ -1397,10 +1396,12 @@
 
       const nameInp = document.getElementById('pedsNameInput');
       const doseInp = document.getElementById('pedsDoseInput');
+      const halfLifeInp = document.getElementById('pedsHalfLifeInput');
       const schedInp = document.getElementById('pedsScheduleInput');
 
       if (nameInp) nameInp.value = formatPedDisplayLabel(entry);
       if (doseInp) doseInp.value = '';
+      if (halfLifeInp) halfLifeInp.value = entry.halfLife || '';
       if (schedInp && entry.schedule) schedInp.value = entry.schedule;
 
       if (showFeedbackToast) {
@@ -3453,6 +3454,7 @@
       try {
         const name = (document.getElementById('pedsNameInput')?.value || '').trim();
         const dose = (document.getElementById('pedsDoseInput')?.value || '').trim();
+        const halfLife = (document.getElementById('pedsHalfLifeInput')?.value || '').trim();
         const schedule =
           activePedSubfolder === 'oral'
             ? ''
@@ -3474,6 +3476,7 @@
           categoryLabel: folderMeta.label,
           name,
           dose,
+          halfLife,
           schedule
         });
 
@@ -3544,10 +3547,8 @@
         const totalItems = protocol.length;
         const doneCount = protocol.filter((item) => checkedIds.includes(item.id)).length;
 
-        const activeCountEl = document.getElementById('pedsActiveCount');
         const dayBadgeEl = document.getElementById('pedsDayBadge');
 
-        if (activeCountEl) activeCountEl.textContent = String(totalItems);
         if (dayBadgeEl) dayBadgeEl.textContent = `${doneCount} / ${totalItems}`;
 
         const checklistEl = document.getElementById('pedsChecklist');
@@ -3572,6 +3573,7 @@
                           <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/30">${escapeHtmlAttr(folderBadge)}</span>
                           <span class="text-sm font-bold ${isChecked ? 'line-through text-zinc-400' : 'text-white'}">${escapeHtmlAttr(item.name)}</span>
                           <span class="text-xs font-semibold px-2 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-emerald-300">${escapeHtmlAttr(item.dose)}</span>
+                          ${item.halfLife ? `<span class="text-xs font-semibold px-2 py-0.5 rounded bg-purple-500/15 border border-purple-500/30 text-purple-300">Half-life: ${escapeHtmlAttr(item.halfLife)}</span>` : ''}
                         </div>
                         ${item.schedule ? `<div class="text-xs text-zinc-400 mt-0.5"><i class="fa-regular fa-clock mr-1 text-zinc-500"></i>${escapeHtmlAttr(item.schedule)}</div>` : ''}
                         ${item.note ? `<div class="text-[11px] text-zinc-500 mt-0.5">${escapeHtmlAttr(item.note)}</div>` : ''}
@@ -3609,6 +3611,7 @@
                       <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-300 mr-1.5">${escapeHtmlAttr(folderBadge)}</span>
                       <span class="font-bold text-white">${escapeHtmlAttr(item.name)}</span>
                       <span class="text-emerald-400 font-semibold ml-2">${escapeHtmlAttr(item.dose)}</span>
+                      ${item.halfLife ? `<span class="text-purple-300 font-semibold ml-2">• Half-life: ${escapeHtmlAttr(item.halfLife)}</span>` : ''}
                       ${item.schedule ? `<span class="text-zinc-500 ml-2">• ${escapeHtmlAttr(item.schedule)}</span>` : ''}
                     </div>
                     <span class="text-emerald-400 font-bold shrink-0"><i class="fa-solid fa-check mr-1"></i>Hotovo</span>
