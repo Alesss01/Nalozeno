@@ -983,19 +983,8 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div class="lg:col-span-6 glass-card rounded-2xl p-5 sm:p-6 space-y-4">
-            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-              <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-clipboard-check text-emerald-400"></i> Denní protokol
-              </h3>
-              <span id="pedsDayBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">0 / 0</span>
-            </div>
-            <p class="text-xs text-zinc-400">Odškrtni si položky provedené ve vybraný den. Změny se ukládají automaticky.</p>
-            <div id="pedsChecklist" class="space-y-2.5"></div>
-          </div>
-
-          <div class="lg:col-span-6 glass-card rounded-2xl p-5 sm:p-6 space-y-5">
+        <div class="space-y-6">
+          <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-5 w-full">
             <h3 class="text-lg font-bold text-white flex items-center gap-2">
               <i class="fa-solid fa-plus-circle text-sky-400"></i> Přidat položku do protokolu
             </h3>
@@ -1053,26 +1042,47 @@
                   <input type="text" id="pedsNameInput" required placeholder="Např. Testosteron Enanthate..." class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
                 </div>
                 <div>
-                  <label id="pedsDoseInputLabel" class="block text-xs text-zinc-400 mb-1">Dávka (mg)</label>
-                  <input type="text" id="pedsDoseInput" required placeholder="Např. 125 mg" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                  <label id="pedsDoseInputLabel" class="block text-xs text-zinc-400 mb-1">Týdenní dávka</label>
+                  <input type="text" id="pedsDoseInput" required placeholder="Např. 250" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
                 </div>
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-xs text-zinc-400 mb-1">Frekvence / Načasování</label>
+              <div id="pedsScheduleFieldWrapper" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="sm:col-span-2">
+                  <label class="block text-xs text-zinc-400 mb-1">Frekvence aplikace</label>
                   <input type="text" id="pedsScheduleInput" placeholder="Např. Po / Čt nebo Každý den večer" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
-                </div>
-                <div>
-                  <label id="pedsNoteInputLabel" class="block text-xs text-zinc-400 mb-1">Místo vpichu / Poznámka</label>
-                  <input type="text" id="pedsNoteInput" placeholder="Např. Gluteus / Delt..." class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                  <div class="mt-2 space-y-2">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <button type="button" onclick="applyPedFrequencyPreset('daily')" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-emerald-500/20 text-zinc-200 hover:text-emerald-300 border border-zinc-700 hover:border-emerald-500/40 text-[11px] font-bold transition">
+                        Denně
+                      </button>
+                      <button type="button" onclick="applyPedFrequencyPreset('eod')" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-emerald-500/20 text-zinc-200 hover:text-emerald-300 border border-zinc-700 hover:border-emerald-500/40 text-[11px] font-bold transition">
+                        Obden
+                      </button>
+                      <button type="button" onclick="clearPedFrequencyDays()" class="px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 text-[11px] font-medium transition">
+                        Vymazat dny
+                      </button>
+                    </div>
+                    <div id="pedsFrequencyDaysGrid" class="grid grid-cols-7 gap-1"></div>
+                  </div>
                 </div>
               </div>
               <button type="submit" id="pedsSubmitBtn" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm transition">
                 + Uložit do složky 1. Injekční
               </button>
             </form>
+          </div>
 
-            <div>
+          <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-5 w-full">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-check text-emerald-400"></i> Denní protokol
+              </h3>
+              <span id="pedsDayBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">0 / 0</span>
+            </div>
+            <p class="text-xs text-zinc-400">Odškrtni si položky provedené ve vybraný den. Změny se ukládají automaticky.</p>
+            <div id="pedsChecklist" class="space-y-2.5"></div>
+
+            <div class="pt-4 border-t border-zinc-800">
               <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">Přehled záznamů ve vybraný den</h4>
               <div id="pedsLogsHistoryList" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
             </div>
@@ -1147,20 +1157,16 @@
         label: '1. Injekční',
         nameLabel: 'Název injekční látky',
         namePlaceholder: 'Např. Testosteron Enanthate (Test E)...',
-        doseLabel: 'Dávka (mg)',
-        dosePlaceholder: 'Např. 125 mg',
-        noteLabel: 'Místo vpichu / Poznámka',
-        notePlaceholder: 'Např. Gluteus / Delt...'
+        doseLabel: 'Týdenní dávka',
+        dosePlaceholder: 'Např. 250'
       },
       oral: {
         id: 'oral',
         label: '2. Orální',
         nameLabel: 'Název orální látky',
         namePlaceholder: 'Např. Oxandrolone (Anavar)...',
-        doseLabel: 'Dávka (mg)',
-        dosePlaceholder: 'Např. 20 mg',
-        noteLabel: 'S jídlem / Poznámka',
-        notePlaceholder: 'Např. Po jídle...'
+        doseLabel: 'Denní dávka v mg',
+        dosePlaceholder: 'Např. 20'
       },
       peptides: {
         id: 'peptides',
@@ -1168,9 +1174,7 @@
         nameLabel: 'Název peptidu',
         namePlaceholder: 'Např. BPC-157...',
         doseLabel: 'Dávka (mcg / IU)',
-        dosePlaceholder: 'Např. 250 mcg / 2 IU',
-        noteLabel: 'Aplikace / Poznámka',
-        notePlaceholder: 'Např. Subkutánně nalačno...'
+        dosePlaceholder: 'Např. 250 mcg / 2 IU'
       },
       ai: {
         id: 'ai',
@@ -1178,9 +1182,7 @@
         nameLabel: 'Název inhibitoru aromatázy (IA)',
         namePlaceholder: 'Např. Arimidex (Anastrozol)...',
         doseLabel: 'Dávka (mg)',
-        dosePlaceholder: 'Např. 0,25 mg / 12,5 mg',
-        noteLabel: 'Důvod / Poznámka',
-        notePlaceholder: 'Např. Dle krevních testů...'
+        dosePlaceholder: 'Např. 0,25 mg / 12,5 mg'
       }
     };
 
@@ -1277,6 +1279,74 @@
 
     let activePedSubfolder = 'injectable';
     let pedDbEntriesCache = [];
+    let selectedPedFrequencyDays = [];
+
+    function renderPedFrequencyDaysSelector() {
+      const grid = document.getElementById('pedsFrequencyDaysGrid');
+      if (!grid) return;
+
+      grid.innerHTML = WEEK_DAYS.map((d) => {
+        const isSelected = selectedPedFrequencyDays.includes(d.id);
+        return `
+          <button type="button" onclick="togglePedFrequencyDay('${d.id}')"
+            class="py-1.5 rounded-lg text-[11px] font-bold border transition ${
+              isSelected
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
+                : 'bg-zinc-900/80 text-zinc-400 hover:text-white border-zinc-800'
+            }" title="${escapeHtmlAttr(d.name)}">
+            ${escapeHtmlAttr(d.short)}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function syncPedScheduleInputFromDays() {
+      const schedInp = document.getElementById('pedsScheduleInput');
+      if (!schedInp) return;
+
+      if (selectedPedFrequencyDays.length === 0) {
+        return;
+      }
+      if (selectedPedFrequencyDays.length === WEEK_DAYS.length) {
+        schedInp.value = 'Denně';
+        return;
+      }
+
+      const orderedLabels = WEEK_DAYS
+        .filter((d) => selectedPedFrequencyDays.includes(d.id))
+        .map((d) => d.short);
+      schedInp.value = orderedLabels.join(' / ');
+    }
+
+    window.applyPedFrequencyPreset = function (preset) {
+      const schedInp = document.getElementById('pedsScheduleInput');
+      if (preset === 'daily') {
+        selectedPedFrequencyDays = WEEK_DAYS.map((d) => d.id);
+        if (schedInp) schedInp.value = 'Denně';
+      } else if (preset === 'eod') {
+        selectedPedFrequencyDays = [];
+        if (schedInp) schedInp.value = 'Obden';
+      }
+      renderPedFrequencyDaysSelector();
+    };
+
+    window.togglePedFrequencyDay = function (dayId) {
+      const idx = selectedPedFrequencyDays.indexOf(dayId);
+      if (idx > -1) {
+        selectedPedFrequencyDays.splice(idx, 1);
+      } else {
+        selectedPedFrequencyDays.push(dayId);
+      }
+      renderPedFrequencyDaysSelector();
+      syncPedScheduleInputFromDays();
+    };
+
+    window.clearPedFrequencyDays = function () {
+      selectedPedFrequencyDays = [];
+      const schedInp = document.getElementById('pedsScheduleInput');
+      if (schedInp) schedInp.value = '';
+      renderPedFrequencyDaysSelector();
+    };
 
     function formatPedDisplayLabel(item) {
       return item.knownName ? `${item.compound} (${item.knownName})` : item.compound;
@@ -1328,12 +1398,10 @@
       const nameInp = document.getElementById('pedsNameInput');
       const doseInp = document.getElementById('pedsDoseInput');
       const schedInp = document.getElementById('pedsScheduleInput');
-      const noteInp = document.getElementById('pedsNoteInput');
 
       if (nameInp) nameInp.value = formatPedDisplayLabel(entry);
       if (doseInp) doseInp.value = '';
       if (schedInp && entry.schedule) schedInp.value = entry.schedule;
-      if (noteInp) noteInp.value = entry.note || '';
 
       if (showFeedbackToast) {
         showToast(`Předvyplněno: ${formatPedDisplayLabel(entry)}`);
@@ -1358,8 +1426,8 @@
       const nameInp = document.getElementById('pedsNameInput');
       const doseLbl = document.getElementById('pedsDoseInputLabel');
       const doseInp = document.getElementById('pedsDoseInput');
-      const noteLbl = document.getElementById('pedsNoteInputLabel');
-      const noteInp = document.getElementById('pedsNoteInput');
+      const scheduleWrapper = document.getElementById('pedsScheduleFieldWrapper');
+      const scheduleInp = document.getElementById('pedsScheduleInput');
       const submitBtn = document.getElementById('pedsSubmitBtn');
 
       if (badge) badge.textContent = meta.label;
@@ -1367,8 +1435,16 @@
       if (nameInp) nameInp.placeholder = meta.namePlaceholder;
       if (doseLbl) doseLbl.textContent = meta.doseLabel;
       if (doseInp) doseInp.placeholder = meta.dosePlaceholder;
-      if (noteLbl) noteLbl.textContent = meta.noteLabel;
-      if (noteInp) noteInp.placeholder = meta.notePlaceholder;
+
+      if (folderKey === 'oral') {
+        scheduleWrapper?.classList.add('hidden');
+        if (scheduleInp) scheduleInp.value = '';
+        selectedPedFrequencyDays = [];
+        renderPedFrequencyDaysSelector();
+      } else {
+        scheduleWrapper?.classList.remove('hidden');
+      }
+
       if (submitBtn) submitBtn.textContent = `+ Uložit do složky ${meta.label}`;
 
       populatePedDatabaseSelect();
@@ -3377,8 +3453,10 @@
       try {
         const name = (document.getElementById('pedsNameInput')?.value || '').trim();
         const dose = (document.getElementById('pedsDoseInput')?.value || '').trim();
-        const schedule = (document.getElementById('pedsScheduleInput')?.value || '').trim();
-        const note = (document.getElementById('pedsNoteInput')?.value || '').trim();
+        const schedule =
+          activePedSubfolder === 'oral'
+            ? ''
+            : (document.getElementById('pedsScheduleInput')?.value || '').trim();
         const folderMeta = PED_SUBFOLDERS[activePedSubfolder] || PED_SUBFOLDERS.injectable;
 
         if (!name || !dose) {
@@ -3396,11 +3474,12 @@
           categoryLabel: folderMeta.label,
           name,
           dose,
-          schedule,
-          note
+          schedule
         });
 
         e.target.reset();
+        selectedPedFrequencyDays = [];
+        renderPedFrequencyDaysSelector();
         selectPedSubfolder(activePedSubfolder);
         renderPedsTab();
         await persistState();
@@ -4993,6 +5072,7 @@
       document.getElementById('weightDateInput').value = todayStr;
       document.getElementById('photoDateInput').value = todayStr;
       document.getElementById('pedsDate').value = todayStr;
+      renderPedFrequencyDaysSelector();
       selectPedSubfolder('injectable');
 
       renderAll();
