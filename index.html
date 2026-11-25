@@ -4,13 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Naloženo – Fitness, Síla & Výživa</title>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js pro přehledné grafy -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <!-- FontAwesome ikony -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <script>
@@ -115,7 +111,6 @@
         </span>
       </div>
 
-      <!-- Přepínač Přihlášení / Registrace -->
       <div class="grid grid-cols-2 gap-1.5 bg-zinc-900/90 p-1 rounded-xl border border-zinc-800">
         <button type="button" id="authModeLoginBtn" onclick="setAuthMode('login')" class="py-2 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition">
           Přihlásit se
@@ -125,7 +120,6 @@
         </button>
       </div>
 
-      <!-- Formulář přihlášení -->
       <form id="loginAccountForm" onsubmit="handleLoginSubmit(event)" class="space-y-3.5">
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">E-mail (nebo přezdívka)</label>
@@ -148,7 +142,6 @@
         </button>
       </form>
 
-      <!-- Formulář registrace -->
       <form id="registerAccountForm" onsubmit="handleRegisterSubmit(event)" class="hidden space-y-3.5">
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Přezdívka (Nick)</label>
@@ -176,7 +169,6 @@
         </button>
       </form>
 
-      <!-- Panel čekající na potvrzení e-mailu -->
       <div id="verifyEmailPanel" class="hidden space-y-3.5 bg-zinc-900/90 border border-emerald-500/30 rounded-xl p-4">
         <div class="flex items-start gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
@@ -222,7 +214,6 @@
         </div>
       </div>
 
-      <!-- Obnovení zapomenutého hesla -->
       <div id="forgotPasswordPanel" class="hidden space-y-3.5 bg-zinc-900/90 border border-sky-500/30 rounded-xl p-4">
         <div class="flex items-start gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
@@ -276,7 +267,6 @@
         </form>
       </div>
 
-      <!-- Seznam lokálních účtů -->
       <div id="registeredAccountsBox" class="pt-3 border-t border-zinc-800 space-y-2">
         <div class="flex items-center justify-between text-[11px] text-zinc-400">
           <span>Lokální účty na tomto zařízení:</span>
@@ -287,7 +277,7 @@
     </div>
   </div>
 
-  <!-- Desktop Boční Panel (Sidebar) -->
+  <!-- Desktop Boční Panel -->
   <aside class="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 bg-zinc-900/90 border-r border-zinc-800 p-6 justify-between z-30">
     <div>
       <div class="flex items-center gap-3 mb-6">
@@ -331,6 +321,10 @@
         <button onclick="switchTab('physique')" data-tab="physique" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
           <i class="fa-solid fa-camera-retro w-5 text-center"></i>
           <span>Váha & Kontrola formy</span>
+        </button>
+        <button onclick="switchTab('peds')" data-tab="peds" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
+          <i class="fa-solid fa-syringe w-5 text-center"></i>
+          <span>PEDs</span>
         </button>
       </nav>
     </div>
@@ -769,7 +763,6 @@
               </span>
             </div>
 
-            <!-- Online databáze potravin (Open Food Facts) -->
             <div class="bg-zinc-900/90 border border-sky-500/25 rounded-xl p-4 space-y-3">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <label class="block text-xs font-bold uppercase tracking-wider text-sky-300">
@@ -969,11 +962,93 @@
         </div>
       </section>
 
+      <!-- SEKCE 6: PEDS & PROTOKOLY -->
+      <section id="tab-peds" class="tab-content hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">PEDs & Protokoly</h2>
+            <p class="text-sm text-zinc-400 mt-1">Přehled protokolů, dávek, frekvence a denní odškrtávání podání.</p>
+          </div>
+          <div class="flex items-center gap-2 bg-zinc-900 border border-zinc-800 p-1.5 rounded-xl">
+            <label for="pedsDate" class="text-xs text-zinc-400 pl-2">Den:</label>
+            <input type="date" id="pedsDate" onchange="renderPedsTab()" class="bg-transparent text-sm text-white font-medium focus:outline-none px-2 py-1" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="glass-card rounded-2xl p-5">
+            <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">Aktivní položky</p>
+            <h3 id="pedsActiveCount" class="text-2xl sm:text-3xl font-extrabold text-white mt-1">0</h3>
+            <p class="text-xs text-zinc-400 mt-2">V tvém protokolu</p>
+          </div>
+          <div class="glass-card rounded-2xl p-5">
+            <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">Splněno dnes</p>
+            <h3 id="pedsDoneCount" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-1">0 / 0</h3>
+            <p class="text-xs text-zinc-400 mt-2">Podle zvoleného dne</p>
+          </div>
+          <div class="glass-card rounded-2xl p-5">
+            <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">Zapsané záznamy</p>
+            <h3 id="pedsLogsCount" class="text-2xl sm:text-3xl font-extrabold text-sky-400 mt-1">0</h3>
+            <p class="text-xs text-zinc-400 mt-2">Celkem v historii</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-6 glass-card rounded-2xl p-5 sm:p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-check text-emerald-400"></i> Denní protokol
+              </h3>
+              <span id="pedsDayBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">0 / 0</span>
+            </div>
+            <p class="text-xs text-zinc-400">Odškrtni si položky provedené ve vybraný den. Změny se ukládají automaticky.</p>
+            <div id="pedsChecklist" class="space-y-2.5"></div>
+          </div>
+
+          <div class="lg:col-span-6 glass-card rounded-2xl p-5 sm:p-6 space-y-5">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-plus-circle text-sky-400"></i> Přidat položku do protokolu
+            </h3>
+
+            <form onsubmit="addPedProtocolItem(event)" class="space-y-3 bg-zinc-900/70 p-4 rounded-xl border border-zinc-800">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs text-zinc-400 mb-1">Název látky / položky</label>
+                  <input type="text" id="pedsNameInput" required placeholder="Např. Testosteron / MK-677..." class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div>
+                  <label class="block text-xs text-zinc-400 mb-1">Dávka</label>
+                  <input type="text" id="pedsDoseInput" required placeholder="Např. 125 mg / 10 mg" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs text-zinc-400 mb-1">Frekvence / Načasování</label>
+                  <input type="text" id="pedsScheduleInput" placeholder="Např. Po / Čt nebo Každý den večer" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div>
+                  <label class="block text-xs text-zinc-400 mb-1">Poznámka</label>
+                  <input type="text" id="pedsNoteInput" placeholder="Volitelná poznámka..." class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                </div>
+              </div>
+              <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm transition">
+                + Uložit do protokolu
+              </button>
+            </form>
+
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3">Přehled záznamů ve vybraný den</h4>
+              <div id="pedsLogsHistoryList" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   </main>
 
   <!-- Mobilní Spodní Navigace -->
-  <nav class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-zinc-900/95 backdrop-blur-lg border-t border-zinc-800 grid grid-cols-5 py-2 px-1">
+  <nav class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-zinc-900/95 backdrop-blur-lg border-t border-zinc-800 grid grid-cols-6 py-2 px-1">
     <button onclick="switchTab('dashboard')" data-tab="dashboard" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 text-emerald-400">
       <i class="fa-solid fa-chart-line text-base"></i>
       <span class="text-[10px] font-medium mt-1">Přehled</span>
@@ -994,6 +1069,10 @@
       <i class="fa-solid fa-camera-retro text-base"></i>
       <span class="text-[10px] font-medium mt-1">Forma</span>
     </button>
+    <button onclick="switchTab('peds')" data-tab="peds" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 text-zinc-400">
+      <i class="fa-solid fa-syringe text-base"></i>
+      <span class="text-[10px] font-medium mt-1">PEDs</span>
+    </button>
   </nav>
 
   <script type="module">
@@ -1012,7 +1091,7 @@
     import { getFirestore, doc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
     // =========================================================================
-    // START: HARDCODED_FIREBASE_CONFIG (zde vyplň údaje z Firebase konzole)
+    // START: HARDCODED_FIREBASE_CONFIG
     // =========================================================================
     const HARDCODED_FIREBASE_CONFIG = {
       apiKey: "AIzaSyAuWpgLIGkU650FoL77X_Fdb6K8NaUif0g",
@@ -1028,6 +1107,9 @@
 
     const CUSTOM_FB_CONFIG_STORAGE_KEY = 'nalozono_custom_firebase_config_v1';
     const MANUAL_VERIFIED_UIDS_KEY = 'nalozono_manual_verified_uids_v1';
+    const ACCOUNTS_REGISTRY_KEY = 'nalozono_accounts_registry_v1';
+    const ACTIVE_ACCOUNT_SESSION_KEY = 'nalozono_active_account_id_v1';
+    const LOCAL_STORAGE_KEY = 'nalozono_fitness_state_v1';
 
     function getManualVerifiedUids() {
       try {
@@ -1062,8 +1144,8 @@
       if (code === 'auth/email-already-in-use') return 'Tento e-mail už je zaregistrovaný. Přepni na „Přihlásit se“.';
       if (code === 'auth/invalid-email') return 'E-mailová adresa nemá platný formát.';
       if (code === 'auth/weak-password') return 'Heslo musí mít alespoň 6 znaků.';
-      if (code === 'auth/operation-not-allowed') return 'Ve Firebase není zapnuté přihlašování Email/Password (Authentication → Sign-in method → Email/Password → Enable).';
-      if (code === 'auth/too-many-requests') return 'Příliš mnoho pokusů (nebo limit e-mailů). Zkus to prosím za chvíli.';
+      if (code === 'auth/operation-not-allowed') return 'Ve Firebase není zapnuté přihlašování Email/Password.';
+      if (code === 'auth/too-many-requests') return 'Příliš mnoho pokusů. Zkus to prosím za chvíli.';
       if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
         return 'Nesprávný e-mail nebo heslo.';
       }
@@ -1237,84 +1319,6 @@
       ]
     };
 
-    // Databáze potravin (nutriční hodnoty na 100 g podle standardních tabulek)
-    const FOOD_DATABASE = {
-      'Maso & Ryby': [
-        { name: 'Kuřecí prsa syrová', p: 23.1, c: 0.0, f: 1.9 },
-        { name: 'Kuřecí prsa grilovaná / pečená', p: 29.5, c: 0.0, f: 3.2 },
-        { name: 'Krůtí prsa syrová', p: 24.0, c: 0.0, f: 1.5 },
-        { name: 'Hovězí zadní libové', p: 21.5, c: 0.0, f: 4.5 },
-        { name: 'Hovězí mleté (do 10 % tuku)', p: 20.5, c: 0.0, f: 9.5 },
-        { name: 'Vepřová panenka libová', p: 21.8, c: 0.0, f: 3.8 },
-        { name: 'Losos čerstvý filet', p: 20.4, c: 0.0, f: 13.4 },
-        { name: 'Tuňák ve vlastní šťávě (okapaný)', p: 25.5, c: 0.0, f: 1.0 },
-        { name: 'Treska filet', p: 17.8, c: 0.0, f: 0.7 },
-        { name: 'Kuřecí šunka nejvyšší jakosti (95 % masa)', p: 19.5, c: 1.0, f: 2.5 }
-      ],
-      'Mléčné výrobky & Vejce': [
-        { name: 'Vejce slepičí celé (1 ks ≈ 60g)', p: 12.6, c: 0.7, f: 9.5 },
-        { name: 'Vaječný bílek tekutý', p: 10.9, c: 0.7, f: 0.2 },
-        { name: 'Tvaroh odtučněný (vanička)', p: 12.2, c: 4.0, f: 0.5 },
-        { name: 'Tvaroh polotučný (vanička)', p: 11.5, c: 3.8, f: 3.8 },
-        { name: 'Skyr přírodní 0,2 % tuku', p: 11.0, c: 4.0, f: 0.2 },
-        { name: 'Řecký jogurt bílý 0 % tuku (Milko)', p: 10.3, c: 3.6, f: 0.2 },
-        { name: 'Řecký jogurt bílý 5 % tuku', p: 9.0, c: 3.5, f: 5.0 },
-        { name: 'Cottage sýr bílý klasický', p: 11.5, c: 3.0, f: 4.3 },
-        { name: 'Eidam 30 % t.v.s.', p: 27.0, c: 1.5, f: 15.0 },
-        { name: 'Mozzarella light', p: 20.5, c: 1.5, f: 8.5 },
-        { name: 'Mléko polotučné 1,5 %', p: 3.3, c: 4.8, f: 1.5 }
-      ],
-      'Přílohy & Pečivo': [
-        { name: 'Rýže basmati / jasmínová (suchá)', p: 7.5, c: 78.0, f: 0.8 },
-        { name: 'Rýže vařená (hotová příloha)', p: 2.7, c: 28.0, f: 0.3 },
-        { name: 'Ovesné vločky jemné', p: 13.5, c: 60.0, f: 7.0 },
-        { name: 'Těstoviny semolinové (suché)', p: 12.5, c: 72.0, f: 1.5 },
-        { name: 'Brambory vařené bez slupky', p: 2.0, c: 17.5, f: 0.1 },
-        { name: 'Batáty (sladké brambory)', p: 1.6, c: 20.1, f: 0.1 },
-        { name: 'Chléb žitno-pšeničný (Šumava)', p: 7.8, c: 48.0, f: 1.2 },
-        { name: 'Rohlík bílý / celozrnný (1 ks ≈ 43g)', p: 8.8, c: 55.0, f: 1.8 },
-        { name: 'Tortilla pšeničná wrap', p: 8.2, c: 50.0, f: 7.5 },
-        { name: 'Rýžové chlebíčky (Racio)', p: 8.0, c: 80.0, f: 2.5 }
-      ],
-      'Ovoce & Zelenina': [
-        { name: 'Banán loupaný', p: 1.1, c: 22.8, f: 0.3 },
-        { name: 'Jablko čerstvé', p: 0.3, c: 13.8, f: 0.2 },
-        { name: 'Borůvky čerstvé / mražené', p: 0.7, c: 14.5, f: 0.3 },
-        { name: 'Jahody čerstvé', p: 0.7, c: 7.7, f: 0.3 },
-        { name: 'Avokádo čerstvé', p: 2.0, c: 8.5, f: 14.7 },
-        { name: 'Brokolice čerstvá / vařená', p: 2.8, c: 6.6, f: 0.4 },
-        { name: 'Okurka salátová', p: 0.7, c: 3.6, f: 0.1 },
-        { name: 'Rajčata čerstvá', p: 0.9, c: 3.9, f: 0.2 },
-        { name: 'Paprika červená', p: 1.0, c: 6.0, f: 0.3 }
-      ],
-      'Ořechy, Tuky & Sladké': [
-        { name: 'Arašídové máslo 100 %', p: 25.0, c: 16.0, f: 50.0 },
-        { name: 'Mandle přírodní', p: 21.0, c: 19.0, f: 50.0 },
-        { name: 'Vlašské ořechy', p: 15.0, c: 14.0, f: 65.0 },
-        { name: 'Olivový olej extra panenský', p: 0.0, c: 0.0, f: 99.8 },
-        { name: 'Máslo klasické 82 %', p: 0.7, c: 0.6, f: 82.0 },
-        { name: 'Hořká čokoláda 85 %', p: 11.0, c: 22.0, f: 46.0 },
-        { name: 'Med včelí', p: 0.3, c: 82.0, f: 0.0 }
-      ],
-      'Suplementy & Fitness': [
-        { name: 'Syrovátkový Whey Protein (80%)', p: 78.0, c: 6.0, f: 5.5 },
-        { name: 'Whey Isolate (90%)', p: 86.0, c: 2.0, f: 1.5 },
-        { name: 'Micelární kasein (Noční protein)', p: 76.0, c: 5.5, f: 2.0 },
-        { name: 'Proteinová tyčinka (průměr)', p: 32.0, c: 35.0, f: 11.0 },
-        { name: 'Gainer / Sacharidový nápoj', p: 18.0, c: 70.0, f: 2.5 }
-      ],
-      'Hotová jídla': [
-        { name: 'Kuřecí prsa (200g) + Rýže (100g suchá) + Zelenina', p: 54.0, c: 80.0, f: 5.0 },
-        { name: 'Ovesná kaše s proteinem a banánem (porce)', p: 35.0, c: 72.0, f: 8.5 },
-        { name: 'Míchaná vejce (4 ks) + 2 krajíce chleba', p: 38.0, c: 50.0, f: 25.0 },
-        { name: 'Hovězí burger s bramborami (domácí porce)', p: 45.0, c: 55.0, f: 18.0 }
-      ]
-    };
-
-    const ACCOUNTS_REGISTRY_KEY = 'nalozono_accounts_registry_v1';
-    const ACTIVE_ACCOUNT_SESSION_KEY = 'nalozono_active_account_id_v1';
-    const LOCAL_STORAGE_KEY = 'nalozono_fitness_state_v1';
-
     function getAccountStorageKey(accountId) {
       return `nalozono_account_state_${accountId}_v1`;
     }
@@ -1447,7 +1451,9 @@
           'Vitamín D3 + K2',
           'Hořčík'
         ],
-        supplementLogs: {}
+        supplementLogs: {},
+        pedsProtocol: [],
+        pedsLogs: {}
       };
     }
 
@@ -1466,7 +1472,9 @@
               ? parsed.trainingPlans
               : defaults.trainingPlans,
           activePlanId: parsed.activePlanId || defaults.activePlanId,
-          macroTargets: { ...defaults.macroTargets, ...(parsed.macroTargets || {}) }
+          macroTargets: { ...defaults.macroTargets, ...(parsed.macroTargets || {}) },
+          pedsProtocol: Array.isArray(parsed.pedsProtocol) ? parsed.pedsProtocol : [],
+          pedsLogs: parsed.pedsLogs && typeof parsed.pedsLogs === 'object' ? parsed.pedsLogs : {}
         };
       } catch (e) {
         return defaults;
@@ -2252,6 +2260,7 @@
         renderWorkoutHistory();
       } else if (tabName === 'nutrition') renderNutritionTab();
       else if (tabName === 'physique') renderPhysiqueTab();
+      else if (tabName === 'peds') renderPedsTab();
     };
 
     function getActivePlan() {
@@ -2620,7 +2629,7 @@
           (ex) => ex.toLowerCase().includes(query) || category.toLowerCase().includes(query)
         );
         if (filtered.length > 0) {
-          html += `<optgroup label="── ${category} ──">`;
+          html += `<optgroup label="── ${escapeHtmlAttr(category)} ──">`;
           filtered.forEach((ex) => {
             html += `<option value="${escapeHtmlAttr(ex)}">${escapeHtmlAttr(ex)}</option>`;
           });
@@ -2944,59 +2953,64 @@
         `;
       }).join('');
 
-      const editorPanel = document.getElementById('planDayEditorPanel');
-      const currentDayMeta = WEEK_DAYS.find((d) => d.id === selectedPlanDayId) || WEEK_DAYS[0];
-      const currentDayObj = plan.days[selectedPlanDayId];
+      renderPlanDayEditor(plan, selectedPlanDayId);
+    }
 
-      if (!currentDayObj.active) {
-        editorPanel.innerHTML = `
-          <div class="text-center py-14 space-y-4">
-            <div class="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-500 flex items-center justify-center text-2xl mx-auto">
-              <i class="fa-solid fa-bed"></i>
-            </div>
+    function renderPlanDayEditor(plan, dayId) {
+      const editorEl = document.getElementById('planDayEditorPanel');
+      if (!editorEl) return;
+      const dayMeta = WEEK_DAYS.find((d) => d.id === dayId) || WEEK_DAYS[0];
+      const dayObj = plan.days[dayMeta.id] || { active: false, title: 'Den volna (Regenerace)', focus: 'Odpočinek', exercises: [] };
+
+      if (!dayObj.active) {
+        editorEl.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800">
             <div>
-              <h3 class="text-lg font-bold text-white">${currentDayMeta.name} je nastaven jako Den volna</h3>
-              <p class="text-sm text-zinc-400 max-w-md mx-auto mt-1">Regenerace je klíčová pro růst svalů. Pokud chceš v tento den cvičit, aktivuj ho jedním kliknutím.</p>
+              <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">${dayMeta.name}</span>
+              <h3 class="text-xl font-extrabold text-white mt-0.5">${escapeHtmlAttr(dayObj.title || 'Den volna')}</h3>
             </div>
-            <button type="button" onclick="togglePlanDayActive('${selectedPlanDayId}')" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm transition">
-              + Nastavit ${currentDayMeta.name} jako tréninkový den
+            <button type="button" onclick="togglePlanDayActive('${dayMeta.id}')" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition flex items-center gap-2 self-start sm:self-auto">
+              <i class="fa-solid fa-dumbbell"></i> Nastavit jako tréninkový den
             </button>
+          </div>
+          <div class="py-12 text-center space-y-2 text-zinc-400 text-sm">
+            <i class="fa-solid fa-mug-hot text-2xl text-zinc-600"></i>
+            <p>Tento den je v plánu nastaven jako <strong class="text-zinc-200">den volna</strong>.</p>
+            <p class="text-xs text-zinc-500">Klikni na tlačítko výše nebo na den v mřížce, pokud chceš přidat trénink.</p>
           </div>
         `;
         return;
       }
 
-      const exercisesRowsHtml =
-        currentDayObj.exercises.length === 0
-          ? `<div class="text-center py-8 border border-dashed border-zinc-800 rounded-xl text-xs text-zinc-500">Tento tréninkový den zatím neobsahuje žádné cviky. Přidej je níže z databáze.</div>`
-          : currentDayObj.exercises
+      const exercisesHtml =
+        dayObj.exercises.length === 0
+          ? `<div class="text-center py-8 border border-dashed border-zinc-800 rounded-xl text-xs text-zinc-500">V tomto dni zatím nejsou žádné cviky. Přidej první cvik níže.</div>`
+          : dayObj.exercises
               .map(
                 (ex, idx) => `
-                <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div class="flex items-center gap-3 min-w-0">
-                    <span class="w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0">${idx + 1}</span>
-                    <span class="font-semibold text-sm text-white truncate">${escapeHtmlAttr(ex.name)}</span>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5">
+                  <div class="flex items-start sm:items-center gap-3 min-w-0">
+                    <span class="w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-400 text-xs font-extrabold flex items-center justify-center shrink-0">${idx + 1}</span>
+                    <div class="min-w-0">
+                      <div class="text-sm font-bold text-white truncate">${escapeHtmlAttr(ex.name)}</div>
+                      <div class="text-xs text-zinc-400 mt-0.5">${ex.sets} série × ${escapeHtmlAttr(String(ex.reps))} opakování</div>
+                    </div>
                   </div>
-                  <div class="flex items-center gap-2 shrink-0 justify-end">
-                    <div class="flex items-center gap-1 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1">
-                      <input type="number" min="1" max="15" value="${ex.sets}" onchange="updatePlanDayExercise(${idx}, 'sets', this.value)"
-                        class="w-10 bg-transparent text-center text-xs font-bold text-emerald-400 focus:outline-none" />
-                      <span class="text-[11px] text-zinc-500">sérií</span>
-                    </div>
-                    <span class="text-zinc-600 text-xs">×</span>
-                    <div class="flex items-center gap-1 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1">
-                      <input type="text" value="${escapeHtmlAttr(ex.reps)}" onchange="updatePlanDayExercise(${idx}, 'reps', this.value)" placeholder="8-12"
-                        class="w-14 bg-transparent text-center text-xs font-bold text-white focus:outline-none" />
-                      <span class="text-[11px] text-zinc-500">opak.</span>
-                    </div>
-                    <button type="button" onclick="movePlanDayExercise(${idx}, -1)" class="p-1.5 text-zinc-500 hover:text-white" title="Posunout nahoru">
-                      <i class="fa-solid fa-arrow-up text-xs"></i>
+                  <div class="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                    <label class="text-[11px] text-zinc-400">Série:</label>
+                    <input type="number" min="1" max="20" value="${ex.sets}" onchange="updatePlanDayExercise(${idx}, 'sets', this.value)"
+                      class="w-14 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1 text-xs font-bold text-white text-center focus:outline-none focus:border-emerald-500" />
+                    <label class="text-[11px] text-zinc-400">Opak.:</label>
+                    <input type="text" value="${escapeHtmlAttr(String(ex.reps))}" onchange="updatePlanDayExercise(${idx}, 'reps', this.value)"
+                      class="w-16 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1 text-xs font-bold text-white text-center focus:outline-none focus:border-emerald-500" />
+                    <button type="button" onclick="movePlanDayExercise(${idx}, -1)" class="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs" title="Posunout nahoru">
+                      <i class="fa-solid fa-arrow-up"></i>
                     </button>
-                    <button type="button" onclick="movePlanDayExercise(${idx}, 1)" class="p-1.5 text-zinc-500 hover:text-white" title="Posunout dolů">
-                      <i class="fa-solid fa-arrow-down text-xs"></i>
+                    <button type="button" onclick="movePlanDayExercise(${idx}, 1)" class="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs" title="Posunout dolů">
+                      <i class="fa-solid fa-arrow-down"></i>
                     </button>
-                    <button type="button" onclick="removePlanDayExercise(${idx})" class="p-1.5 text-zinc-500 hover:text-rose-400" title="Smazat cvik">
-                      <i class="fa-solid fa-trash-can text-xs"></i>
+                    <button type="button" onclick="removePlanDayExercise(${idx})" class="p-1.5 rounded-lg bg-zinc-900 hover:bg-rose-950/60 text-zinc-500 hover:text-rose-400 border border-zinc-800 text-xs" title="Odebrat cvik">
+                      <i class="fa-solid fa-trash-can"></i>
                     </button>
                   </div>
                 </div>
@@ -3004,69 +3018,58 @@
               )
               .join('');
 
-      editorPanel.innerHTML = `
+      editorEl.innerHTML = `
         <div class="space-y-5">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-800">
             <div>
-              <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">${currentDayMeta.name} • Konfigurace tréninku</span>
-              <h3 class="text-lg font-extrabold text-white mt-0.5">${escapeHtmlAttr(currentDayObj.title)}</h3>
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">${dayMeta.name}</span>
+              <h3 class="text-xl font-extrabold text-white mt-0.5">${escapeHtmlAttr(dayObj.title)}</h3>
             </div>
-            <button type="button" onclick="startPlannedWorkout('${selectedPlanDayId}')"
-              class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition flex items-center gap-2 self-start sm:self-auto">
-              <i class="fa-solid fa-play"></i> Spustit tento trénink v deníku
+            <button type="button" onclick="startPlannedWorkout('${dayMeta.id}')" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition flex items-center gap-2 self-start sm:self-auto">
+              <i class="fa-solid fa-play"></i> Spustit v deníku
             </button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs text-zinc-400 mb-1">Název tréninkového dne</label>
-              <input type="text" value="${escapeHtmlAttr(currentDayObj.title)}" oninput="updatePlanDayMeta('${selectedPlanDayId}', 'title', this.value)"
-                class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+              <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Název tréninkového dne</label>
+              <input type="text" value="${escapeHtmlAttr(dayObj.title)}" oninput="updatePlanDayMeta('${dayMeta.id}', 'title', this.value)"
+                class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm font-semibold text-white focus:outline-none focus:border-emerald-500" />
             </div>
             <div>
-              <label class="block text-xs text-zinc-400 mb-1">Zaměření / Poznámka</label>
-              <input type="text" value="${escapeHtmlAttr(currentDayObj.focus || '')}" oninput="updatePlanDayMeta('${selectedPlanDayId}', 'focus', this.value)" placeholder="Např. Prsa, ramena a triceps"
+              <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Zaměření dne</label>
+              <input type="text" value="${escapeHtmlAttr(dayObj.focus || '')}" oninput="updatePlanDayMeta('${dayMeta.id}', 'focus', this.value)"
+                placeholder="Např. Prsa, ramena, triceps..."
                 class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
             </div>
           </div>
 
           <div class="space-y-2.5">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Naplánované cviky (${currentDayObj.exercises.length})</span>
-              <span class="text-xs text-zinc-500">Celkem ${currentDayObj.exercises.reduce((s, e) => s + (parseInt(e.sets, 10) || 0), 0)} pracovních sérií</span>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Cviky v tomto dni (${dayObj.exercises.length})</h4>
+              <span class="text-xs text-zinc-500">Celkem ${dayObj.exercises.reduce((s, e) => s + (parseInt(e.sets, 10) || 0), 0)} pracovních sérií</span>
             </div>
-            ${exercisesRowsHtml}
+            <div class="space-y-2">${exercisesHtml}</div>
           </div>
 
           <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 space-y-3">
-            <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400">Přidat cvik do dne (${currentDayMeta.name})</label>
+            <label class="block text-xs font-bold uppercase tracking-wider text-zinc-400">Přidat cvik do tohoto dne</label>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <select id="planExerciseCatFilter" onchange="filterPlanExerciseDropdown()" class="bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-emerald-500">
                 <option value="ALL">Všechny svalové partie</option>
-                <option value="Prsa">Prsa</option>
-                <option value="Záda">Záda</option>
-                <option value="Nohy & Hýždě">Nohy & Hýždě</option>
-                <option value="Ramena">Ramena</option>
-                <option value="Biceps">Biceps</option>
-                <option value="Triceps">Triceps</option>
-                <option value="Břicho & Core">Břicho & Core</option>
-                <option value="Lýtka & Předloktí">Lýtka & Předloktí</option>
+                ${Object.keys(EXERCISE_DATABASE)
+                  .map((cat) => `<option value="${escapeHtmlAttr(cat)}">${escapeHtmlAttr(cat)}</option>`)
+                  .join('')}
               </select>
-              <input type="text" id="planExerciseSearchFilter" oninput="filterPlanExerciseDropdown()" placeholder="Hledat cvik (kladka, stroj, dřep)..."
+              <input type="text" id="planExerciseSearchFilter" oninput="filterPlanExerciseDropdown()" placeholder="Hledat cvik..."
                 class="bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
             </div>
-
             <div class="flex flex-col sm:flex-row gap-2">
-              <select id="planExerciseDbSelect" class="flex-1 bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"></select>
-              <button type="button" onclick="addExerciseToPlanDay()" class="px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-sm font-semibold transition whitespace-nowrap">
-                + Přidat do dne
-              </button>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-2 pt-2 border-t border-zinc-800/80">
-              <input type="text" id="planCustomExerciseInput" placeholder="Nebo napiš vlastní název cviku..." class="flex-1 bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
-              <button type="button" onclick="addExerciseToPlanDay()" class="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium border border-zinc-700 transition">
-                Přidat vlastní
+              <select id="planExerciseDbSelect" class="flex-1 bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"></select>
+              <input type="text" id="planCustomExerciseInput" placeholder="Nebo vlastní cvik..."
+                class="sm:w-52 bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+              <button type="button" onclick="addExerciseToPlanDay()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition whitespace-nowrap">
+                + Přidat cvik
               </button>
             </div>
           </div>
@@ -3076,41 +3079,205 @@
       filterPlanExerciseDropdown();
     }
 
-    window.populateExerciseDropdowns = function () {
-      const dbSelect = document.getElementById('exerciseDatabaseSelect');
-      if (!dbSelect) return;
+    function populateExerciseDropdowns() {
+      const selectEl = document.getElementById('exerciseDatabaseSelect');
+      const countBadge = document.getElementById('exerciseDbCountBadge');
+      const allExercises = Object.values(EXERCISE_DATABASE).flat();
+      if (countBadge) {
+        countBadge.textContent = `${allExercises.length}+ cviků v databázi`;
+      }
+      if (!selectEl) return;
 
-      const selectedCategory = document.getElementById('exerciseCategoryFilter')?.value || 'ALL';
-      const searchQuery = (document.getElementById('exerciseDbSearch')?.value || '').toLowerCase().trim();
+      const cat = document.getElementById('exerciseCategoryFilter')?.value || 'ALL';
+      const query = (document.getElementById('exerciseDbSearch')?.value || '').toLowerCase().trim();
 
       let html = '';
-      let matchedCount = 0;
-
       Object.entries(EXERCISE_DATABASE).forEach(([category, exercises]) => {
-        if (selectedCategory !== 'ALL' && selectedCategory !== category) return;
-
-        const filteredExercises = exercises.filter(
-          (ex) => ex.toLowerCase().includes(searchQuery) || category.toLowerCase().includes(searchQuery)
+        if (cat !== 'ALL' && cat !== category) return;
+        const filtered = exercises.filter(
+          (ex) => ex.toLowerCase().includes(query) || category.toLowerCase().includes(query)
         );
-
-        if (filteredExercises.length > 0) {
-          matchedCount += filteredExercises.length;
-          html += `<optgroup label="── ${escapeHtmlAttr(category)} (${filteredExercises.length}) ──">`;
-          filteredExercises.forEach((ex) => {
+        if (filtered.length > 0) {
+          html += `<optgroup label="── ${escapeHtmlAttr(category)} ──">`;
+          filtered.forEach((ex) => {
             html += `<option value="${escapeHtmlAttr(ex)}">${escapeHtmlAttr(ex)}</option>`;
           });
           html += `</optgroup>`;
         }
       });
 
-      if (matchedCount === 0) {
-        html = `<option value="">Žádný cvik neodpovídá filtru...</option>`;
-      }
+      selectEl.innerHTML = html || `<option value="">Žádný cvik neodpovídá filtru...</option>`;
+    }
 
-      dbSelect.innerHTML = html;
-      const countBadge = document.getElementById('exerciseDbCountBadge');
-      if (countBadge) {
-        countBadge.textContent = `${matchedCount} cviků zobrazeno`;
+    window.addPedProtocolItem = async function (e) {
+      e.preventDefault();
+      try {
+        const name = (document.getElementById('pedsNameInput')?.value || '').trim();
+        const dose = (document.getElementById('pedsDoseInput')?.value || '').trim();
+        const schedule = (document.getElementById('pedsScheduleInput')?.value || '').trim();
+        const note = (document.getElementById('pedsNoteInput')?.value || '').trim();
+
+        if (!name || !dose) {
+          showToast('Vyplň název i dávku položky.', 'error');
+          return;
+        }
+
+        if (!Array.isArray(appState.pedsProtocol)) {
+          appState.pedsProtocol = [];
+        }
+
+        appState.pedsProtocol.push({
+          id: 'ped_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          name,
+          dose,
+          schedule,
+          note
+        });
+
+        e.target.reset();
+        renderPedsTab();
+        await persistState();
+        showToast(`Položka "${name}" přidána do protokolu PEDs.`);
+      } catch (err) {
+        console.error('Chyba při přidávání položky PEDs:', err);
+        showToast('Nepodařilo se přidat položku PEDs.', 'error');
+      }
+    };
+
+    window.removePedProtocolItem = async function (pedId) {
+      try {
+        appState.pedsProtocol = (appState.pedsProtocol || []).filter((item) => item.id !== pedId);
+        if (appState.pedsLogs && typeof appState.pedsLogs === 'object') {
+          Object.keys(appState.pedsLogs).forEach((dateKey) => {
+            if (Array.isArray(appState.pedsLogs[dateKey])) {
+              appState.pedsLogs[dateKey] = appState.pedsLogs[dateKey].filter((id) => id !== pedId);
+            }
+          });
+        }
+        renderPedsTab();
+        await persistState();
+        showToast('Položka odstraněna z protokolu PEDs.');
+      } catch (err) {
+        console.error('Chyba při mazání položky PEDs:', err);
+        showToast('Nepodařilo se odstranit položku PEDs.', 'error');
+      }
+    };
+
+    window.togglePedItemForDate = async function (pedId) {
+      try {
+        const date = document.getElementById('pedsDate')?.value || todayStr;
+        if (!appState.pedsLogs || typeof appState.pedsLogs !== 'object') {
+          appState.pedsLogs = {};
+        }
+        if (!Array.isArray(appState.pedsLogs[date])) {
+          appState.pedsLogs[date] = [];
+        }
+
+        const idx = appState.pedsLogs[date].indexOf(pedId);
+        if (idx > -1) {
+          appState.pedsLogs[date].splice(idx, 1);
+        } else {
+          appState.pedsLogs[date].push(pedId);
+        }
+
+        renderPedsTab();
+        await persistState();
+      } catch (err) {
+        console.error('Chyba při přepínání záznamu PEDs:', err);
+        showToast('Nepodařilo se uložit změnu záznamu.', 'error');
+      }
+    };
+
+    window.renderPedsTab = function () {
+      try {
+        const date = document.getElementById('pedsDate')?.value || todayStr;
+        const protocol = Array.isArray(appState.pedsProtocol) ? appState.pedsProtocol : [];
+        const logsByDate = appState.pedsLogs && typeof appState.pedsLogs === 'object' ? appState.pedsLogs : {};
+        const checkedIds = Array.isArray(logsByDate[date]) ? logsByDate[date] : [];
+
+        const totalItems = protocol.length;
+        const doneCount = protocol.filter((item) => checkedIds.includes(item.id)).length;
+        const totalHistoricalLogs = Object.values(logsByDate).reduce(
+          (sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0),
+          0
+        );
+
+        const activeCountEl = document.getElementById('pedsActiveCount');
+        const doneCountEl = document.getElementById('pedsDoneCount');
+        const logsCountEl = document.getElementById('pedsLogsCount');
+        const dayBadgeEl = document.getElementById('pedsDayBadge');
+
+        if (activeCountEl) activeCountEl.textContent = String(totalItems);
+        if (doneCountEl) doneCountEl.textContent = `${doneCount} / ${totalItems}`;
+        if (logsCountEl) logsCountEl.textContent = String(totalHistoricalLogs);
+        if (dayBadgeEl) dayBadgeEl.textContent = `${doneCount} / ${totalItems}`;
+
+        const checklistEl = document.getElementById('pedsChecklist');
+        if (checklistEl) {
+          if (protocol.length === 0) {
+            checklistEl.innerHTML = `<div class="text-center py-8 border border-dashed border-zinc-800 rounded-xl text-xs text-zinc-500">Zatím nemáš v protokolu žádné položky. Přidej první položku vpravo.</div>`;
+          } else {
+            checklistEl.innerHTML = protocol
+              .map((item) => {
+                const isChecked = checkedIds.includes(item.id);
+                const safeId = escapeHtmlAttr(item.id);
+                return `
+                  <div class="flex items-center justify-between gap-3 p-3.5 rounded-xl border transition ${
+                    isChecked ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-zinc-900/80 border-zinc-800'
+                  }">
+                    <label class="flex items-start gap-3 cursor-pointer flex-1 min-w-0">
+                      <input type="checkbox" ${isChecked ? 'checked' : ''} data-ped-id="${safeId}"
+                        class="ped-checkbox mt-0.5 w-4 h-4 rounded accent-emerald-500 cursor-pointer shrink-0" />
+                      <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                          <span class="text-sm font-bold ${isChecked ? 'line-through text-zinc-400' : 'text-white'}">${escapeHtmlAttr(item.name)}</span>
+                          <span class="text-xs font-semibold px-2 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-emerald-300">${escapeHtmlAttr(item.dose)}</span>
+                        </div>
+                        ${item.schedule ? `<div class="text-xs text-zinc-400 mt-0.5"><i class="fa-regular fa-clock mr-1 text-zinc-500"></i>${escapeHtmlAttr(item.schedule)}</div>` : ''}
+                        ${item.note ? `<div class="text-[11px] text-zinc-500 mt-0.5">${escapeHtmlAttr(item.note)}</div>` : ''}
+                      </div>
+                    </label>
+                    <button type="button" data-ped-id="${safeId}" class="ped-remove-btn text-zinc-500 hover:text-rose-400 p-1.5 text-xs shrink-0" title="Smazat položku">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
+                `;
+              })
+              .join('');
+
+            checklistEl.querySelectorAll('.ped-checkbox').forEach((cb) => {
+              cb.addEventListener('change', () => togglePedItemForDate(cb.dataset.pedId || ''));
+            });
+            checklistEl.querySelectorAll('.ped-remove-btn').forEach((btn) => {
+              btn.addEventListener('click', () => removePedProtocolItem(btn.dataset.pedId || ''));
+            });
+          }
+        }
+
+        const historyEl = document.getElementById('pedsLogsHistoryList');
+        if (historyEl) {
+          const checkedItems = protocol.filter((item) => checkedIds.includes(item.id));
+          if (checkedItems.length === 0) {
+            historyEl.innerHTML = `<div class="text-center py-6 border border-dashed border-zinc-800 rounded-xl text-xs text-zinc-500">Pro vybraný den (${formatDateCz(date)}) zatím nejsou odškrtnuté žádné záznamy.</div>`;
+          } else {
+            historyEl.innerHTML = checkedItems
+              .map(
+                (item) => `
+                <div class="flex items-center justify-between bg-zinc-900/90 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs">
+                  <div class="min-w-0">
+                    <span class="font-bold text-white">${escapeHtmlAttr(item.name)}</span>
+                    <span class="text-emerald-400 font-semibold ml-2">${escapeHtmlAttr(item.dose)}</span>
+                    ${item.schedule ? `<span class="text-zinc-500 ml-2">• ${escapeHtmlAttr(item.schedule)}</span>` : ''}
+                  </div>
+                  <span class="text-emerald-400 font-bold shrink-0"><i class="fa-solid fa-check mr-1"></i>Hotovo</span>
+                </div>
+              `
+              )
+              .join('');
+          }
+        }
+      } catch (err) {
+        console.error('Chyba při vykreslování sekce PEDs:', err);
       }
     };
 
@@ -4190,7 +4357,6 @@
           <div>
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                <!-- Velký výrazný stav SPLNĚNO s fajfkou -->
                 <div class="inline-flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-emerald-500/15 border-2 border-emerald-400/60 shadow-lg shadow-emerald-500/10 self-start">
                   <div class="w-9 h-9 rounded-xl bg-emerald-400 text-zinc-950 flex items-center justify-center text-lg font-black shadow">
                     <i class="fa-solid fa-check"></i>
@@ -4201,7 +4367,6 @@
                   </div>
                 </div>
 
-                <!-- Přepracované karty progresu: Zvýšení váhy & Zvýšení opakování -->
                 <div class="grid grid-cols-2 gap-2.5">
                   <div class="px-3.5 py-2 rounded-xl border flex items-center gap-2.5 ${
                     prog.weightIncreased
@@ -4529,6 +4694,7 @@
       renderWorkoutHistory();
       renderNutritionTab();
       renderPhysiqueTab();
+      renderPedsTab();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -4536,6 +4702,7 @@
       document.getElementById('nutritionDate').value = todayStr;
       document.getElementById('weightDateInput').value = todayStr;
       document.getElementById('photoDateInput').value = todayStr;
+      document.getElementById('pedsDate').value = todayStr;
 
       populateExerciseDropdowns();
       updateActiveAccountBadges();
