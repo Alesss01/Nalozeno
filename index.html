@@ -981,16 +981,6 @@
             <h3 id="pedsActiveCount" class="text-2xl sm:text-3xl font-extrabold text-white mt-1">0</h3>
             <p class="text-xs text-zinc-400 mt-2">V tvém protokolu</p>
           </div>
-          <div class="glass-card rounded-2xl p-5">
-            <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">Splněno dnes</p>
-            <h3 id="pedsDoneCount" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-1">0 / 0</h3>
-            <p class="text-xs text-zinc-400 mt-2">Podle zvoleného dne</p>
-          </div>
-          <div class="glass-card rounded-2xl p-5">
-            <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">Zapsané záznamy</p>
-            <h3 id="pedsLogsCount" class="text-2xl sm:text-3xl font-extrabold text-sky-400 mt-1">0</h3>
-            <p class="text-xs text-zinc-400 mt-2">Celkem v historii</p>
-          </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -1010,15 +1000,44 @@
               <i class="fa-solid fa-plus-circle text-sky-400"></i> Přidat položku do protokolu
             </h3>
 
+            <!-- 4 podsložky: 1. Injekční, 2. Orální, 3. Peptidy, 4. IA -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 bg-zinc-900/95 p-1.5 rounded-xl border border-zinc-800" id="pedsSubfolderTabs">
+              <button type="button" onclick="selectPedSubfolder('injectable')" data-ped-subfolder="injectable"
+                class="ped-subfolder-btn py-2 px-2.5 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-syringe"></i>
+                <span>1. Injekční</span>
+              </button>
+              <button type="button" onclick="selectPedSubfolder('oral')" data-ped-subfolder="oral"
+                class="ped-subfolder-btn py-2 px-2.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-white border border-transparent transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-tablets"></i>
+                <span>2. Orální</span>
+              </button>
+              <button type="button" onclick="selectPedSubfolder('peptides')" data-ped-subfolder="peptides"
+                class="ped-subfolder-btn py-2 px-2.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-white border border-transparent transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-vial"></i>
+                <span>3. Peptidy</span>
+              </button>
+              <button type="button" onclick="selectPedSubfolder('ai')" data-ped-subfolder="ai"
+                class="ped-subfolder-btn py-2 px-2.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-white border border-transparent transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>4. IA</span>
+              </button>
+            </div>
+
             <form onsubmit="addPedProtocolItem(event)" class="space-y-3 bg-zinc-900/70 p-4 rounded-xl border border-zinc-800">
+              <div class="flex items-center justify-between text-xs pb-1 border-b border-zinc-800/80">
+                <span class="text-zinc-400">Aktivní podsložka:</span>
+                <span id="pedsActiveSubfolderLabel" class="font-bold text-emerald-300">1. Injekční</span>
+              </div>
+
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-xs text-zinc-400 mb-1">Název látky / položky</label>
-                  <input type="text" id="pedsNameInput" required placeholder="Např. Testosteron / MK-677..." class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                  <label id="pedsNameInputLabel" class="block text-xs text-zinc-400 mb-1">Název injekční látky</label>
+                  <input type="text" id="pedsNameInput" required placeholder="Např. Testosteron Enanthate..." class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
                 </div>
                 <div>
-                  <label class="block text-xs text-zinc-400 mb-1">Dávka</label>
-                  <input type="text" id="pedsDoseInput" required placeholder="Např. 125 mg / 10 mg" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                  <label id="pedsDoseInputLabel" class="block text-xs text-zinc-400 mb-1">Dávka (mg / ml)</label>
+                  <input type="text" id="pedsDoseInput" required placeholder="Např. 125 mg (0,5 ml)" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
                 </div>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1027,12 +1046,12 @@
                   <input type="text" id="pedsScheduleInput" placeholder="Např. Po / Čt nebo Každý den večer" class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
                 </div>
                 <div>
-                  <label class="block text-xs text-zinc-400 mb-1">Poznámka</label>
-                  <input type="text" id="pedsNoteInput" placeholder="Volitelná poznámka..." class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                  <label id="pedsNoteInputLabel" class="block text-xs text-zinc-400 mb-1">Místo vpichu / Poznámka</label>
+                  <input type="text" id="pedsNoteInput" placeholder="Např. Gluteus / Delt..." class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
                 </div>
               </div>
-              <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm transition">
-                + Uložit do protokolu
+              <button type="submit" id="pedsSubmitBtn" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm transition">
+                + Uložit do složky 1. Injekční
               </button>
             </form>
 
@@ -1090,9 +1109,6 @@
     } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { getFirestore, doc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-    // =========================================================================
-    // START: HARDCODED_FIREBASE_CONFIG
-    // =========================================================================
     const HARDCODED_FIREBASE_CONFIG = {
       apiKey: "AIzaSyAuWpgLIGkU650FoL77X_Fdb6K8NaUif0g",
       authDomain: "nalozeno.firebaseapp.com",
@@ -1101,15 +1117,89 @@
       messagingSenderId: "301075980963",
       appId: "1:301075980963:web:f86c4698be61a56ac99516"
     };
-    // =========================================================================
-    // KONEC: HARDCODED_FIREBASE_CONFIG
-    // =========================================================================
 
     const CUSTOM_FB_CONFIG_STORAGE_KEY = 'nalozono_custom_firebase_config_v1';
     const MANUAL_VERIFIED_UIDS_KEY = 'nalozono_manual_verified_uids_v1';
     const ACCOUNTS_REGISTRY_KEY = 'nalozono_accounts_registry_v1';
     const ACTIVE_ACCOUNT_SESSION_KEY = 'nalozono_active_account_id_v1';
     const LOCAL_STORAGE_KEY = 'nalozono_fitness_state_v1';
+
+    const PED_SUBFOLDERS = {
+      injectable: {
+        id: 'injectable',
+        label: '1. Injekční',
+        nameLabel: 'Název injekční látky',
+        namePlaceholder: 'Např. Testosteron Enanthate...',
+        doseLabel: 'Dávka (mg / ml)',
+        dosePlaceholder: 'Např. 125 mg (0,5 ml)',
+        noteLabel: 'Místo vpichu / Poznámka',
+        notePlaceholder: 'Např. Gluteus / Delt...'
+      },
+      oral: {
+        id: 'oral',
+        label: '2. Orální',
+        nameLabel: 'Název orální látky',
+        namePlaceholder: 'Např. Anavar / TUDCA...',
+        doseLabel: 'Dávka (mg)',
+        dosePlaceholder: 'Např. 20 mg',
+        noteLabel: 'S jídlem / Poznámka',
+        notePlaceholder: 'Např. Po jídle...'
+      },
+      peptides: {
+        id: 'peptides',
+        label: '3. Peptidy',
+        nameLabel: 'Název peptidu',
+        namePlaceholder: 'Např. BPC-157 / TB-500 / HGH...',
+        doseLabel: 'Dávka (mcg / IU)',
+        dosePlaceholder: 'Např. 250 mcg / 2 IU',
+        noteLabel: 'Aplikace / Poznámka',
+        notePlaceholder: 'Např. Subkutánně nalačno...'
+      },
+      ai: {
+        id: 'ai',
+        label: '4. IA',
+        nameLabel: 'Název inhibitoru aromatázy (IA)',
+        namePlaceholder: 'Např. Arimidex / Aromasin...',
+        doseLabel: 'Dávka (mg)',
+        dosePlaceholder: 'Např. 0,25 mg / 12,5 mg',
+        noteLabel: 'Důvod / Poznámka',
+        notePlaceholder: 'Např. Dle krevních testů...'
+      }
+    };
+
+    let activePedSubfolder = 'injectable';
+
+    window.selectPedSubfolder = function (folderKey) {
+      if (!PED_SUBFOLDERS[folderKey]) return;
+      activePedSubfolder = folderKey;
+      const meta = PED_SUBFOLDERS[folderKey];
+
+      document.querySelectorAll('.ped-subfolder-btn').forEach((btn) => {
+        if (btn.dataset.pedSubfolder === folderKey) {
+          btn.className = 'ped-subfolder-btn py-2 px-2.5 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition flex items-center justify-center gap-1.5';
+        } else {
+          btn.className = 'ped-subfolder-btn py-2 px-2.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-white border border-transparent transition flex items-center justify-center gap-1.5';
+        }
+      });
+
+      const badge = document.getElementById('pedsActiveSubfolderLabel');
+      const nameLbl = document.getElementById('pedsNameInputLabel');
+      const nameInp = document.getElementById('pedsNameInput');
+      const doseLbl = document.getElementById('pedsDoseInputLabel');
+      const doseInp = document.getElementById('pedsDoseInput');
+      const noteLbl = document.getElementById('pedsNoteInputLabel');
+      const noteInp = document.getElementById('pedsNoteInput');
+      const submitBtn = document.getElementById('pedsSubmitBtn');
+
+      if (badge) badge.textContent = meta.label;
+      if (nameLbl) nameLbl.textContent = meta.nameLabel;
+      if (nameInp) nameInp.placeholder = meta.namePlaceholder;
+      if (doseLbl) doseLbl.textContent = meta.doseLabel;
+      if (doseInp) doseInp.placeholder = meta.dosePlaceholder;
+      if (noteLbl) noteLbl.textContent = meta.noteLabel;
+      if (noteInp) noteInp.placeholder = meta.notePlaceholder;
+      if (submitBtn) submitBtn.textContent = `+ Uložit do složky ${meta.label}`;
+    };
 
     function getManualVerifiedUids() {
       try {
@@ -3116,6 +3206,7 @@
         const dose = (document.getElementById('pedsDoseInput')?.value || '').trim();
         const schedule = (document.getElementById('pedsScheduleInput')?.value || '').trim();
         const note = (document.getElementById('pedsNoteInput')?.value || '').trim();
+        const folderMeta = PED_SUBFOLDERS[activePedSubfolder] || PED_SUBFOLDERS.injectable;
 
         if (!name || !dose) {
           showToast('Vyplň název i dávku položky.', 'error');
@@ -3128,6 +3219,8 @@
 
         appState.pedsProtocol.push({
           id: 'ped_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          category: folderMeta.id,
+          categoryLabel: folderMeta.label,
           name,
           dose,
           schedule,
@@ -3135,9 +3228,10 @@
         });
 
         e.target.reset();
+        selectPedSubfolder(activePedSubfolder);
         renderPedsTab();
         await persistState();
-        showToast(`Položka "${name}" přidána do protokolu PEDs.`);
+        showToast(`Položka "${name}" přidána do ${folderMeta.label}.`);
       } catch (err) {
         console.error('Chyba při přidávání položky PEDs:', err);
         showToast('Nepodařilo se přidat položku PEDs.', 'error');
@@ -3197,30 +3291,23 @@
 
         const totalItems = protocol.length;
         const doneCount = protocol.filter((item) => checkedIds.includes(item.id)).length;
-        const totalHistoricalLogs = Object.values(logsByDate).reduce(
-          (sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0),
-          0
-        );
 
         const activeCountEl = document.getElementById('pedsActiveCount');
-        const doneCountEl = document.getElementById('pedsDoneCount');
-        const logsCountEl = document.getElementById('pedsLogsCount');
         const dayBadgeEl = document.getElementById('pedsDayBadge');
 
         if (activeCountEl) activeCountEl.textContent = String(totalItems);
-        if (doneCountEl) doneCountEl.textContent = `${doneCount} / ${totalItems}`;
-        if (logsCountEl) logsCountEl.textContent = String(totalHistoricalLogs);
         if (dayBadgeEl) dayBadgeEl.textContent = `${doneCount} / ${totalItems}`;
 
         const checklistEl = document.getElementById('pedsChecklist');
         if (checklistEl) {
           if (protocol.length === 0) {
-            checklistEl.innerHTML = `<div class="text-center py-8 border border-dashed border-zinc-800 rounded-xl text-xs text-zinc-500">Zatím nemáš v protokolu žádné položky. Přidej první položku vpravo.</div>`;
+            checklistEl.innerHTML = `<div class="text-center py-8 border border-dashed border-zinc-800 rounded-xl text-xs text-zinc-500">Zatím nemáš v protokolu žádné položky. Vyber podsložku vpravo a přidej první položku.</div>`;
           } else {
             checklistEl.innerHTML = protocol
               .map((item) => {
                 const isChecked = checkedIds.includes(item.id);
                 const safeId = escapeHtmlAttr(item.id);
+                const folderBadge = item.categoryLabel || PED_SUBFOLDERS[item.category]?.label || '1. Injekční';
                 return `
                   <div class="flex items-center justify-between gap-3 p-3.5 rounded-xl border transition ${
                     isChecked ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-zinc-900/80 border-zinc-800'
@@ -3230,6 +3317,7 @@
                         class="ped-checkbox mt-0.5 w-4 h-4 rounded accent-emerald-500 cursor-pointer shrink-0" />
                       <div class="min-w-0">
                         <div class="flex flex-wrap items-center gap-2">
+                          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-300 border border-sky-500/30">${escapeHtmlAttr(folderBadge)}</span>
                           <span class="text-sm font-bold ${isChecked ? 'line-through text-zinc-400' : 'text-white'}">${escapeHtmlAttr(item.name)}</span>
                           <span class="text-xs font-semibold px-2 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-emerald-300">${escapeHtmlAttr(item.dose)}</span>
                         </div>
@@ -3261,18 +3349,20 @@
             historyEl.innerHTML = `<div class="text-center py-6 border border-dashed border-zinc-800 rounded-xl text-xs text-zinc-500">Pro vybraný den (${formatDateCz(date)}) zatím nejsou odškrtnuté žádné záznamy.</div>`;
           } else {
             historyEl.innerHTML = checkedItems
-              .map(
-                (item) => `
-                <div class="flex items-center justify-between bg-zinc-900/90 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs">
-                  <div class="min-w-0">
-                    <span class="font-bold text-white">${escapeHtmlAttr(item.name)}</span>
-                    <span class="text-emerald-400 font-semibold ml-2">${escapeHtmlAttr(item.dose)}</span>
-                    ${item.schedule ? `<span class="text-zinc-500 ml-2">• ${escapeHtmlAttr(item.schedule)}</span>` : ''}
+              .map((item) => {
+                const folderBadge = item.categoryLabel || PED_SUBFOLDERS[item.category]?.label || '1. Injekční';
+                return `
+                  <div class="flex items-center justify-between bg-zinc-900/90 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs">
+                    <div class="min-w-0">
+                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-300 mr-1.5">${escapeHtmlAttr(folderBadge)}</span>
+                      <span class="font-bold text-white">${escapeHtmlAttr(item.name)}</span>
+                      <span class="text-emerald-400 font-semibold ml-2">${escapeHtmlAttr(item.dose)}</span>
+                      ${item.schedule ? `<span class="text-zinc-500 ml-2">• ${escapeHtmlAttr(item.schedule)}</span>` : ''}
+                    </div>
+                    <span class="text-emerald-400 font-bold shrink-0"><i class="fa-solid fa-check mr-1"></i>Hotovo</span>
                   </div>
-                  <span class="text-emerald-400 font-bold shrink-0"><i class="fa-solid fa-check mr-1"></i>Hotovo</span>
-                </div>
-              `
-              )
+                `;
+              })
               .join('');
           }
         }
@@ -4704,6 +4794,7 @@
       document.getElementById('photoDateInput').value = todayStr;
       document.getElementById('pedsDate').value = todayStr;
 
+      selectPedSubfolder(activePedSubfolder);
       populateExerciseDropdowns();
       updateActiveAccountBadges();
       renderAll();
