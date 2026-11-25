@@ -276,30 +276,6 @@
         </form>
       </div>
 
-      <!-- Nastavení Firebase Cloudu přímo v aplikaci -->
-      <div class="pt-3 border-t border-zinc-800 space-y-2.5">
-        <button type="button" onclick="toggleFirebaseConfigBox()" class="w-full flex items-center justify-between text-xs font-semibold text-zinc-300 hover:text-emerald-300 transition py-1">
-          <span><i class="fa-solid fa-cloud-arrow-up text-emerald-400 mr-1.5"></i>Nastavení Firebase Cloudu</span>
-          <i id="firebaseConfigChevron" class="fa-solid fa-chevron-down text-[10px]"></i>
-        </button>
-
-        <div id="firebaseConfigPanel" class="hidden space-y-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl p-3">
-          <p class="text-[11px] text-zinc-400 leading-relaxed">
-            Vlož objekt <code class="text-emerald-300">firebaseConfig</code> z Firebase konzole pro synchronizaci napříč zařízeními a reálné e-maily.
-          </p>
-          <textarea id="firebaseConfigJsonInput" rows="5" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}'
-            class="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2.5 text-[11px] font-mono text-zinc-200 focus:outline-none focus:border-emerald-500"></textarea>
-          <div class="flex items-center justify-between gap-2">
-            <button type="button" onclick="clearSavedFirebaseConfig()" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-rose-300 text-[11px] font-semibold transition">
-              Smazat klíče
-            </button>
-            <button type="button" onclick="saveCustomFirebaseConfig()" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-extrabold transition">
-              Uložit a připojit Cloud
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- Seznam lokálních účtů -->
       <div id="registeredAccountsBox" class="pt-3 border-t border-zinc-800 space-y-2">
         <div class="flex items-center justify-between text-[11px] text-zinc-400">
@@ -1000,7 +976,7 @@
     import { getFirestore, doc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
     // =========================================================================
-    // START: HARDCODED_FIREBASE_CONFIG (můžeš vyplnit zde, nebo v okně v aplikaci)
+    // START: HARDCODED_FIREBASE_CONFIG (zde vyplň údaje z Firebase konzole)
     // =========================================================================
     const HARDCODED_FIREBASE_CONFIG = {
       apiKey: "",
@@ -1429,48 +1405,6 @@
         regAccountsBox?.classList.remove('hidden');
       }
     }
-
-    window.toggleFirebaseConfigBox = function () {
-      const panel = document.getElementById('firebaseConfigPanel');
-      const chev = document.getElementById('firebaseConfigChevron');
-      if (!panel) return;
-      panel.classList.toggle('hidden');
-      if (chev) {
-        chev.className = panel.classList.contains('hidden') ? 'fa-solid fa-chevron-down text-[10px]' : 'fa-solid fa-chevron-up text-[10px]';
-      }
-      const existing = resolveFirebaseConfig();
-      const textarea = document.getElementById('firebaseConfigJsonInput');
-      if (textarea && existing && !textarea.value) {
-        textarea.value = JSON.stringify(existing, null, 2);
-      }
-    };
-
-    window.saveCustomFirebaseConfig = function () {
-      const raw = (document.getElementById('firebaseConfigJsonInput')?.value || '').trim();
-      try {
-        const cleaned = raw
-          .replace(/const\s+firebaseConfig\s*=\s*/g, '')
-          .replace(/;\s*$/g, '')
-          .replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
-          .replace(/'/g, '"');
-        const parsed = JSON.parse(cleaned);
-        if (!parsed.apiKey || !parsed.projectId) {
-          showToast('Chybí apiKey nebo projectId v konfiguraci.', 'error');
-          return;
-        }
-        localStorage.setItem(CUSTOM_FB_CONFIG_STORAGE_KEY, JSON.stringify(parsed));
-        showToast('Firebase Cloud uložen! Obnovuji připojení...');
-        setTimeout(() => window.location.reload(), 600);
-      } catch (e) {
-        showToast('Neplatný formát konfigurace. Zkopíruj objekt firebaseConfig z Firebase konzole.', 'error');
-      }
-    };
-
-    window.clearSavedFirebaseConfig = function () {
-      localStorage.removeItem(CUSTOM_FB_CONFIG_STORAGE_KEY);
-      showToast('Vlastní Firebase konfigurace odstraněna.');
-      setTimeout(() => window.location.reload(), 500);
-    };
 
     function enterCloudSession(user) {
       activeAccount = {
