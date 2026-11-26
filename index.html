@@ -354,7 +354,11 @@
         </button>
         <button onclick="switchTab('peds')" data-tab="peds" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
           <i class="fa-solid fa-syringe w-5 text-center"></i>
-          <span>PEDs</span>
+          <span>PEDs - kalkulačka</span>
+        </button>
+        <button onclick="switchTab('peds-analysis')" data-tab="peds-analysis" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
+          <i class="fa-solid fa-microscope w-5 text-center"></i>
+          <span>PEDs - rozbor</span>
         </button>
       </nav>
     </div>
@@ -1033,7 +1037,7 @@
                 <div class="flex items-center justify-between gap-2">
                   <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400">Kombinované látky (<span id="hlCalcCompoundCountBadge">1 / 6</span>)</label>
                   <button type="button" id="hlAddExtraCompoundBtn" onclick="addExtraHlCompound()"
-                    class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/35 text-[11px] font-bold transition flex items-center gap-1">
+                    class="px-2.5 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-zinc-950 border border-amber-300/60 text-[11px] font-bold transition flex items-center gap-1 shadow-sm shadow-amber-500/20">
                     <i class="fa-solid fa-plus"></i> Přidat látku
                   </button>
                 </div>
@@ -1163,9 +1167,6 @@
 
                 <!-- Shrnutí metrik -->
                 <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 sm:p-5 space-y-3 w-full">
-
-                <!-- Shrnutí metrik -->
-                <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 space-y-3">
                   <p id="hlCalcSummarySentence" class="text-xs sm:text-sm text-zinc-200 leading-relaxed">
                     --
                   </p>
@@ -1195,11 +1196,72 @@
         </div>
       </section>
 
+      <!-- SEKCE 7: PEDS - ROZBOR -->
+      <section id="tab-peds-analysis" class="tab-content hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">PEDs - rozbor</h2>
+            <p class="text-sm text-zinc-400 mt-1">Orientační přehled poločasů rozpadu (half-life), odhadu vrcholu, frekvence a farmakokinetických poznámek.</p>
+          </div>
+          <button type="button" onclick="switchTab('peds')" class="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-emerald-300 border border-emerald-500/35 font-semibold text-sm transition flex items-center gap-2 self-start sm:self-auto">
+            <i class="fa-solid fa-chart-area"></i> Otevřít kalkulačku
+          </button>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5 sm:p-6 space-y-4 border border-zinc-800/80">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="flex flex-wrap gap-1.5" id="pedsAnalysisCategoryFilters">
+              <button type="button" data-analysis-cat="ALL" onclick="setPedsAnalysisCategory('ALL')"
+                class="peds-analysis-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition">
+                Vše
+              </button>
+              <button type="button" data-analysis-cat="injectable" onclick="setPedsAnalysisCategory('injectable')"
+                class="peds-analysis-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition">
+                1. Injekční
+              </button>
+              <button type="button" data-analysis-cat="oral" onclick="setPedsAnalysisCategory('oral')"
+                class="peds-analysis-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition">
+                2. Orální
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <span id="pedsAnalysisCountBadge" class="text-xs font-semibold text-zinc-400 shrink-0">0 látek</span>
+              <div class="relative flex-1 md:w-64">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+                <input type="text" id="pedsAnalysisSearchInput" oninput="renderPedsAnalysisTab()"
+                  placeholder="Hledat látku, ester, poznámku..."
+                  class="w-full bg-zinc-950 border border-zinc-700 rounded-xl pl-8 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-zinc-800/90 bg-zinc-950/75">
+            <table class="w-full text-left border-collapse min-w-[680px]">
+              <thead>
+                <tr class="border-b border-zinc-800 bg-zinc-900/90 text-[11px] uppercase tracking-wider text-zinc-400">
+                  <th class="py-3 px-4 font-bold">Látka & Skupina</th>
+                  <th class="py-3 px-4 font-bold">Half-life</th>
+                  <th class="py-3 px-4 font-bold">Odhad vrcholu</th>
+                  <th class="py-3 px-4 font-bold">Poznámka</th>
+                  <th class="py-3 px-4 font-bold text-right">Akce</th>
+                </tr>
+              </thead>
+              <tbody id="pedsAnalysisTableBody" class="divide-y divide-zinc-800/70 text-xs"></tbody>
+            </table>
+          </div>
+
+          <p class="text-[11px] text-zinc-500 leading-relaxed">
+            Orientační farmakokinetický přehled pro edukativní simulaci. Skutečný poločas rozpadu a nástup vrcholu závisí na nosném oleji, dávce, místu podání a individuálním metabolismu.
+          </p>
+        </div>
+      </section>
+
     </div>
   </main>
 
   <!-- Mobilní Spodní Navigace -->
-  <nav class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-zinc-900/95 backdrop-blur-lg border-t border-zinc-800 grid grid-cols-6 py-2 px-1">
+  <nav class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-zinc-900/95 backdrop-blur-lg border-t border-zinc-800 grid grid-cols-7 py-2 px-0.5">
     <button onclick="switchTab('dashboard')" data-tab="dashboard" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 text-emerald-400">
       <i class="fa-solid fa-chart-line text-base"></i>
       <span class="text-[10px] font-medium mt-1">Přehled</span>
@@ -1222,7 +1284,11 @@
     </button>
     <button onclick="switchTab('peds')" data-tab="peds" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 text-zinc-400">
       <i class="fa-solid fa-syringe text-base"></i>
-      <span class="text-[10px] font-medium mt-1">PEDs</span>
+      <span class="text-[9px] font-medium mt-1 truncate max-w-full px-0.5">PEDs - kalk.</span>
+    </button>
+    <button onclick="switchTab('peds-analysis')" data-tab="peds-analysis" class="mobile-nav-btn flex flex-col items-center justify-center py-1.5 text-zinc-400">
+      <i class="fa-solid fa-microscope text-base"></i>
+      <span class="text-[9px] font-medium mt-1 truncate max-w-full px-0.5">PEDs - rozbor</span>
     </button>
   </nav>
 
@@ -1272,22 +1338,6 @@
         namePlaceholder: 'Např. Oxandrolone (Anavar)...',
         doseLabel: 'Denní dávka v mg',
         dosePlaceholder: 'Např. 20'
-      },
-      peptides: {
-        id: 'peptides',
-        label: '3. Peptidy',
-        nameLabel: 'Název peptidu',
-        namePlaceholder: 'Např. BPC-157...',
-        doseLabel: 'Dávka (mcg / IU)',
-        dosePlaceholder: 'Např. 250 mcg / 2 IU'
-      },
-      ai: {
-        id: 'ai',
-        label: '4. IA',
-        nameLabel: 'Název inhibitoru aromatázy (IA)',
-        namePlaceholder: 'Např. Arimidex (Anastrozol)...',
-        doseLabel: 'Dávka (mg)',
-        dosePlaceholder: 'Např. 0,25 mg / 12,5 mg'
       }
     };
 
@@ -1295,89 +1345,71 @@
       injectable: {
         'Testosteron a jeho estery': [
           { compound: 'Testosterone (suspension)', knownName: 'Test Suspension', halfLife: 'cca 2–4 hodiny', schedule: '1–2× denně', note: 'Vodní suspenze bez esteru • Rychlý nástup i pokles' },
-          { compound: 'Testosterone Propionate', knownName: 'Test P', halfLife: 'cca 1–2 dny', schedule: 'Každý 2. den (EOD)', note: 'Krátký ester • Injekčně (Gluteus / Delt)' },
-          { compound: 'Testosterone Phenylpropionate', knownName: 'Test PP', halfLife: 'cca 2,5–4,5 dne', schedule: 'Každý 2.–3. den', note: 'Středně krátký ester • Injekčně' },
-          { compound: 'Testosterone Isocaproate', knownName: 'Test I', halfLife: 'cca 4–5 dní', schedule: '2× týdně', note: 'Středně dlouhý ester • Injekčně' },
-          { compound: 'Testosterone Enanthate', knownName: 'Test E', halfLife: 'cca 4,5–5 dní', schedule: '2× týdně', note: 'Dlouhý ester • Injekčně (Gluteus / Delt)' },
-          { compound: 'Testosterone Cypionate', knownName: 'Test C', halfLife: 'cca 5–8 dní', schedule: '2× týdně', note: 'Dlouhý ester • Injekčně (Gluteus / Delt)' },
-          { compound: 'Testosterone Decanoate', knownName: 'Test D', halfLife: 'cca 7–12 dní', schedule: '1–2× týdně', note: 'Velmi dlouhý ester • Injekčně' },
-          { compound: 'Testosterone Undecanoate', knownName: 'Nebido', halfLife: 'cca 21–34 dní', schedule: 'Dle protokolu (týdny)', note: 'Extrémně dlouhý ester (olejový depot) • Injekčně' },
-          { compound: 'Testosterone Acetate', knownName: 'Test Acetate', halfLife: 'cca 1 den', schedule: 'Každý den / Obden', note: 'Velmi krátký ester • Injekčně' },
+          { compound: 'Testosterone Propionate', knownName: 'Test P', halfLife: 'cca 1–2 dny', schedule: 'Každý 2. den (EOD)', note: 'Krátký ester' },
+          { compound: 'Testosterone Phenylpropionate', knownName: 'Test PP', halfLife: 'cca 2,5–4,5 dne', schedule: 'Každý 2.–3. den', note: 'Středně krátký ester' },
+          { compound: 'Testosterone Isocaproate', knownName: 'Test I', halfLife: 'cca 4–5 dní', schedule: '2× týdně', note: 'Středně dlouhý ester' },
+          { compound: 'Testosterone Enanthate', knownName: 'Test E', halfLife: 'cca 4,5–5 dní', schedule: '2× týdně', note: 'Dlouhý ester' },
+          { compound: 'Testosterone Cypionate', knownName: 'Test C', halfLife: 'cca 5–8 dní', schedule: '2× týdně', note: 'Dlouhý ester' },
+          { compound: 'Testosterone Decanoate', knownName: 'Test D', halfLife: 'cca 7–12 dní', schedule: '1–2× týdně', note: 'Velmi dlouhý ester' },
+          { compound: 'Testosterone Undecanoate', knownName: 'Nebido', halfLife: 'cca 20–33 dní', schedule: 'Dle protokolu (týdny)', note: 'Extrémně dlouhý ester (olejový depot)' },
+          { compound: 'Testosterone Acetate', knownName: 'Test Acetate', halfLife: 'cca 1 den', schedule: 'Každý den / Obden', note: 'Velmi krátký ester' },
           { compound: 'Testosterone blends', knownName: 'Sustanon 250, Omnadren', halfLife: 'cca 5–8 dní', schedule: '2× týdně', note: 'Směs 4 esterů testosteronu (Prop, Phenylprop, Isocapr, Decanoate)' }
         ],
         'Nandrolon a jeho estery': [
-          { compound: 'Nandrolone Decanoate', knownName: 'Deca-Durabolin', halfLife: 'cca 6–12 dní', schedule: '1–2× týdně', note: '19-nor derivát (dlouhý ester) • Injekčně' },
-          { compound: 'Nandrolone Phenylpropionate', knownName: 'NPP', halfLife: 'cca 2,5–3 dny', schedule: 'Každý 2.–3. den', note: '19-nor derivát (krátký ester) • Injekčně' },
-          { compound: 'Nandrolone Laurate', knownName: 'Laurabolin', halfLife: 'cca 10–15 dní', schedule: 'Dle protokolu', note: '19-nor derivát (laurátový ester) • Historický/veterinární' }
+          { compound: 'Nandrolone Decanoate', knownName: 'Deca-Durabolin', halfLife: 'cca 6–12 dní', schedule: '1–2× týdně', note: '19-nor derivát (dlouhý ester)' },
+          { compound: 'Nandrolone Phenylpropionate', knownName: 'NPP', halfLife: 'cca 2,5–4,5 dne', schedule: 'Každý 2.–3. den', note: '19-nor derivát (krátký ester)' },
+          { compound: 'Nandrolone Laurate', knownName: 'Laurabolin', halfLife: 'cca 10–15 dní', schedule: 'Dle protokolu', note: '19-nor derivát (laurátový ester)' }
         ],
         'Trenbolon a jeho estery': [
-          { compound: 'Trenbolone Acetate', knownName: 'Tren A', halfLife: 'cca 1–2 dny', schedule: 'Každý 2. den (EOD)', note: '19-nor derivát (krátký ester) • Injekčně' },
-          { compound: 'Trenbolone Enanthate', knownName: 'Tren E', halfLife: 'cca 5–7 dní', schedule: '2× týdně', note: '19-nor derivát (dlouhý ester) • Injekčně' },
-          { compound: 'Trenbolone Hexahydrobenzylcarbonate', knownName: 'Parabolan', halfLife: 'cca 6–8 dní', schedule: '2× týdně', note: '19-nor derivát (hexahydrobenzylkarbonát) • Injekčně' }
+          { compound: 'Trenbolone Acetate', knownName: 'Tren A', halfLife: 'cca 1–2 dny', schedule: 'Každý 2. den (EOD)', note: '19-nor derivát (krátký ester)' },
+          { compound: 'Trenbolone Enanthate', knownName: 'Tren E', halfLife: 'cca 5–7 dní', schedule: '2× týdně', note: '19-nor derivát (dlouhý ester)' },
+          { compound: 'Trenbolone Hexahydrobenzylcarbonate', knownName: 'Parabolan', halfLife: 'cca 6–8 dní', schedule: '2× týdně', note: '19-nor derivát (hexahydrobenzylkarbonát)' }
         ],
         'DHT deriváty a další injekční látky': [
-          { compound: 'Drostanolone Propionate', knownName: 'Masteron P', halfLife: 'cca 1,5–2 dny', schedule: 'Každý 2. den (EOD)', note: 'DHT derivát (krátký ester) • Injekčně' },
-          { compound: 'Drostanolone Enanthate', knownName: 'Masteron E', halfLife: 'cca 5–7 dní', schedule: '2× týdně', note: 'DHT derivát (dlouhý ester) • Injekčně' },
-          { compound: 'Methenolone Enanthate', knownName: 'Primobolan Depot', halfLife: 'cca 5–7 dní', schedule: '2× týdně', note: 'DHT derivát (enanthát) • Injekčně' },
-          { compound: 'Stanozolol injectable suspension', knownName: 'Winstrol Depot', halfLife: 'cca 9–24 hodin', schedule: 'Každý den / Obden', note: 'DHT derivát (vodní mikrokrystalická suspenze) • Injekčně' },
-          { compound: 'Boldenone Undecylenate', knownName: 'Equipoise', halfLife: 'cca 12–14 dní', schedule: '1–2× týdně', note: 'Dlouhý undecylenátový ester • Injekčně' },
-          { compound: 'Boldenone Acetate', knownName: 'Boldenone Acetate', halfLife: 'cca 1,5–2 dny', schedule: 'Každý 2. den', note: 'Krátký ester • Injekčně' },
-          { compound: 'Clostebol Acetate', knownName: 'Steranabol', halfLife: 'cca 1–2 dny', schedule: 'Každý 2. den', note: '4-chlortestosteron acetát • Injekčně' }
+          { compound: 'Drostanolone Propionate', knownName: 'Masteron P', halfLife: 'cca 1,5–2 dny', schedule: 'Každý 2. den (EOD)', note: 'DHT derivát (krátký ester)' },
+          { compound: 'Drostanolone Enanthate', knownName: 'Masteron E', halfLife: 'cca 5–7 dní', schedule: '2× týdně', note: 'DHT derivát (dlouhý ester)' },
+          { compound: 'Methenolone Enanthate', knownName: 'Primobolan Depot', halfLife: 'cca 5–10 dní', schedule: '2× týdně', note: 'DHT derivát (enanthát)' },
+          { compound: 'Stanozolol injectable suspension', knownName: 'Winstrol Depot', halfLife: 'cca 9–24 hodin', schedule: 'Každý den / Obden', note: 'DHT derivát (vodní mikrokrystalická suspenze)' },
+          { compound: 'Boldenone Undecylenate', knownName: 'Equipoise', halfLife: 'cca 10–14 dní', schedule: '1–2× týdně', note: 'Dlouhý undecylenátový ester' },
+          { compound: 'Boldenone Acetate', knownName: 'Boldenone Acetate', halfLife: 'cca 1,5–2 dny', schedule: 'Každý 2. den', note: 'Krátký ester' },
+          { compound: 'Clostebol Acetate', knownName: 'Steranabol', halfLife: 'cca 1–2 dny', schedule: 'Každý 2. den', note: '4-chlortestosteron acetát' }
         ]
       },
       oral: {
         'Klasická orální anabolika': [
-          { compound: 'Methandienone (Metandienone)', knownName: 'Dianabol, Dbol', halfLife: 'cca 3–6 hodin', schedule: 'Každý den (rozděleně)', note: '17α-alkylovaný orální AAS • S jídlem' },
-          { compound: 'Oxymetholone', knownName: 'Anadrol, Anapolon', halfLife: 'cca 8–9 hodin', schedule: 'Každý den', note: '17α-alkylovaný orální AAS • S jídlem' },
-          { compound: 'Oxandrolone', knownName: 'Anavar', halfLife: 'cca 9–10 hodin', schedule: 'Každý den (2× denně)', note: 'DHT derivát • Orálně' },
-          { compound: 'Stanozolol', knownName: 'Winstrol, Stromba', halfLife: 'cca 9 hodin', schedule: 'Každý den', note: 'DHT derivát • Orálně' },
-          { compound: 'Chlorodehydromethyltestosterone', knownName: 'Turinabol, Tbol', halfLife: 'cca 16 hodin', schedule: 'Každý den', note: '4-chlor-derivát • Orálně' },
-          { compound: 'Fluoxymesterone', knownName: 'Halotestin', halfLife: 'cca 6–9 hodin', schedule: 'Každý den', note: 'Silný androgenní derivát • Orálně' },
-          { compound: 'Methyltestosterone', knownName: 'Android, Metandren', halfLife: 'cca 3–4 hodiny', schedule: 'Každý den', note: 'Methylovaný testosteron • Orálně' },
-          { compound: 'Mesterolone', knownName: 'Proviron', halfLife: 'cca 12 hodin', schedule: 'Každý den', note: 'DHT derivát • Orálně' },
-          { compound: 'Methenolone Acetate', knownName: 'Primobolan Oral', halfLife: 'cca 4–6 hodin', schedule: 'Každý den', note: 'DHT derivát (acetát) • Orálně' },
-          { compound: 'Testosterone Undecanoate', knownName: 'Andriol, Jatenzo', halfLife: 'cca 2–4 hodiny', schedule: '2× denně s jídlem', note: 'Lymfatická absorpce s tukem • Výrazně kratší poločas než injekční Nebido' },
-          { compound: 'Methandriol', knownName: 'Methandriol', halfLife: 'cca 4–8 hodin', schedule: 'Každý den', note: 'Historický orální derivát • Orálně' },
-          { compound: 'Norethandrolone', knownName: 'Nilevar', halfLife: 'cca 6–12 hodin', schedule: 'Každý den', note: '19-nor orální derivát • Orálně' },
-          { compound: 'Mestanolone', knownName: 'Androstanolone methyl derivative', halfLife: 'cca 6–10 hodin', schedule: 'Každý den', note: 'Methylovaný DHT • Orálně' },
-          { compound: 'Oxymesterone', knownName: 'Oranabol', halfLife: 'cca 6–8 hodin', schedule: 'Každý den', note: '4-hydroxy derivát • Orálně' },
-          { compound: 'Ethylestrenol', knownName: 'Maxibolin', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: '19-nor orální derivát • Orálně' },
-          { compound: 'Quinbolone', knownName: 'Anabolicum Vister', halfLife: 'cca 6–12 hodin (orientačně)', schedule: 'Každý den', note: 'Cyklopentenolový enol ether • Orálně' }
+          { compound: 'Methandienone (Metandienone)', knownName: 'Dianabol, Dbol', halfLife: 'cca 3–6 hodin', schedule: 'Každý den (rozděleně)', note: '17α-alkylovaný AAS' },
+          { compound: 'Oxymetholone', knownName: 'Anadrol, Anapolon', halfLife: 'cca 8–9 hodin', schedule: 'Každý den', note: '17α-alkylovaný AAS' },
+          { compound: 'Oxandrolone', knownName: 'Anavar', halfLife: 'cca 9–10 hodin', schedule: 'Každý den (2× denně)', note: 'DHT derivát' },
+          { compound: 'Stanozolol', knownName: 'Winstrol, Stromba', halfLife: 'cca 9 hodin', schedule: 'Každý den', note: 'DHT derivát' },
+          { compound: 'Chlorodehydromethyltestosterone', knownName: 'Turinabol, Tbol', halfLife: 'cca 16 hodin', schedule: 'Každý den', note: '4-chlor-derivát' },
+          { compound: 'Fluoxymesterone', knownName: 'Halotestin', halfLife: 'cca 6–9 hodin', schedule: 'Každý den', note: 'Silný androgenní derivát' },
+          { compound: 'Methyltestosterone', knownName: 'Android, Metandren', halfLife: 'cca 3–5 hodin', schedule: 'Každý den', note: 'Methylovaný testosteron' },
+          { compound: 'Mesterolone', knownName: 'Proviron', halfLife: 'cca 12 hodin', schedule: 'Každý den', note: 'DHT derivát' },
+          { compound: 'Methenolone Acetate', knownName: 'Primobolan Oral', halfLife: 'cca 4–6 hodin', schedule: 'Každý den', note: 'DHT derivát (acetát)' },
+          { compound: 'Testosterone Undecanoate', knownName: 'Andriol, Jatenzo', halfLife: 'cca 4–12 hodin', schedule: '2× denně', note: 'Lymfatická absorpce • Výrazně kratší poločas než injekční Nebido' },
+          { compound: 'Methandriol', knownName: 'Methandriol', halfLife: 'cca 4–8 hodin', schedule: 'Každý den', note: 'Derivát androstenediolu' },
+          { compound: 'Norethandrolone', knownName: 'Nilevar', halfLife: 'cca 6–12 hodin', schedule: 'Každý den', note: '19-nor derivát' },
+          { compound: 'Mestanolone', knownName: 'Androstanolone methyl derivative', halfLife: 'cca 6–10 hodin', schedule: 'Každý den', note: 'Methylovaný DHT' },
+          { compound: 'Oxymesterone', knownName: 'Oranabol', halfLife: 'cca 6–8 hodin', schedule: 'Každý den', note: '4-hydroxy derivát' },
+          { compound: 'Ethylestrenol', knownName: 'Maxibolin', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: '19-nor derivát' },
+          { compound: 'Quinbolone', knownName: 'Anabolicum Vister', halfLife: 'cca 4–8 hodin', schedule: 'Každý den', note: 'Cyklopentenolový enol ether' }
         ],
         'Designérské a méně známé orální steroidy': [
-          { compound: 'Methasterone', knownName: 'Superdrol', halfLife: 'cca 6–8 hodin', schedule: 'Každý den', note: 'Designérský DHT derivát • S jídlem' },
-          { compound: 'Methyl-1-Testosterone', knownName: 'M1T', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: 'Designérský 1-testosteron derivát • Orálně' },
-          { compound: 'Methylstenbolone', knownName: 'M-Sten', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: 'Designérský dimerický/methylovaný AAS • Orálně' },
-          { compound: 'Desoxymethyltestosterone', knownName: 'DMT, Madol', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: 'Designérský AAS • Orálně' },
-          { compound: 'Methyldienolone', knownName: 'M-Dien', halfLife: 'cca 6–10 hodin', schedule: 'Každý den', note: 'Designérský 19-nor derivát • Orálně' },
-          { compound: 'Metribolone', knownName: 'Methyltrienolone', halfLife: 'cca 4–6 hodin', schedule: 'Dle protokolu', note: 'Silný 19-nor derivát • Orálně' },
-          { compound: 'Furazabol', knownName: 'Miotolan', halfLife: 'cca 6–10 hodin', schedule: 'Každý den', note: 'Furazanový DHT derivát • Orálně' },
-          { compound: 'Prostanozol', knownName: 'Prostanozol', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: 'Pyrazolový derivát • Orálně' },
-          { compound: 'Epistane', knownName: 'Epistane', halfLife: 'cca 6–8 hodin', schedule: 'Každý den', note: '2α,3α-epithio-17α-methyl-5α-androstan-17β-ol • Orálně' },
+          { compound: 'Methasterone', knownName: 'Superdrol', halfLife: 'cca 6–12 hodin', schedule: 'Každý den', note: 'Designérský DHT derivát' },
+          { compound: 'Methyl-1-Testosterone', knownName: 'M1T', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: 'Designérský 1-testosteron derivát' },
+          { compound: 'Methylstenbolone', knownName: 'M-Sten', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: 'Designérský dimerický/methylovaný AAS' },
+          { compound: 'Desoxymethyltestosterone', knownName: 'DMT, Madol', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: 'Designérský AAS' },
+          { compound: 'Methyldienolone', knownName: 'M-Dien', halfLife: 'cca 6–10 hodin', schedule: 'Každý den', note: 'Designérský 19-nor derivát' },
+          { compound: 'Metribolone', knownName: 'Methyltrienolone', halfLife: 'cca 4–8 hodin', schedule: 'Dle protokolu', note: 'Silný 19-nor derivát' },
+          { compound: 'Furazabol', knownName: 'Miotolan', halfLife: 'cca 6–10 hodin', schedule: 'Každý den', note: 'Furazanový DHT derivát' },
+          { compound: 'Prostanozol', knownName: 'Prostanozol', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: 'Pyrazolový derivát' },
+          { compound: 'Epistane', knownName: 'Epistane', halfLife: 'cca 6–8 hodin', schedule: 'Každý den', note: '2α,3α-epithio-17α-methyl-5α-androstan-17β-ol' },
           { compound: 'Methylnortestosterone', knownName: 'MENT / Trestolone oral', halfLife: 'cca 1–3 hodiny', schedule: 'Každý den', note: '7α-methyl-19-nortestosteron derivát • Velmi rychlý rozpad' },
-          { compound: 'Mibolerone', knownName: 'Cheque Drops', halfLife: 'cca 2–4 hodiny', schedule: 'Dle potřeby', note: 'Silný androgenní derivát • Sublingválně / Orálně' },
-          { compound: 'Norboletone', knownName: 'Norbolethone', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: '19-nor derivát • Orálně' },
-          { compound: 'Bolasterone', knownName: 'Bolasterone', halfLife: 'cca 6–12 hodin', schedule: 'Každý den', note: '7α,17α-dimethyltestosteron • Orálně' },
-          { compound: 'Calusterone', knownName: 'Calusterone', halfLife: 'cca 6–12 hodin', schedule: 'Každý den', note: '7β,17α-dimethyltestosteron • Orálně' },
-          { compound: 'Formebolone', knownName: 'Esiclene', halfLife: 'cca 4–8 hodin', schedule: 'Každý den', note: '2-formyl derivát • Orálně' }
-        ]
-      },
-      peptides: {
-        'Regenerace a tkáně': [
-          { compound: 'BPC-157', knownName: 'Body Protection Compound-157', halfLife: 'cca 3–4 hodiny', schedule: '1–2× denně', note: 'Subkutánně nebo lokálně u úponu' },
-          { compound: 'TB-500', knownName: 'Thymosin Beta-4 fragment', halfLife: 'cca 2–3 hodiny', schedule: '2× týdně', note: 'Krátký plazmatický poločas (tkáňový efekt přetrvává dny)' }
-        ],
-        'GH osy a metabolické peptidy': [
-          { compound: 'CJC-1295 (no DAC)', knownName: 'Mod GRF (1-29)', halfLife: 'cca 30 minut', schedule: '1–3× denně nalačno', note: 'Subkutánně (30 min před/po jídle)' },
-          { compound: 'Ipamorelin', knownName: 'Ipamorelin', halfLife: 'cca 2 hodiny', schedule: '1–3× denně nalačno', note: 'Subkutánně (často v kombinaci s CJC)' },
-          { compound: 'Somatropin (HGH)', knownName: 'Growth Hormone', halfLife: 'cca 2–4 hodiny', schedule: 'Každý den', note: 'Subkutánně (ráno nebo po tréninku)' }
-        ]
-      },
-      ai: {
-        'Inhibitory aromatázy (IA)': [
-          { compound: 'Anastrozol', knownName: 'Arimidex', halfLife: 'cca 40–50 hodin', schedule: 'Dle krevních testů / E2', note: 'Kompetitivní nesteroidní IA • Orálně' },
-          { compound: 'Exemestan', knownName: 'Aromasin', halfLife: 'cca 24–27 hodin', schedule: 'Dle krevních testů / E2', note: 'Steroidní sebevražedný IA • S jídlem' },
-          { compound: 'Letrozol', knownName: 'Femara', halfLife: 'cca 2–4 dny', schedule: 'Dle krevních testů / E2', note: 'Silný nesteroidní IA • Orálně' }
+          { compound: 'Mibolerone', knownName: 'Cheque Drops', halfLife: 'cca 2–4 hodiny', schedule: 'Dle potřeby', note: 'Silný androgenní derivát • Sublingválně' },
+          { compound: 'Norboletone', knownName: 'Norbolethone', halfLife: 'cca 8–12 hodin', schedule: 'Každý den', note: '19-nor derivát' },
+          { compound: 'Bolasterone', knownName: 'Bolasterone', halfLife: 'cca 6–12 hodin', schedule: 'Každý den', note: '7α,17α-dimethyltestosteron' },
+          { compound: 'Calusterone', knownName: 'Calusterone', halfLife: 'cca 6–12 hodin', schedule: 'Každý den', note: '7β,17α-dimethyltestosteron' },
+          { compound: 'Formebolone', knownName: 'Esiclene', halfLife: 'cca 4–8 hodin', schedule: 'Každý den', note: '2-formyl derivát' }
         ]
       }
     };
@@ -1385,7 +1417,7 @@
     let activePedSubfolder = 'injectable';
     let pedDbEntriesCache = [];
     let selectedPedFrequencyDays = [];
-
+    let activePedsAnalysisCategory = 'ALL';
     let hlCalcChartInstance = null;
     let hlCalcModalChartInstance = null;
     let hlCalcCatalog = [];
@@ -1432,7 +1464,7 @@
           addBtn.className = 'px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-600 border border-zinc-800 text-[11px] font-bold cursor-not-allowed flex items-center gap-1';
         } else {
           addBtn.disabled = false;
-          addBtn.className = 'px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/35 text-[11px] font-bold transition flex items-center gap-1';
+          addBtn.className = 'px-2.5 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-zinc-950 border border-amber-300/60 text-[11px] font-bold transition flex items-center gap-1 shadow-sm shadow-amber-500/20';
         }
       }
     }
@@ -1736,9 +1768,7 @@
     function buildHlCalcCatalog() {
       const folderMetaMap = {
         injectable: '1. Injekční',
-        oral: '2. Orální',
-        peptides: '3. Peptidy',
-        ai: '4. IA'
+        oral: '2. Orální'
       };
       const catalog = [];
       Object.entries(PEDS_DATABASE).forEach(([category, groups]) => {
@@ -1775,13 +1805,11 @@
           return avgVal;
         }
       }
-      if (category === 'oral' || category === 'peptides') return 0.35;
-      if (category === 'ai') return 1.8;
+      if (category === 'oral') return 0.35;
       return 5;
     }
 
     function estimateTimeToPeakDays(hlDays, category = 'injectable') {
-      if (category === 'peptides') return Math.max(0.015, Math.min(0.25, hlDays * 0.35));
       if (category === 'oral') return Math.max(0.03, Math.min(0.45, hlDays * 0.45));
       return Math.max(0.15, Math.min(3.5, hlDays * 0.35));
     }
@@ -1962,9 +1990,7 @@
       if (halfLifeInp && !halfLifeInp.value.trim()) {
         halfLifeInp.value = 'cca 5 dní';
       }
-      if (unitSelect && item.category === 'peptides') {
-        unitSelect.value = 'mcg';
-      } else if (unitSelect && item.category !== 'peptides') {
+      if (unitSelect) {
         unitSelect.value = 'mg';
       }
 
@@ -4777,6 +4803,379 @@
       selectEl.innerHTML = html || `<option value="">Žádný cvik neodpovídá filtru...</option>`;
     }
 
+    function createBuilderExerciseEntry(name) {
+      return {
+        name: String(name || '').trim(),
+        sets: [
+          { weight: 60, reps: 10 },
+          { weight: 60, reps: 10 },
+          { weight: 60, reps: 10 }
+        ]
+      };
+    }
+
+    window.addSelectedDbExercise = function () {
+      const selectEl = document.getElementById('exerciseDatabaseSelect');
+      const name = (selectEl?.value || '').trim();
+      if (!name) {
+        showToast('Vyber cvik z databáze.', 'error');
+        return;
+      }
+      currentBuilderExercises.push(createBuilderExerciseEntry(name));
+      renderBuilderExercises();
+      showToast(`Cvik "${name}" přidán do tréninku.`);
+    };
+
+    window.addExerciseToBuilder = function () {
+      const inputEl = document.getElementById('newExerciseInput');
+      const name = (inputEl?.value || '').trim();
+      if (!name) {
+        showToast('Napiš název vlastního cviku.', 'error');
+        return;
+      }
+      currentBuilderExercises.push(createBuilderExerciseEntry(name));
+      if (inputEl) inputEl.value = '';
+      renderBuilderExercises();
+      showToast(`Vlastní cvik "${name}" přidán.`);
+    };
+
+    window.quickAddExercise = function (name) {
+      if (!name) return;
+      currentBuilderExercises.push(createBuilderExerciseEntry(name));
+      renderBuilderExercises();
+      showToast(`Přidán cvik: ${name}`);
+    };
+
+    window.addSetToExercise = function (exIdx) {
+      const ex = currentBuilderExercises[exIdx];
+      if (!ex || !Array.isArray(ex.sets)) return;
+      const lastSet = ex.sets[ex.sets.length - 1] || { weight: 60, reps: 10 };
+      ex.sets.push({
+        weight: parseFloat(lastSet.weight) || 0,
+        reps: parseInt(lastSet.reps, 10) || 10
+      });
+      renderBuilderExercises();
+    };
+
+    window.removeSetFromExercise = function (exIdx, setIdx) {
+      const ex = currentBuilderExercises[exIdx];
+      if (!ex || !Array.isArray(ex.sets)) return;
+      if (ex.sets.length <= 1) {
+        showToast('Cvik musí obsahovat alespoň jednu sérii.', 'error');
+        return;
+      }
+      ex.sets.splice(setIdx, 1);
+      renderBuilderExercises();
+    };
+
+    window.updateSetValue = function (exIdx, setIdx, field, rawValue) {
+      const ex = currentBuilderExercises[exIdx];
+      if (!ex || !Array.isArray(ex.sets) || !ex.sets[setIdx]) return;
+      if (field === 'weight') {
+        ex.sets[setIdx].weight = Math.max(0, parseFloat(rawValue) || 0);
+      } else if (field === 'reps') {
+        ex.sets[setIdx].reps = Math.max(0, parseInt(rawValue, 10) || 0);
+      }
+      updateLiveWorkoutTonnage();
+    };
+
+    window.removeBuilderExercise = function (exIdx) {
+      if (exIdx < 0 || exIdx >= currentBuilderExercises.length) return;
+      currentBuilderExercises.splice(exIdx, 1);
+      renderBuilderExercises();
+    };
+
+    function calculateBuilderTotalVolume() {
+      return currentBuilderExercises.reduce((sum, ex) => {
+        const sets = Array.isArray(ex.sets) ? ex.sets : [];
+        const exVol = sets.reduce((sAcc, s) => {
+          const w = parseFloat(s.weight) || 0;
+          const r = parseInt(s.reps, 10) || 0;
+          return sAcc + w * r;
+        }, 0);
+        return sum + exVol;
+      }, 0);
+    }
+
+    function updateLiveWorkoutTonnage() {
+      const liveEl = document.getElementById('liveWorkoutTonnage');
+      if (!liveEl) return;
+      const totalKg = Math.round(calculateBuilderTotalVolume());
+      liveEl.textContent = `${totalKg.toLocaleString('cs-CZ')} kg`;
+    }
+
+    window.renderBuilderExercises = function () {
+      const listEl = document.getElementById('builderExercisesList');
+      updateLiveWorkoutTonnage();
+      if (!listEl) return;
+
+      if (!Array.isArray(currentBuilderExercises) || currentBuilderExercises.length === 0) {
+        listEl.innerHTML = `
+          <div class="text-center py-8 border border-dashed border-zinc-800 rounded-xl text-xs text-zinc-500">
+            Zatím nemáš v tomto tréninku žádné cviky. Vyber cvik výše nebo načti den z tréninkového plánu.
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = currentBuilderExercises
+        .map((ex, exIdx) => {
+          const meta = getExerciseMeta(ex.name);
+          const sets = Array.isArray(ex.sets) ? ex.sets : [];
+          const exVolume = Math.round(
+            sets.reduce((acc, s) => acc + (parseFloat(s.weight) || 0) * (parseInt(s.reps, 10) || 0), 0)
+          );
+
+          const setsHtml = sets
+            .map((set, setIdx) => {
+              const wVal = parseFloat(set.weight) || 0;
+              const rVal = parseInt(set.reps, 10) || 0;
+              return `
+                <div class="grid grid-cols-12 gap-2 items-center bg-zinc-950/90 border border-zinc-800/90 rounded-lg px-3 py-2">
+                  <span class="col-span-2 text-xs font-bold text-zinc-400">#${setIdx + 1}</span>
+                  <div class="col-span-4 flex items-center gap-1.5">
+                    <input type="number" min="0" max="1000" step="0.5" value="${wVal}"
+                      oninput="updateSetValue(${exIdx}, ${setIdx}, 'weight', this.value)"
+                      class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs font-bold text-white text-center focus:outline-none focus:border-emerald-500" />
+                    <span class="text-[11px] text-zinc-500">kg</span>
+                  </div>
+                  <div class="col-span-4 flex items-center gap-1.5">
+                    <input type="number" min="0" max="200" step="1" value="${rVal}"
+                      oninput="updateSetValue(${exIdx}, ${setIdx}, 'reps', this.value)"
+                      class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-2 py-1 text-xs font-bold text-emerald-300 text-center focus:outline-none focus:border-emerald-500" />
+                    <span class="text-[11px] text-zinc-500">op.</span>
+                  </div>
+                  <div class="col-span-2 text-right">
+                    <button type="button" onclick="removeSetFromExercise(${exIdx}, ${setIdx})"
+                      class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-950/40 transition text-xs" title="Odebrat sérii">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+                </div>
+              `;
+            })
+            .join('');
+
+          return `
+            <div class="bg-zinc-900/85 border border-zinc-800 rounded-xl p-4 space-y-3">
+              <div class="flex items-start justify-between gap-3 border-b border-zinc-800/80 pb-2.5">
+                <div class="min-w-0">
+                  <div class="text-sm font-bold text-white truncate">${escapeHtmlAttr(ex.name)}</div>
+                  <div class="flex flex-wrap items-center gap-2 mt-1 text-[11px] text-zinc-400">
+                    <span class="px-2 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-zinc-300">${escapeHtmlAttr(meta.category)}</span>
+                    <span class="text-zinc-500">${escapeHtmlAttr(meta.gear)}</span>
+                    <span class="text-emerald-400 font-semibold">• Objem: ${exVolume.toLocaleString('cs-CZ')} kg</span>
+                  </div>
+                </div>
+                <button type="button" onclick="removeBuilderExercise(${exIdx})"
+                  class="p-2 rounded-lg bg-zinc-950 hover:bg-rose-950/60 text-zinc-400 hover:text-rose-400 border border-zinc-800 text-xs transition shrink-0" title="Odebrat cvik">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+
+              <div class="space-y-1.5">${setsHtml}</div>
+
+              <button type="button" onclick="addSetToExercise(${exIdx})"
+                class="w-full py-2 rounded-lg bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-xs font-semibold text-emerald-300 transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-plus"></i> Přidat sérii
+              </button>
+            </div>
+          `;
+        })
+        .join('');
+    };
+
+    window.saveWorkout = async function () {
+      try {
+        const date = document.getElementById('workoutDate')?.value || todayStr;
+        const nameInput = document.getElementById('workoutName');
+        const noteInput = document.getElementById('workoutNote');
+        const name = (nameInput?.value || '').trim() || 'Silový trénink';
+        const note = (noteInput?.value || '').trim();
+
+        const cleanedExercises = (currentBuilderExercises || [])
+          .filter((ex) => ex && String(ex.name || '').trim())
+          .map((ex) => ({
+            name: String(ex.name).trim(),
+            sets: (Array.isArray(ex.sets) ? ex.sets : []).map((s) => ({
+              weight: Math.max(0, parseFloat(s.weight) || 0),
+              reps: Math.max(0, parseInt(s.reps, 10) || 0)
+            }))
+          }));
+
+        if (cleanedExercises.length === 0) {
+          showToast('Přidej alespoň jeden cvik před uložením tréninku.', 'error');
+          return;
+        }
+
+        const totalVolume = Math.round(
+          cleanedExercises.reduce(
+            (sum, ex) =>
+              sum +
+              ex.sets.reduce((sAcc, s) => sAcc + (parseFloat(s.weight) || 0) * (parseInt(s.reps, 10) || 0), 0),
+            0
+          )
+        );
+
+        if (!Array.isArray(appState.workouts)) {
+          appState.workouts = [];
+        }
+
+        if (editingWorkoutId) {
+          const idx = appState.workouts.findIndex((w) => w.id === editingWorkoutId);
+          if (idx >= 0) {
+            appState.workouts[idx] = {
+              ...appState.workouts[idx],
+              date,
+              name,
+              note,
+              totalVolume,
+              exercises: cleanedExercises
+            };
+          } else {
+            appState.workouts.push({
+              id: editingWorkoutId,
+              date,
+              name,
+              note,
+              totalVolume,
+              exercises: cleanedExercises
+            });
+          }
+          editingWorkoutId = null;
+          showToast(`Trénink "${name}" byl upraven.`);
+        } else {
+          appState.workouts.push({
+            id: 'wk_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+            date,
+            name,
+            note,
+            totalVolume,
+            exercises: cleanedExercises
+          });
+          showToast(`Trénink "${name}" uložen (${totalVolume.toLocaleString('cs-CZ')} kg).`);
+        }
+
+        appState.workouts.sort((a, b) => {
+          if (a.date !== b.date) return a.date.localeCompare(b.date);
+          return String(a.id).localeCompare(String(b.id));
+        });
+
+        currentBuilderExercises = [];
+        if (nameInput) nameInput.value = '';
+        if (noteInput) noteInput.value = '';
+
+        renderWorkoutStatusNotices();
+        renderBuilderExercises();
+        renderWorkoutHistory();
+        renderDashboard();
+        await persistState();
+      } catch (err) {
+        console.error('Chyba při ukládání tréninku:', err);
+        showToast('Nepodařilo se uložit trénink.', 'error');
+      }
+    };
+
+    window.deleteWorkout = function (workoutId) {
+      const target = (appState.workouts || []).find((w) => w.id === workoutId);
+      const label = target ? `"${target.name}" (${formatDateCz(target.date)})` : 'tento trénink';
+      askConfirm('Smazat tréninkový záznam?', `Opravdu chceš smazat ${label}?`, async () => {
+        appState.workouts = (appState.workouts || []).filter((w) => w.id !== workoutId);
+        if (editingWorkoutId === workoutId) {
+          editingWorkoutId = null;
+          currentBuilderExercises = [];
+          renderBuilderExercises();
+        }
+        renderWorkoutStatusNotices();
+        renderWorkoutHistory();
+        renderDashboard();
+        await persistState();
+        showToast('Tréninkový záznam byl smazán.');
+      });
+    };
+
+    window.renderWorkoutHistory = function () {
+      const listEl = document.getElementById('workoutHistoryList');
+      if (!listEl) return;
+
+      const searchQuery = (document.getElementById('workoutSearchInput')?.value || '').toLowerCase().trim();
+      const sorted = [...(appState.workouts || [])].sort((a, b) => {
+        if (b.date !== a.date) return b.date.localeCompare(a.date);
+        return String(b.id).localeCompare(String(a.id));
+      });
+
+      const filtered = sorted.filter((w) => {
+        if (!searchQuery) return true;
+        const nameMatch = String(w.name || '').toLowerCase().includes(searchQuery);
+        const noteMatch = String(w.note || '').toLowerCase().includes(searchQuery);
+        const exMatch = Array.isArray(w.exercises)
+          ? w.exercises.some((ex) => String(ex.name || '').toLowerCase().includes(searchQuery))
+          : false;
+        return nameMatch || noteMatch || exMatch;
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="glass-card rounded-2xl p-8 text-center text-xs text-zinc-500">
+            ${
+              searchQuery
+                ? 'Žádný trénink neodpovídá hledanému výrazu.'
+                : 'Zatím nemáš zapsané žádné tréninky. Vytvoř svůj první záznam vlevo.'
+            }
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = filtered
+        .map((w) => {
+          const exercises = Array.isArray(w.exercises) ? w.exercises : [];
+          const vol = Math.round(w.totalVolume || 0);
+          const exSummaryHtml = exercises
+            .map((ex) => {
+              const setsText = (Array.isArray(ex.sets) ? ex.sets : [])
+                .map((s) => `${parseFloat(s.weight) || 0}×${parseInt(s.reps, 10) || 0}`)
+                .join(', ');
+              return `
+                <div class="flex items-baseline justify-between gap-2 text-xs py-1 border-b border-zinc-800/60 last:border-b-0">
+                  <span class="font-medium text-zinc-200 truncate">${escapeHtmlAttr(ex.name)}</span>
+                  <span class="text-[11px] text-zinc-400 shrink-0">${escapeHtmlAttr(setsText)}</span>
+                </div>
+              `;
+            })
+            .join('');
+
+          return `
+            <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-3 border border-zinc-800/80">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs font-bold text-emerald-400">${formatDateCz(w.date)}</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 font-semibold">${vol.toLocaleString('cs-CZ')} kg</span>
+                  </div>
+                  <h4 class="text-base font-extrabold text-white mt-1 truncate">${escapeHtmlAttr(w.name || 'Silový trénink')}</h4>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button type="button" onclick="editWorkoutEntry('${escapeHtmlAttr(w.id)}')"
+                    class="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-emerald-300 border border-zinc-800 text-xs transition" title="Upravit trénink">
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                  <button type="button" onclick="deleteWorkout('${escapeHtmlAttr(w.id)}')"
+                    class="p-2 rounded-lg bg-zinc-900 hover:bg-rose-950/60 text-zinc-400 hover:text-rose-400 border border-zinc-800 text-xs transition" title="Smazat trénink">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </div>
+
+              ${exSummaryHtml ? `<div class="bg-zinc-950/75 rounded-xl px-3 py-2 border border-zinc-800/70">${exSummaryHtml}</div>` : ''}
+
+              ${w.note ? `<p class="text-xs text-zinc-400 italic"><i class="fa-regular fa-note-sticky mr-1.5 text-zinc-500"></i>${escapeHtmlAttr(w.note)}</p>` : ''}
+            </div>
+          `;
+        })
+        .join('');
+    };
+
     window.addPedProtocolItem = async function (e) {
       e.preventDefault();
       try {
@@ -4954,353 +5353,124 @@
       }
     };
 
-    window.addSelectedDbExercise = function () {
-      const select = document.getElementById('exerciseDatabaseSelect');
-      const name = select?.value;
-      if (!name) {
-        showToast('Vyber platný cvik ze seznamu.', 'error');
-        return;
-      }
-      currentBuilderExercises.push({
-        name,
-        sets: [{ weight: 50, reps: 10 }]
+    window.setPedsAnalysisCategory = function (catKey) {
+      activePedsAnalysisCategory = catKey || 'ALL';
+      document.querySelectorAll('.peds-analysis-cat-btn').forEach((btn) => {
+        if (btn.dataset.analysisCat === activePedsAnalysisCategory) {
+          btn.className =
+            'peds-analysis-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition';
+        } else {
+          btn.className =
+            'peds-analysis-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition';
+        }
       });
-      renderBuilderExercises();
+      renderPedsAnalysisTab();
     };
 
-    function calculateWorkoutTonnage(exercises) {
-      let total = 0;
-      exercises.forEach((ex) => {
-        ex.sets.forEach((s) => {
-          const w = parseFloat(s.weight) || 0;
-          const r = parseInt(s.reps, 10) || 0;
-          total += w * r;
-        });
-      });
-      return Math.round(total);
-    }
+    window.loadAnalysisCompoundToCalc = function (catalogIdx) {
+      if (hlCalcCatalog.length === 0) buildHlCalcCatalog();
+      const idx = parseInt(catalogIdx, 10);
+      const item = hlCalcCatalog[idx];
+      if (!item) return;
 
-    window.addExerciseToBuilder = function () {
-      const input = document.getElementById('newExerciseInput');
-      const name = input.value.trim();
-      if (!name) {
-        showToast('Zadej prosím název cviku.', 'error');
-        return;
-      }
-      currentBuilderExercises.push({
-        name,
-        sets: [{ weight: 60, reps: 10 }]
-      });
-      input.value = '';
-      renderBuilderExercises();
+      const selectEl = document.getElementById('hlCalcCompoundSelect');
+      const halfLifeInp = document.getElementById('hlCalcHalfLifeInput');
+      const unitSelect = document.getElementById('hlCalcUnitSelect');
+
+      if (selectEl) selectEl.value = String(idx);
+      if (halfLifeInp && item.halfLifeText) halfLifeInp.value = item.halfLifeText;
+      if (unitSelect) unitSelect.value = 'mg';
+
+      switchTab('peds');
+      updateHalfLifeCalculator();
+      showToast(`Načteno do kalkulačky: ${item.displayName}`);
     };
 
-    window.quickAddExercise = function (name) {
-      currentBuilderExercises.push({
-        name,
-        sets: [{ weight: 60, reps: 10 }]
-      });
-      renderBuilderExercises();
-    };
+    window.renderPedsAnalysisTab = function () {
+      const tbody = document.getElementById('pedsAnalysisTableBody');
+      const countBadge = document.getElementById('pedsAnalysisCountBadge');
+      if (!tbody) return;
+      if (hlCalcCatalog.length === 0) buildHlCalcCatalog();
 
-    window.removeBuilderExercise = function (exIdx) {
-      currentBuilderExercises.splice(exIdx, 1);
-      renderBuilderExercises();
-    };
+      const query = (document.getElementById('pedsAnalysisSearchInput')?.value || '').toLowerCase().trim();
 
-    window.addSetToBuilderExercise = function (exIdx) {
-      const sets = currentBuilderExercises[exIdx].sets;
-      const lastSet = sets[sets.length - 1] || { weight: 60, reps: 10 };
-      sets.push({ weight: lastSet.weight, reps: lastSet.reps });
-      renderBuilderExercises();
-    };
-
-    window.removeSetFromBuilderExercise = function (exIdx, setIdx) {
-      currentBuilderExercises[exIdx].sets.splice(setIdx, 1);
-      if (currentBuilderExercises[exIdx].sets.length === 0) {
-        currentBuilderExercises.splice(exIdx, 1);
-      }
-      renderBuilderExercises();
-    };
-
-    window.updateBuilderSet = function (exIdx, setIdx, field, value) {
-      const num = parseFloat(value);
-      currentBuilderExercises[exIdx].sets[setIdx][field] = isNaN(num) ? 0 : num;
-      updateLiveTonnageDisplay();
-      const exVolEl = document.getElementById(`ex-vol-${exIdx}`);
-      if (exVolEl) {
-        const exVol = currentBuilderExercises[exIdx].sets.reduce(
-          (acc, s) => acc + (parseFloat(s.weight) || 0) * (parseInt(s.reps, 10) || 0),
-          0
-        );
-        exVolEl.textContent = `${Math.round(exVol).toLocaleString('cs-CZ')} kg`;
-      }
-    };
-
-    function updateLiveTonnageDisplay() {
-      const total = calculateWorkoutTonnage(currentBuilderExercises);
-      document.getElementById('liveWorkoutTonnage').textContent = `${total.toLocaleString('cs-CZ')} kg`;
-    }
-
-    function renderBuilderExercises() {
-      const container = document.getElementById('builderExercisesList');
-      if (currentBuilderExercises.length === 0) {
-        container.innerHTML = `
-          <div class="text-center py-8 border border-dashed border-zinc-800 rounded-xl text-zinc-500 text-sm">
-            Zatím jsi nepřidal žádný cvik. Vyber cvik výše a začni zapisovat série.
-          </div>
-        `;
-        updateLiveTonnageDisplay();
-        return;
-      }
-
-      container.innerHTML = currentBuilderExercises
-        .map((ex, exIdx) => {
-          const exVolume = ex.sets.reduce(
-            (sum, s) => sum + (parseFloat(s.weight) || 0) * (parseInt(s.reps, 10) || 0),
-            0
-          );
-
-          const setsHtml = ex.sets
-            .map(
-              (set, setIdx) => `
-              <div class="grid grid-cols-12 gap-2 items-center">
-                <div class="col-span-2 text-xs font-bold text-zinc-400 text-center bg-zinc-950 py-2 rounded-lg border border-zinc-800">
-                  #${setIdx + 1}
-                </div>
-                <div class="col-span-4 relative">
-                  <input type="number" step="0.5" min="0" value="${set.weight}"
-                    oninput="updateBuilderSet(${exIdx}, ${setIdx}, 'weight', this.value)"
-                    class="w-full bg-zinc-950 border border-zinc-700 rounded-lg pl-2.5 pr-7 py-1.5 text-sm text-white font-semibold focus:outline-none focus:border-emerald-500" />
-                  <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-zinc-500">kg</span>
-                </div>
-                <div class="col-span-4 relative">
-                  <input type="number" min="1" value="${set.reps}"
-                    oninput="updateBuilderSet(${exIdx}, ${setIdx}, 'reps', this.value)"
-                    class="w-full bg-zinc-950 border border-zinc-700 rounded-lg pl-2.5 pr-9 py-1.5 text-sm text-white font-semibold focus:outline-none focus:border-emerald-500" />
-                  <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-zinc-500">opak.</span>
-                </div>
-                <div class="col-span-2 flex justify-end">
-                  <button type="button" onclick="removeSetFromBuilderExercise(${exIdx}, ${setIdx})" class="p-2 text-zinc-500 hover:text-rose-400 transition" title="Smazat sérii">
-                    <i class="fa-solid fa-trash-can text-xs"></i>
-                  </button>
-                </div>
-              </div>
-            `
-            )
-            .join('');
-
-          return `
-            <div class="bg-zinc-900/90 border border-zinc-800 rounded-xl p-4 space-y-3">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="w-6 h-6 rounded-md bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center justify-center">${exIdx + 1}</span>
-                  <h4 class="font-bold text-white text-sm sm:text-base">${escapeHtmlAttr(ex.name)}</h4>
-                </div>
-                <div class="flex items-center gap-3">
-                  <span id="ex-vol-${exIdx}" class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg">
-                    ${Math.round(exVolume).toLocaleString('cs-CZ')} kg
-                  </span>
-                  <button type="button" onclick="removeBuilderExercise(${exIdx})" class="text-zinc-500 hover:text-rose-400 text-sm">
-                    <i class="fa-solid fa-xmark"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div class="space-y-2">
-                ${setsHtml}
-              </div>
-
-              <button type="button" onclick="addSetToBuilderExercise(${exIdx})" class="w-full py-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-800 text-xs font-medium text-zinc-300 hover:text-white transition">
-                + Přidat další sérii
-              </button>
-            </div>
-          `;
-        })
-        .join('');
-
-      updateLiveTonnageDisplay();
-    }
-
-    window.saveWorkout = async function () {
-      const date = document.getElementById('workoutDate').value || todayStr;
-      const name = document.getElementById('workoutName').value.trim() || 'Silový trénink';
-      const note = document.getElementById('workoutNote').value.trim();
-
-      if (currentBuilderExercises.length === 0) {
-        showToast('Přidej alespoň jeden cvik se sériemi.', 'error');
-        return;
-      }
-
-      const totalVolume = calculateWorkoutTonnage(currentBuilderExercises);
-      const wasEditing = Boolean(editingWorkoutId);
-
-      if (editingWorkoutId) {
-        const idx = appState.workouts.findIndex((w) => w.id === editingWorkoutId);
-        if (idx > -1) {
-          appState.workouts[idx] = {
-            ...appState.workouts[idx],
-            date,
-            name,
-            note,
-            totalVolume,
-            exercises: JSON.parse(JSON.stringify(currentBuilderExercises))
+      const rows = hlCalcCatalog
+        .map((item, catalogIdx) => {
+          const hlDays = Math.max(0.02, parseHalfLifeDays(item.halfLifeText, item.category));
+          const peakDays = estimateTimeToPeakDays(hlDays, item.category);
+          return {
+            ...item,
+            catalogIdx,
+            peakEstimateText: formatDurationHumanCz(peakDays)
           };
-        }
-        editingWorkoutId = null;
-      } else {
-        const newWorkout = {
-          id: 'w_' + Date.now(),
-          date,
-          name,
-          note,
-          totalVolume,
-          exercises: JSON.parse(JSON.stringify(currentBuilderExercises))
-        };
-        appState.workouts.push(newWorkout);
+        })
+        .filter((item) => {
+          if (activePedsAnalysisCategory !== 'ALL' && item.category !== activePedsAnalysisCategory) {
+            return false;
+          }
+          if (!query) return true;
+          const haystack = [
+            item.compound,
+            item.knownName,
+            item.groupName,
+            item.categoryLabel,
+            item.halfLife,
+            item.note
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+          return haystack.includes(query);
+        });
+
+      if (countBadge) {
+        countBadge.textContent = `${rows.length} ${rows.length === 1 ? 'látka' : rows.length >= 2 && rows.length <= 4 ? 'látky' : 'látek'}`;
       }
 
-      appState.workouts.sort((a, b) => a.date.localeCompare(b.date));
-
-      currentBuilderExercises = [];
-      document.getElementById('workoutName').value = '';
-      document.getElementById('workoutNote').value = '';
-      populateWorkoutPlanQuickSelect();
-      renderWorkoutStatusNotices();
-      renderBuilderExercises();
-      renderWorkoutHistory();
-      renderDashboard();
-      await persistState();
-      showToast(
-        wasEditing
-          ? `Změny tréninku uloženy (${totalVolume.toLocaleString('cs-CZ')} kg).`
-          : `Trénink uložen! Celkem nazvedáno ${totalVolume.toLocaleString('cs-CZ')} kg.`
-      );
-    };
-
-    window.deleteWorkout = function (id) {
-      askConfirm('Smazat trénink?', 'Opravdu chceš odstranit tento tréninkový záznam z historie?', async () => {
-        if (editingWorkoutId === id) {
-          editingWorkoutId = null;
-        }
-        appState.workouts = appState.workouts.filter((w) => w.id !== id);
-        populateWorkoutPlanQuickSelect();
-        renderWorkoutStatusNotices();
-        renderWorkoutHistory();
-        renderDashboard();
-        await persistState();
-        showToast('Trénink byl smazán.');
-      });
-    };
-
-    window.renderWorkoutHistory = function () {
-      const container = document.getElementById('workoutHistoryList');
-      const query = (document.getElementById('workoutSearchInput')?.value || '').toLowerCase();
-
-      const sorted = [...appState.workouts].sort((a, b) => b.date.localeCompare(a.date));
-      const filtered = sorted.filter(
-        (w) =>
-          w.name.toLowerCase().includes(query) ||
-          w.exercises.some((ex) => ex.name.toLowerCase().includes(query))
-      );
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<div class="glass-card rounded-2xl p-6 text-center text-sm text-zinc-500">Žádné tréninky nenalezeny.</div>`;
+      if (rows.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="py-8 px-4 text-center text-zinc-500">
+              Žádná látka neodpovídá zvolenému filtru nebo hledanému výrazu.
+            </td>
+          </tr>
+        `;
         return;
       }
 
-      container.innerHTML = filtered
-        .map((w) => {
-          const totalSets = w.exercises.reduce((sum, ex) => sum + (ex.sets?.length || 0), 0);
-          const isTodayItem = w.date === todayStr;
-
-          const exercisesBlocks = w.exercises
-            .map((ex, exIdx) => {
-              const meta = getExerciseMeta(ex.name);
-              const exVol = ex.sets.reduce((sSum, s) => sSum + (parseFloat(s.weight) || 0) * (parseInt(s.reps, 10) || 0), 0);
-
-              const setRows = ex.sets
-                .map((s, sIdx) => {
-                  const weightNum = parseFloat(s.weight) || 0;
-                  const repsNum = parseInt(s.reps, 10) || 0;
-                  const setVol = Math.round(weightNum * repsNum);
-                  return `
-                    <div class="grid grid-cols-12 items-center text-xs py-1.5 px-2.5 rounded-lg bg-zinc-900/80 border border-zinc-800/60 tabular-nums">
-                      <span class="col-span-2 font-semibold text-zinc-500">S${sIdx + 1}</span>
-                      <span class="col-span-6 font-semibold text-zinc-100">${weightNum} kg <span class="text-zinc-500 font-normal">×</span> ${repsNum} opak.</span>
-                      <span class="col-span-4 text-right font-semibold text-emerald-400/90">${setVol.toLocaleString('cs-CZ')} kg</span>
-                    </div>
-                  `;
-                })
-                .join('');
-
-              return `
-                <div class="rounded-xl bg-zinc-950/80 border border-zinc-800/80 p-3 space-y-2">
-                  <div class="flex items-start justify-between gap-2">
-                    <div class="min-w-0">
-                      <div class="flex items-center gap-2 flex-wrap">
-                        <span class="text-[11px] font-bold text-zinc-500">${exIdx + 1}.</span>
-                        <span class="text-xs sm:text-[13px] font-bold text-white truncate">${escapeHtmlAttr(ex.name)}</span>
-                      </div>
-                      <div class="flex items-center gap-1.5 mt-1">
-                        <span class="text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 font-medium">${escapeHtmlAttr(meta.category)}</span>
-                        <span class="text-[10px] px-2 py-0.5 rounded-md bg-zinc-800/60 text-zinc-400">${escapeHtmlAttr(meta.gear)}</span>
-                      </div>
-                    </div>
-                    <span class="text-xs font-bold text-emerald-400 shrink-0 tabular-nums">${Math.round(exVol).toLocaleString('cs-CZ')} kg</span>
-                  </div>
-                  <div class="space-y-1 pt-0.5">
-                    ${setRows}
-                  </div>
-                </div>
-              `;
-            })
-            .join('');
-
-          return `
-            <article class="glass-card rounded-2xl p-4 sm:p-5 space-y-3.5 border ${isTodayItem ? 'border-emerald-500/40' : 'border-zinc-800/80'} hover:border-zinc-700 transition">
-              <div class="flex items-start justify-between gap-3 pb-3 border-b border-zinc-800/80">
-                <div class="min-w-0">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-xs font-semibold text-emerald-400">${formatDateCz(w.date)}</span>
-                    ${isTodayItem ? `<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"><i class="fa-solid fa-check"></i> Dnes splněno</span>` : ''}
-                  </div>
-                  <h4 class="font-extrabold text-white text-base mt-0.5 truncate">${escapeHtmlAttr(w.name)}</h4>
-                </div>
-                <div class="flex items-center gap-1.5 shrink-0">
-                  <button type="button" onclick="editWorkoutEntry('${w.id}')" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-emerald-300 border border-zinc-700/80 text-xs font-semibold transition flex items-center gap-1.5" title="Upravit trénink">
-                    <i class="fa-solid fa-pen text-[11px]"></i>
-                    <span class="hidden sm:inline">Upravit</span>
-                  </button>
-                  <button type="button" onclick="deleteWorkout('${w.id}')" class="p-1.5 rounded-lg bg-zinc-900 hover:bg-rose-950/60 text-zinc-500 hover:text-rose-400 border border-zinc-800 transition" title="Smazat trénink">
-                    <i class="fa-solid fa-trash-can text-xs"></i>
-                  </button>
-                </div>
+      tbody.innerHTML = rows
+        .map(
+          (item) => `
+          <tr class="hover:bg-zinc-900/60 transition align-top">
+            <td class="py-3 px-4">
+              <div class="font-bold text-white">${escapeHtmlAttr(item.compound)}</div>
+              <div class="text-[11px] text-zinc-400 mt-0.5">
+                ${item.knownName ? `<span class="text-zinc-300 font-medium">${escapeHtmlAttr(item.knownName)}</span> • ` : ''}
+                <span class="text-sky-300">${escapeHtmlAttr(item.categoryLabel)}</span>
+                <span class="text-zinc-500">(${escapeHtmlAttr(item.groupName)})</span>
               </div>
-
-              <div class="grid grid-cols-3 gap-2 text-center bg-zinc-900/70 rounded-xl p-2.5 border border-zinc-800/60 tabular-nums">
-                <div>
-                  <span class="block text-[10px] uppercase tracking-wider text-zinc-500">Tonáž</span>
-                  <span class="text-xs sm:text-sm font-extrabold text-emerald-400">${w.totalVolume.toLocaleString('cs-CZ')} kg</span>
-                </div>
-                <div class="border-x border-zinc-800">
-                  <span class="block text-[10px] uppercase tracking-wider text-zinc-500">Cviky</span>
-                  <span class="text-xs sm:text-sm font-bold text-white">${w.exercises.length}</span>
-                </div>
-                <div>
-                  <span class="block text-[10px] uppercase tracking-wider text-zinc-500">Série</span>
-                  <span class="text-xs sm:text-sm font-bold text-zinc-200">${totalSets}</span>
-                </div>
-              </div>
-
-              <div class="space-y-2">
-                ${exercisesBlocks}
-              </div>
-
-              ${w.note ? `<p class="text-xs text-zinc-400 bg-zinc-900/50 rounded-xl px-3 py-2 border border-zinc-800/50"><i class="fa-regular fa-comment-dots mr-1.5 text-zinc-500"></i>${escapeHtmlAttr(w.note)}</p>` : ''}
-            </article>
-          `;
-        })
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap">
+              <span class="inline-block px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold">
+                ${escapeHtmlAttr(item.halfLife || '--')}
+              </span>
+            </td>
+            <td class="py-3 px-4 whitespace-nowrap font-semibold text-sky-300">
+              cca ${escapeHtmlAttr(item.peakEstimateText)}
+            </td>
+            <td class="py-3 px-4 text-zinc-300 max-w-md">
+              ${item.note ? `<div class="text-xs text-zinc-300 leading-relaxed">${escapeHtmlAttr(item.note)}</div>` : '<span class="text-zinc-600">--</span>'}
+            </td>
+            <td class="py-3 px-4 text-right whitespace-nowrap">
+              <button type="button" onclick="loadAnalysisCompoundToCalc(${item.catalogIdx})"
+                class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-zinc-700 hover:border-emerald-500/40 text-[11px] font-bold transition inline-flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                <span>Do kalkulačky</span>
+              </button>
+            </td>
+          </tr>
+        `
+        )
         .join('');
     };
 
@@ -6395,6 +6565,7 @@
       renderNutritionTab();
       renderPhysiqueTab();
       renderPedsTab();
+      renderPedsAnalysisTab();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
