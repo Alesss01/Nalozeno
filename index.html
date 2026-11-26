@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="cs" class="dark">
 <head>
@@ -1118,6 +1119,39 @@
               </span>
             </div>
 
+            <!-- Rychlé čipy: Oblíbená a poslední jídla + kopie ze včerejška -->
+            <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3.5 space-y-2.5">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+                  <button type="button" id="quickMealsTabFavBtn" onclick="setQuickMealsTab('favorites')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-star text-[11px]"></i> Oblíbená
+                  </button>
+                  <button type="button" id="quickMealsTabRecentBtn" onclick="setQuickMealsTab('recent')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-bold text-zinc-400 hover:text-white border border-transparent transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-clock-rotate-left text-[11px]"></i> Poslední
+                  </button>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <button type="button" onclick="saveCurrentFormMealToFavorites()"
+                    class="px-2.5 py-1.5 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-amber-300 border border-zinc-700/80 text-[11px] font-bold transition flex items-center gap-1"
+                    title="Uložit hodnoty z formuláře mezi oblíbená jídla">
+                    <i class="fa-regular fa-star"></i>
+                    <span>Do oblíbených</span>
+                  </button>
+                  <button type="button" onclick="copyMealsFromYesterday()"
+                    class="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/35 text-[11px] font-bold transition flex items-center gap-1"
+                    title="Zkopírovat všechna jídla ze včerejšího dne do vybraného dne">
+                    <i class="fa-solid fa-copy"></i>
+                    <span>Kopírovat ze včerejška</span>
+                  </button>
+                </div>
+              </div>
+
+              <div id="quickMealChipsContainer" class="flex flex-wrap gap-1.5"></div>
+            </div>
+
             <div class="bg-zinc-900/90 border border-sky-500/25 rounded-xl p-4 space-y-3">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <label class="block text-xs font-bold uppercase tracking-wider text-sky-300">
@@ -1612,6 +1646,34 @@
       <span class="text-[9px] font-medium mt-1 truncate max-w-full px-0.5">PEDs - rozbor</span>
     </button>
   </nav>
+
+  <script>
+    window.switchTab = window.switchTab || function (tabName) {
+      document.querySelectorAll('.tab-content').forEach((el) => el.classList.add('hidden'));
+      const activeSection = document.getElementById(`tab-${tabName}`);
+      if (activeSection) activeSection.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach((btn) => {
+        if (btn.dataset.tab === tabName) {
+          btn.classList.add('tab-active');
+          btn.classList.remove('text-zinc-400');
+        } else {
+          btn.classList.remove('tab-active');
+          btn.classList.add('text-zinc-400');
+        }
+      });
+
+      document.querySelectorAll('.mobile-nav-btn').forEach((btn) => {
+        if (btn.dataset.tab === tabName) {
+          btn.classList.add('text-emerald-400');
+          btn.classList.remove('text-zinc-400');
+        } else {
+          btn.classList.remove('text-emerald-400');
+          btn.classList.add('text-zinc-400');
+        }
+      });
+    };
+  </script>
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
@@ -3397,6 +3459,11 @@
         photos: [],
         macroTargets: { kcal: 2500, protein: 180, carbs: 260, fat: 75 },
         mealsByDate: {},
+        favoriteMeals: [
+          { id: 'fav_oats_pro', name: 'Ovesné vločky + protein', protein: 35, carbs: 62, fat: 10, kcal: 478 },
+          { id: 'fav_chicken_rice', name: 'Kuřecí prsa + rýže', protein: 48, carbs: 75, fat: 5, kcal: 537 },
+          { id: 'fav_skyr_nuts', name: 'Skyr + med + ořechy', protein: 24, carbs: 26, fat: 12, kcal: 308 }
+        ],
         supplementsList: [
           'Kreatin Monohydrát (5 g)',
           'Syrovátkový Protein (30 g)',
@@ -3434,6 +3501,7 @@
               : defaults.trainingPlans,
           activePlanId: parsed.activePlanId || defaults.activePlanId,
           macroTargets: { ...defaults.macroTargets, ...(parsed.macroTargets || {}) },
+          favoriteMeals: Array.isArray(parsed.favoriteMeals) ? parsed.favoriteMeals : defaults.favoriteMeals,
           pedsProtocol: Array.isArray(parsed.pedsProtocol) ? parsed.pedsProtocol : [],
           pedsLogs: parsed.pedsLogs && typeof parsed.pedsLogs === 'object' ? parsed.pedsLogs : {},
           oneRepMaxes: { ...defaults.oneRepMaxes, ...(parsed.oneRepMaxes || {}) },
@@ -3586,6 +3654,7 @@
                   : defaults.trainingPlans,
               activePlanId: remoteData.activePlanId || defaults.activePlanId,
               macroTargets: { ...defaults.macroTargets, ...(remoteData.macroTargets || {}) },
+              favoriteMeals: Array.isArray(remoteData.favoriteMeals) ? remoteData.favoriteMeals : defaults.favoriteMeals,
               oneRepMaxes: { ...defaults.oneRepMaxes, ...(remoteData.oneRepMaxes || {}) },
               stepsTarget: Number(remoteData.stepsTarget) > 0 ? Math.round(Number(remoteData.stepsTarget)) : defaults.stepsTarget,
               stepsByDate: remoteData.stepsByDate && typeof remoteData.stepsByDate === 'object' ? remoteData.stepsByDate : {},
@@ -4236,6 +4305,22 @@
       else if (tabName === 'physique') renderPhysiqueTab();
       else if (tabName === 'peds') renderPedsTab();
       else if (tabName === 'peds-analysis') renderPedsAnalysisTab();
+    };
+
+    const _fullSwitchTab = window.switchTab;
+    window.switchTab = function (tabName) {
+      _fullSwitchTab(tabName);
+      if (tabName === 'dashboard' && typeof renderDashboard === 'function') renderDashboard();
+      else if (tabName === 'plan' && typeof renderPlanTab === 'function') renderPlanTab();
+      else if (tabName === 'workouts') {
+        if (typeof populateWorkoutPlanQuickSelect === 'function') populateWorkoutPlanQuickSelect();
+        if (typeof renderWorkoutStatusNotices === 'function') renderWorkoutStatusNotices();
+        if (typeof renderBuilderExercises === 'function') renderBuilderExercises();
+        if (typeof renderWorkoutHistory === 'function') renderWorkoutHistory();
+      } else if (tabName === 'nutrition' && typeof renderNutritionTab === 'function') renderNutritionTab();
+      else if (tabName === 'physique' && typeof renderPhysiqueTab === 'function') renderPhysiqueTab();
+      else if (tabName === 'peds' && typeof renderPedsTab === 'function') renderPedsTab();
+      else if (tabName === 'peds-analysis' && typeof renderPedsAnalysisTab === 'function') renderPedsAnalysisTab();
     };
 
     function getActivePlan() {
@@ -5788,201 +5873,226 @@
 
     let onlineFoodResultsCache = [];
     let selectedOnlineFoodItem = null;
+    let activeQuickMealsTab = 'favorites';
 
-    window.searchOpenFoodFacts = async function () {
-      const queryInput = document.getElementById('onlineFoodQueryInput');
-      const resultsBox = document.getElementById('onlineFoodResultsBox');
-      const searchBtn = document.getElementById('onlineFoodSearchBtn');
-      const query = (queryInput?.value || '').trim();
+    function ensureFavoriteMealsState() {
+      if (!Array.isArray(appState.favoriteMeals)) {
+        appState.favoriteMeals = [];
+      }
+      return appState.favoriteMeals;
+    }
 
-      if (!query) {
-        showToast('Zadej název potraviny pro vyhledání.', 'error');
+    function getRecentMealsList(limit = 6) {
+      const mealsByDate = appState.mealsByDate && typeof appState.mealsByDate === 'object' ? appState.mealsByDate : {};
+      const sortedDates = Object.keys(mealsByDate).sort((a, b) => b.localeCompare(a));
+      const seen = new Set();
+      const recent = [];
+
+      for (const dKey of sortedDates) {
+        const dayMeals = Array.isArray(mealsByDate[dKey]) ? mealsByDate[dKey] : [];
+        for (let i = dayMeals.length - 1; i >= 0; i--) {
+          const m = dayMeals[i];
+          if (!m || !m.name) continue;
+          const sig = `${String(m.name).trim().toLowerCase()}|${Number(m.protein) || 0}|${Number(m.carbs) || 0}|${Number(m.fat) || 0}`;
+          if (seen.has(sig)) continue;
+          seen.add(sig);
+          recent.push({
+            id: m.id || `rec_${recent.length}`,
+            name: m.name,
+            protein: parseFloat(m.protein) || 0,
+            carbs: parseFloat(m.carbs) || 0,
+            fat: parseFloat(m.fat) || 0,
+            kcal: Math.round(m.kcal || (parseFloat(m.protein) || 0) * 4 + (parseFloat(m.carbs) || 0) * 4 + (parseFloat(m.fat) || 0) * 9)
+          });
+          if (recent.length >= limit) return recent;
+        }
+      }
+      return recent;
+    }
+
+    window.setQuickMealsTab = function (tabKey) {
+      activeQuickMealsTab = tabKey === 'recent' ? 'recent' : 'favorites';
+      const favBtn = document.getElementById('quickMealsTabFavBtn');
+      const recBtn = document.getElementById('quickMealsTabRecentBtn');
+
+      if (favBtn) {
+        favBtn.className =
+          activeQuickMealsTab === 'favorites'
+            ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 transition flex items-center gap-1.5'
+            : 'px-2.5 py-1 rounded-lg text-xs font-bold text-zinc-400 hover:text-white border border-transparent transition flex items-center gap-1.5';
+      }
+      if (recBtn) {
+        recBtn.className =
+          activeQuickMealsTab === 'recent'
+            ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40 transition flex items-center gap-1.5'
+            : 'px-2.5 py-1 rounded-lg text-xs font-bold text-zinc-400 hover:text-white border border-transparent transition flex items-center gap-1.5';
+      }
+      renderQuickMealChips();
+    };
+
+    function renderQuickMealChips() {
+      const container = document.getElementById('quickMealChipsContainer');
+      if (!container) return;
+
+      const favs = ensureFavoriteMealsState();
+      const recents = getRecentMealsList(6);
+      const items = activeQuickMealsTab === 'recent' ? recents : favs;
+
+      if (!Array.isArray(items) || items.length === 0) {
+        container.innerHTML =
+          activeQuickMealsTab === 'recent'
+            ? `<span class="text-[11px] text-zinc-500 py-1">Zatím nemáš žádné dříve zapsané jídlo.</span>`
+            : `<span class="text-[11px] text-zinc-500 py-1">Zatím nemáš žádná oblíbená jídla. Vyplň makra níže a klikni na „Do oblíbených“.</span>`;
         return;
       }
 
-      if (searchBtn) {
-        searchBtn.disabled = true;
-        searchBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Hledám...`;
-      }
-      if (resultsBox) {
-        resultsBox.classList.remove('hidden');
-        resultsBox.innerHTML = `<div class="text-xs text-zinc-400 py-2 px-2">Hledám „${escapeHtmlAttr(query)}“ v Open Food Facts...</div>`;
-      }
+      container.innerHTML = items
+        .map((m) => {
+          const p = Math.round((parseFloat(m.protein) || 0) * 10) / 10;
+          const c = Math.round((parseFloat(m.carbs) || 0) * 10) / 10;
+          const f = Math.round((parseFloat(m.fat) || 0) * 10) / 10;
+          const kcal = Math.round(m.kcal || p * 4 + c * 4 + f * 9);
+          const safeName = escapeHtmlAttr(m.name);
+          const isFav = activeQuickMealsTab === 'favorites';
 
-      try {
-        const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=15&fields=product_name,product_name_cs,brands,nutriments`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Chyba odpovědi serveru');
-        const data = await response.json();
-
-        const validProducts = (data.products || [])
-          .map((p) => {
-            const rawName = (p.product_name_cs || p.product_name || '').trim();
-            const brand = (p.brands || '').split(',')[0].trim();
-            const nut = p.nutriments || {};
-            const prot = parseFloat(nut.proteins_100g);
-            const carbs = parseFloat(nut.carbohydrates_100g);
-            const fat = parseFloat(nut.fat_100g);
-
-            if (!rawName || (isNaN(prot) && isNaN(carbs) && isNaN(fat))) return null;
-            const fullName = brand && !rawName.toLowerCase().includes(brand.toLowerCase()) ? `${rawName} (${brand})` : rawName;
-            return {
-              name: fullName,
-              p: isNaN(prot) ? 0 : Math.round(prot * 10) / 10,
-              c: isNaN(carbs) ? 0 : Math.round(carbs * 10) / 10,
-              f: isNaN(fat) ? 0 : Math.round(fat * 10) / 10
-            };
-          })
-          .filter(Boolean);
-
-        onlineFoodResultsCache = validProducts;
-
-        if (!resultsBox) return;
-        if (validProducts.length === 0) {
-          resultsBox.innerHTML = `<div class="text-xs text-zinc-500 py-2 px-2">Žádné shody s nutričními hodnotami nenalezeny. Zkus jiný výraz.</div>`;
-          return;
-        }
-
-        resultsBox.innerHTML = validProducts
-          .map((item, idx) => {
-            const kcal100 = Math.round(item.p * 4 + item.c * 4 + item.f * 9);
-            return `
-              <button type="button" onclick="selectOnlineFoodItem(${idx})"
-                class="w-full text-left px-3 py-2 rounded-lg bg-zinc-950 hover:bg-zinc-800/90 border border-zinc-800 hover:border-sky-500/40 transition flex items-center justify-between gap-2">
-                <div class="min-w-0">
-                  <span class="block text-xs font-semibold text-white truncate">${escapeHtmlAttr(item.name)}</span>
-                  <span class="block text-[10px] text-zinc-400">100g → B: ${item.p}g • S: ${item.c}g • T: ${item.f}g</span>
-                </div>
-                <span class="text-xs font-bold text-sky-400 shrink-0">${kcal100} kcal</span>
+          return `
+            <div class="inline-flex items-center rounded-xl bg-zinc-950 hover:bg-zinc-800/90 border border-zinc-800 hover:border-amber-500/40 transition overflow-hidden max-w-full">
+              <button type="button" onclick="quickAddPresetMeal('${safeName}', ${p}, ${c}, ${f})"
+                class="px-3 py-1.5 text-left flex items-center gap-2 min-w-0"
+                title="Kliknutím ihned zapíšeš do dnešního dne (B: ${p}g, S: ${c}g, T: ${f}g)">
+                <i class="fa-solid fa-plus text-[10px] ${isFav ? 'text-amber-400' : 'text-sky-400'} shrink-0"></i>
+                <span class="text-xs font-semibold text-white truncate max-w-[180px] sm:max-w-[230px]">${safeName}</span>
+                <span class="text-[10px] font-bold text-amber-300/90 tabular-nums shrink-0">${kcal} kcal</span>
               </button>
-            `;
-          })
-          .join('');
-      } catch (err) {
-        if (resultsBox) {
-          resultsBox.innerHTML = `<div class="text-xs text-rose-400 py-2 px-2">Online databáze je momentálně nedostupná. Zkus to prosím za chvíli znovu.</div>`;
-        }
-      } finally {
-        if (searchBtn) {
-          searchBtn.disabled = false;
-          searchBtn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> Hledat`;
-        }
-      }
-    };
-
-    function applyFoodItemToForm(item) {
-      if (!item) return;
-      selectedOnlineFoodItem = item;
-      const grams = Math.max(1, parseFloat(document.getElementById('foodGramsInput')?.value) || 100);
-      const factor = grams / 100;
-
-      const nameEl = document.getElementById('mealNameInput');
-      const pEl = document.getElementById('mealProteinInput');
-      const cEl = document.getElementById('mealCarbsInput');
-      const fEl = document.getElementById('mealFatInput');
-      const hintEl = document.getElementById('foodDbPer100Preview');
-
-      if (nameEl) nameEl.value = `${item.name} (${grams} g)`;
-      if (pEl) pEl.value = Math.round(item.p * factor * 10) / 10;
-      if (cEl) cEl.value = Math.round(item.c * factor * 10) / 10;
-      if (fEl) fEl.value = Math.round(item.f * factor * 10) / 10;
-      if (hintEl) hintEl.textContent = `100g → B: ${item.p}g | S: ${item.c}g | T: ${item.f}g`;
-
-      previewMealKcal();
+              ${
+                isFav && m.id
+                  ? `<button type="button" onclick="removeFavoriteMeal('${escapeHtmlAttr(m.id)}')"
+                      class="px-2 py-1.5 text-zinc-600 hover:text-rose-400 hover:bg-rose-950/40 border-l border-zinc-800/80 transition text-[10px]"
+                      title="Odebrat z oblíbených">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>`
+                  : ''
+              }
+            </div>
+          `;
+        })
+        .join('');
     }
 
-    window.selectOnlineFoodItem = function (idx) {
-      const item = onlineFoodResultsCache[idx];
-      if (!item) return;
-      applyFoodItemToForm(item);
-      const grams = Math.max(1, parseFloat(document.getElementById('foodGramsInput')?.value) || 100);
-      showToast(`Načteno: ${item.name} (${grams} g)`);
-    };
+    window.quickAddPresetMeal = async function (name, protein, carbs, fat) {
+      const date = document.getElementById('nutritionDate')?.value || todayStr;
+      const p = Math.max(0, parseFloat(protein) || 0);
+      const c = Math.max(0, parseFloat(carbs) || 0);
+      const f = Math.max(0, parseFloat(fat) || 0);
+      const kcal = Math.round(p * 4 + c * 4 + f * 9);
+      const cleanName = String(name || '').trim() || 'Rychlé jídlo';
 
-    window.reapplyLastOnlineFoodGrams = function () {
-      if (selectedOnlineFoodItem) {
-        applyFoodItemToForm(selectedOnlineFoodItem);
+      if (!appState.mealsByDate || typeof appState.mealsByDate !== 'object') {
+        appState.mealsByDate = {};
       }
-    };
+      if (!Array.isArray(appState.mealsByDate[date])) {
+        appState.mealsByDate[date] = [];
+      }
 
-    window.addMeal = async function (e) {
-      e.preventDefault();
-      const date = document.getElementById('nutritionDate').value || todayStr;
-      const name = document.getElementById('mealNameInput').value.trim();
-      const protein = parseFloat(document.getElementById('mealProteinInput').value) || 0;
-      const carbs = parseFloat(document.getElementById('mealCarbsInput').value) || 0;
-      const fat = parseFloat(document.getElementById('mealFatInput').value) || 0;
-      const kcal = Math.round(protein * 4 + carbs * 4 + fat * 9);
-
-      if (!appState.mealsByDate[date]) appState.mealsByDate[date] = [];
       appState.mealsByDate[date].push({
-        id: 'm_' + Date.now(),
-        name,
-        protein,
-        carbs,
-        fat,
+        id: 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        name: cleanName,
+        protein: p,
+        carbs: c,
+        fat: f,
         kcal
       });
 
-      selectedOnlineFoodItem = null;
-      const hintEl = document.getElementById('foodDbPer100Preview');
-      if (hintEl) hintEl.textContent = '100g → B: -- | S: -- | T: --';
-
-      e.target.reset();
-      previewMealKcal();
       renderNutritionTab();
       renderDashboard();
       await persistState();
-      showToast(`Jídlo "${name}" přidáno (${kcal} kcal).`);
+      showToast(`Přidáno: ${cleanName} (${kcal} kcal)`);
     };
 
-    window.deleteMeal = async function (date, mealId) {
-      if (!appState.mealsByDate[date]) return;
-      appState.mealsByDate[date] = appState.mealsByDate[date].filter((m) => m.id !== mealId);
-      renderNutritionTab();
-      renderDashboard();
-      await persistState();
-      showToast('Jídlo odstraněno.');
-    };
+    window.saveCurrentFormMealToFavorites = async function () {
+      const name = (document.getElementById('mealNameInput')?.value || '').trim();
+      const protein = parseFloat(document.getElementById('mealProteinInput')?.value) || 0;
+      const carbs = parseFloat(document.getElementById('mealCarbsInput')?.value) || 0;
+      const fat = parseFloat(document.getElementById('mealFatInput')?.value) || 0;
 
-    window.toggleSupplement = async function (suppName) {
-      const date = document.getElementById('nutritionDate').value || todayStr;
-      if (!appState.supplementLogs[date]) appState.supplementLogs[date] = [];
+      if (!name) {
+        showToast('Nejdřív vyplň název a makra jídla ve formuláři.', 'error');
+        return;
+      }
 
-      const idx = appState.supplementLogs[date].indexOf(suppName);
-      if (idx > -1) {
-        appState.supplementLogs[date].splice(idx, 1);
+      const favs = ensureFavoriteMealsState();
+      const kcal = Math.round(protein * 4 + carbs * 4 + fat * 9);
+      const existingIdx = favs.findIndex((item) => String(item.name || '').toLowerCase() === name.toLowerCase());
+
+      if (existingIdx >= 0) {
+        favs[existingIdx] = { ...favs[existingIdx], name, protein, carbs, fat, kcal };
       } else {
-        appState.supplementLogs[date].push(suppName);
+        favs.push({
+          id: 'fav_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+          name,
+          protein,
+          carbs,
+          fat,
+          kcal
+        });
       }
-      renderNutritionTab();
+
+      setQuickMealsTab('favorites');
       await persistState();
+      showToast(`Jídlo "${name}" uloženo do oblíbených.`);
     };
 
-    window.addSupplementItem = async function (e) {
-      e.preventDefault();
-      const input = document.getElementById('newSupplementInput');
-      const name = input.value.trim();
-      if (!name) return;
-      if (!appState.supplementsList.includes(name)) {
-        appState.supplementsList.push(name);
-      }
-      input.value = '';
-      renderNutritionTab();
+    window.removeFavoriteMeal = async function (favId) {
+      appState.favoriteMeals = ensureFavoriteMealsState().filter((item) => item.id !== favId);
+      renderQuickMealChips();
       await persistState();
-      showToast('Doplněk výživy přidán do seznamu.');
+      showToast('Odebráno z oblíbených jídel.');
     };
 
-    window.removeSupplementItem = async function (suppName) {
-      appState.supplementsList = appState.supplementsList.filter((s) => s !== suppName);
+    window.copyMealsFromYesterday = async function () {
+      const targetDate = document.getElementById('nutritionDate')?.value || todayStr;
+      const baseDateObj = parseIsoLocalDate(targetDate);
+      const yesterdayObj = new Date(baseDateObj.getFullYear(), baseDateObj.getMonth(), baseDateObj.getDate() - 1);
+      const yesterdayIso = formatIsoLocalDate(yesterdayObj);
+
+      const sourceMeals = Array.isArray(appState.mealsByDate?.[yesterdayIso]) ? appState.mealsByDate[yesterdayIso] : [];
+      if (sourceMeals.length === 0) {
+        showToast(`Ze včerejšího dne (${formatDateCz(yesterdayIso)}) nejsou zapsaná žádná jídla.`, 'error');
+        return;
+      }
+
+      if (!appState.mealsByDate || typeof appState.mealsByDate !== 'object') {
+        appState.mealsByDate = {};
+      }
+      if (!Array.isArray(appState.mealsByDate[targetDate])) {
+        appState.mealsByDate[targetDate] = [];
+      }
+
+      sourceMeals.forEach((m, idx) => {
+        const p = parseFloat(m.protein) || 0;
+        const c = parseFloat(m.carbs) || 0;
+        const f = parseFloat(m.fat) || 0;
+        appState.mealsByDate[targetDate].push({
+          id: 'm_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).slice(2, 5),
+          name: m.name,
+          protein: p,
+          carbs: c,
+          fat: f,
+          kcal: Math.round(m.kcal || p * 4 + c * 4 + f * 9)
+        });
+      });
+
       renderNutritionTab();
+      renderDashboard();
       await persistState();
+      showToast(`Zkopírováno ${sourceMeals.length} jídel ze dne ${formatDateCz(yesterdayIso)}.`);
     };
 
     window.renderNutritionTab = function () {
       const date = document.getElementById('nutritionDate').value || todayStr;
       const meals = appState.mealsByDate[date] || [];
       const targets = appState.macroTargets;
+      renderQuickMealChips();
 
       const totals = meals.reduce(
         (acc, m) => {
@@ -8083,7 +8193,7 @@
           <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
             <button type="button" onclick="openBpStatsModal()" class="px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/35 text-xs font-bold transition flex items-center gap-1.5">
               <i class="fa-solid fa-chart-line"></i>
-              <span>Detail & Grafy${list.length > 0 ? ` (${list.length})` : ''}</span>
+              <span>Detail & Grafy</span>
             </button>
             <button type="button" onclick="toggleBpEditMode()" class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold transition flex items-center gap-1.5">
               <i class="fa-solid ${isEditingBloodPressure ? 'fa-xmark' : 'fa-plus'}"></i>
