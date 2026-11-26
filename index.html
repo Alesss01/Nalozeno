@@ -123,6 +123,219 @@
     </div>
   </div>
 
+  <!-- Modální okno pro dlouhodobé statistiky a grafy kroků -->
+  <div id="stepsStatsModal" onclick="handleStepsModalBackdropClick(event)" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-6 overflow-y-auto">
+    <div class="glass-card rounded-2xl w-full max-w-5xl p-4 sm:p-6 shadow-2xl border border-zinc-700/80 space-y-5 my-auto max-h-[92vh] overflow-y-auto">
+      <div class="flex items-start sm:items-center justify-between gap-3 border-b border-zinc-800 pb-3.5">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-base sm:text-xl font-extrabold text-white flex items-center gap-2">
+              <i class="fa-solid fa-shoe-prints text-sky-400 text-sm sm:text-base"></i>
+              <span>Dlouhodobá statistika & Grafy kroků</span>
+            </h3>
+            <span id="stepsModalTargetPill" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+              Cíl: 10 000 / den
+            </span>
+          </div>
+          <p class="text-xs text-zinc-400 mt-1">Vývoj kroků v čase, trend plnění cíle, osobní rekordy a rozložení podle dnů v týdnu.</p>
+        </div>
+        <button type="button" onclick="closeStepsStatsModal()" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white border border-zinc-700 text-xs font-bold transition flex items-center gap-1.5 shrink-0" title="Zavřít detail kroků (Esc)">
+          <i class="fa-solid fa-xmark"></i>
+          <span>Zavřít</span>
+        </button>
+      </div>
+
+      <!-- Přepínač období -->
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-1.5" id="stepsModalRangeButtons">
+          <button type="button" data-steps-range="14d" onclick="setStepsModalRange('14d')" class="steps-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition">14 dní</button>
+          <button type="button" data-steps-range="30d" onclick="setStepsModalRange('30d')" class="steps-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40 transition">30 dní</button>
+          <button type="button" data-steps-range="90d" onclick="setStepsModalRange('90d')" class="steps-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition">90 dní</button>
+          <button type="button" data-steps-range="12m" onclick="setStepsModalRange('12m')" class="steps-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition">12 měsíců</button>
+          <button type="button" data-steps-range="all" onclick="setStepsModalRange('all')" class="steps-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition">Vše</button>
+        </div>
+        <span id="stepsModalPeriodSummary" class="text-[11px] text-zinc-400 tabular-nums">--</span>
+      </div>
+
+      <!-- 4 KPI karty pro zvolené období -->
+      <div id="stepsModalKpiGrid" class="grid grid-cols-2 lg:grid-cols-4 gap-3 tabular-nums"></div>
+
+      <!-- Hlavní graf vývoje kroků -->
+      <div class="bg-zinc-950/90 border border-zinc-800 rounded-xl p-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h4 id="stepsModalChartTitle" class="text-sm font-bold text-white">Vývoj kroků za posledních 30 dní</h4>
+            <p id="stepsModalChartSubtitle" class="text-[11px] text-zinc-400">Zelené sloupce = splněný denní cíl, přerušovaná čára = cíl, oranžová = 7denní průměr</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 text-[11px]">
+            <span class="flex items-center gap-1.5 text-emerald-300 font-semibold"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-400"></span> Cíl splněn</span>
+            <span class="flex items-center gap-1.5 text-sky-300 font-semibold"><span class="w-2.5 h-2.5 rounded-sm bg-sky-400/80"></span> Pod cílem</span>
+            <span class="flex items-center gap-1.5 text-amber-300 font-semibold"><span class="w-3 h-0.5 bg-amber-400"></span> Trend</span>
+          </div>
+        </div>
+        <div class="relative h-64 sm:h-72 w-full">
+          <canvas id="stepsHistoryChartCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Spodní sekce: Průměr podle dnů v týdnu + Zpětný zápis & Historie -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-5 bg-zinc-950/90 border border-zinc-800 rounded-xl p-4 space-y-3 flex flex-col justify-between">
+          <div>
+            <h4 class="text-sm font-bold text-white">Průměr podle dne v týdnu</h4>
+            <p class="text-[11px] text-zinc-400">Které dny v týdnu máš dlouhodobě nejvyšší aktivitu</p>
+          </div>
+          <div class="relative h-48 w-full">
+            <canvas id="stepsWeekdayChartCanvas"></canvas>
+          </div>
+          <div id="stepsModalWeekdayInsight" class="text-[11px] text-zinc-400 pt-2 border-t border-zinc-800/80">--</div>
+        </div>
+
+        <div class="lg:col-span-7 bg-zinc-950/90 border border-zinc-800 rounded-xl p-4 space-y-3.5">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h4 class="text-sm font-bold text-white">Dopsat nebo upravit den</h4>
+              <p class="text-[11px] text-zinc-400">Doplň si kroky zpětně pro libovolné datum</p>
+            </div>
+            <span id="stepsModalTotalDaysCount" class="text-[11px] font-semibold text-zinc-400">0 záznamů</span>
+          </div>
+
+          <form onsubmit="saveHistoricalStepsEntry(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end bg-zinc-900/80 border border-zinc-800 rounded-xl p-3">
+            <div class="sm:col-span-5">
+              <label for="stepsHistoryDateInput" class="block text-[11px] text-zinc-400 mb-1">Datum</label>
+              <input type="date" id="stepsHistoryDateInput" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-white focus:outline-none focus:border-sky-400" />
+            </div>
+            <div class="sm:col-span-4">
+              <label for="stepsHistoryCountInput" class="block text-[11px] text-zinc-400 mb-1">Počet kroků</label>
+              <input type="number" id="stepsHistoryCountInput" required min="0" max="200000" step="1" placeholder="10500" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-sky-400" />
+            </div>
+            <div class="sm:col-span-3">
+              <button type="submit" class="w-full py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-zinc-950 text-xs font-extrabold transition">
+                Uložit den
+              </button>
+            </div>
+          </form>
+
+          <div id="stepsModalHistoryList" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modální okno pro dlouhodobé statistiky, grafy a historii krevního tlaku -->
+  <div id="bpStatsModal" onclick="handleBpModalBackdropClick(event)" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-md p-3 sm:p-6 overflow-y-auto">
+    <div class="glass-card rounded-2xl w-full max-w-5xl p-4 sm:p-6 shadow-2xl border border-zinc-700/80 space-y-5 my-auto max-h-[92vh] overflow-y-auto">
+      <div class="flex items-start sm:items-center justify-between gap-3 border-b border-zinc-800 pb-3.5">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-base sm:text-xl font-extrabold text-white flex items-center gap-2">
+              <i class="fa-solid fa-heart-pulse text-rose-400 text-sm sm:text-base"></i>
+              <span>Dlouhodobá statistika & Grafy krevního tlaku</span>
+            </h3>
+            <span id="bpModalCategoryPill" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">
+              Bez měření
+            </span>
+          </div>
+          <p class="text-xs text-zinc-400 mt-1">Vývoj systolického a diastolického tlaku, tepové frekvence, rozložení kategorií a kompletní historie měření.</p>
+        </div>
+        <button type="button" onclick="closeBpStatsModal()" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white border border-zinc-700 text-xs font-bold transition flex items-center gap-1.5 shrink-0" title="Zavřít detail krevního tlaku (Esc)">
+          <i class="fa-solid fa-xmark"></i>
+          <span>Zavřít</span>
+        </button>
+      </div>
+
+      <!-- Přepínač období -->
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-1.5" id="bpModalRangeButtons">
+          <button type="button" data-bp-range="14d" onclick="setBpModalRange('14d')" class="bp-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition">14 dní</button>
+          <button type="button" data-bp-range="30d" onclick="setBpModalRange('30d')" class="bp-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 transition">30 dní</button>
+          <button type="button" data-bp-range="90d" onclick="setBpModalRange('90d')" class="bp-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition">90 dní</button>
+          <button type="button" data-bp-range="12m" onclick="setBpModalRange('12m')" class="bp-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition">12 měsíců</button>
+          <button type="button" data-bp-range="all" onclick="setBpModalRange('all')" class="bp-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition">Vše</button>
+        </div>
+        <span id="bpModalPeriodSummary" class="text-[11px] text-zinc-400 tabular-nums">--</span>
+      </div>
+
+      <!-- 4 KPI karty pro zvolené období -->
+      <div id="bpModalKpiGrid" class="grid grid-cols-2 lg:grid-cols-4 gap-3 tabular-nums"></div>
+
+      <!-- Hlavní graf vývoje krevního tlaku a tepu -->
+      <div class="bg-zinc-950/90 border border-zinc-800 rounded-xl p-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h4 id="bpModalChartTitle" class="text-sm font-bold text-white">Vývoj krevního tlaku za posledních 30 dní</h4>
+            <p id="bpModalChartSubtitle" class="text-[11px] text-zinc-400">Systolický (SYS) a diastolický (DIA) tlak s referenční hranicí 140/90 mmHg a tepovou frekvencí</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 text-[11px]">
+            <span class="flex items-center gap-1.5 text-rose-300 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-rose-400"></span> SYS (mmHg)</span>
+            <span class="flex items-center gap-1.5 text-sky-300 font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span> DIA (mmHg)</span>
+            <span class="flex items-center gap-1.5 text-amber-300 font-semibold"><span class="w-3 h-0.5 bg-amber-400"></span> Tep (bpm)</span>
+          </div>
+        </div>
+        <div class="relative h-64 sm:h-72 w-full">
+          <canvas id="bpHistoryChartCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Spodní sekce: Rozložení kategorií + Zápis & Kompletní historie -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-5 bg-zinc-950/90 border border-zinc-800 rounded-xl p-4 space-y-3 flex flex-col justify-between">
+          <div>
+            <h4 class="text-sm font-bold text-white">Rozložení kategorií tlaku</h4>
+            <p class="text-[11px] text-zinc-400">Podíl měření v jednotlivých pásmech za zvolené období</p>
+          </div>
+          <div class="relative h-44 w-full flex items-center justify-center">
+            <canvas id="bpCategoryChartCanvas"></canvas>
+          </div>
+          <div id="bpModalCategoryBreakdown" class="space-y-1.5 pt-2 border-t border-zinc-800/80 text-xs"></div>
+        </div>
+
+        <div class="lg:col-span-7 bg-zinc-950/90 border border-zinc-800 rounded-xl p-4 space-y-3.5">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h4 class="text-sm font-bold text-white">Zapsat měření & Historie</h4>
+              <p class="text-[11px] text-zinc-400">Přidej nové nebo starší měření včetně času a poznámky</p>
+            </div>
+            <span id="bpModalTotalCount" class="text-[11px] font-semibold text-zinc-400">0 měření</span>
+          </div>
+
+          <form onsubmit="saveModalBloodPressure(event)" class="space-y-2.5 bg-zinc-900/80 border border-zinc-800 rounded-xl p-3">
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              <div>
+                <label for="bpModalSysInput" class="block text-[11px] text-rose-300 font-semibold mb-1">SYS</label>
+                <input type="number" id="bpModalSysInput" required min="60" max="260" step="1" placeholder="120" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-rose-400" />
+              </div>
+              <div>
+                <label for="bpModalDiaInput" class="block text-[11px] text-sky-300 font-semibold mb-1">DIA</label>
+                <input type="number" id="bpModalDiaInput" required min="30" max="180" step="1" placeholder="80" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-sky-400" />
+              </div>
+              <div>
+                <label for="bpModalPulseInput" class="block text-[11px] text-amber-300 font-semibold mb-1">Tep (vol.)</label>
+                <input type="number" id="bpModalPulseInput" min="30" max="220" step="1" placeholder="65" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-amber-400" />
+              </div>
+              <div>
+                <label for="bpModalDateInput" class="block text-[11px] text-zinc-400 mb-1">Datum</label>
+                <input type="date" id="bpModalDateInput" required class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1.5 text-xs font-semibold text-white focus:outline-none focus:border-rose-400" />
+              </div>
+              <div class="col-span-2 sm:col-span-1">
+                <label for="bpModalTimeInput" class="block text-[11px] text-zinc-400 mb-1">Čas</label>
+                <input type="time" id="bpModalTimeInput" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1.5 text-xs font-semibold text-white focus:outline-none focus:border-rose-400" />
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input type="text" id="bpModalNoteInput" maxlength="80" placeholder="Poznámka (např. ráno v klidu, po tréninku...)" class="flex-1 bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-rose-400" />
+              <button type="submit" class="px-4 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-400 text-zinc-950 text-xs font-extrabold transition shrink-0">
+                Uložit měření
+              </button>
+            </div>
+          </form>
+
+          <div id="bpModalHistoryList" class="space-y-1.5 max-h-56 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Přihlášení / Registrace uživatelských účtů -->
   <div id="authModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-zinc-950/95 backdrop-blur-md p-4 overflow-y-auto">
     <div class="glass-card rounded-2xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-zinc-700/80 space-y-5 my-auto">
@@ -308,9 +521,9 @@
   </div>
 
   <!-- Desktop Boční Panel -->
-  <aside class="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 bg-zinc-900/90 border-r border-zinc-800 p-6 justify-between z-30">
+  <aside class="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 overflow-y-auto bg-zinc-900/90 border-r border-zinc-800 p-5 justify-between z-30">
     <div>
-      <div class="flex items-center gap-3 mb-6">
+      <div class="flex items-center gap-3 mb-5">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-zinc-950 font-extrabold text-xl shadow-lg shadow-emerald-500/20">
           <i class="fa-solid fa-dumbbell"></i>
         </div>
@@ -320,7 +533,7 @@
         </div>
       </div>
 
-      <div class="mb-6 p-3 rounded-xl bg-zinc-950/90 border border-zinc-800 flex items-center justify-between gap-2">
+      <div class="mb-5 p-3 rounded-xl bg-zinc-950/90 border border-zinc-800 flex items-center justify-between gap-2">
         <div class="min-w-0">
           <span class="block text-[10px] uppercase tracking-wider text-zinc-500">Přihlášený účet</span>
           <span id="sidebarActiveUserNick" class="block text-sm font-extrabold text-emerald-400 truncate">--</span>
@@ -331,39 +544,39 @@
         </button>
       </div>
 
-      <nav class="space-y-2" id="desktopNav">
-        <button onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-btn tab-active w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-transparent text-left font-medium transition">
+      <nav class="space-y-1.5" id="desktopNav">
+        <button onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-btn tab-active w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-transparent text-left font-medium transition">
           <i class="fa-solid fa-chart-line w-5 text-center"></i>
           <span>Přehled & Grafy</span>
         </button>
-        <button onclick="switchTab('plan')" data-tab="plan" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
+        <button onclick="switchTab('plan')" data-tab="plan" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
           <i class="fa-solid fa-calendar-week w-5 text-center"></i>
           <span>Tréninkový plán</span>
         </button>
-        <button onclick="switchTab('workouts')" data-tab="workouts" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
+        <button onclick="switchTab('workouts')" data-tab="workouts" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
           <i class="fa-solid fa-weight-hanging w-5 text-center"></i>
           <span>Tréninkový deník</span>
         </button>
-        <button onclick="switchTab('nutrition')" data-tab="nutrition" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
+        <button onclick="switchTab('nutrition')" data-tab="nutrition" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
           <i class="fa-solid fa-utensils w-5 text-center"></i>
           <span>Jídelníček & Doplňky</span>
         </button>
-        <button onclick="switchTab('physique')" data-tab="physique" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
+        <button onclick="switchTab('physique')" data-tab="physique" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
           <i class="fa-solid fa-camera-retro w-5 text-center"></i>
           <span>Váha & Kontrola formy</span>
         </button>
-        <button onclick="switchTab('peds')" data-tab="peds" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
+        <button onclick="switchTab('peds')" data-tab="peds" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
           <i class="fa-solid fa-syringe w-5 text-center"></i>
           <span>PEDs - kalkulačka</span>
         </button>
-        <button onclick="switchTab('peds-analysis')" data-tab="peds-analysis" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
+        <button onclick="switchTab('peds-analysis')" data-tab="peds-analysis" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-800/60 text-left font-medium transition">
           <i class="fa-solid fa-microscope w-5 text-center"></i>
           <span>PEDs - rozbor</span>
         </button>
       </nav>
     </div>
 
-    <div class="space-y-3 pt-6 border-t border-zinc-800">
+    <div class="space-y-3 pt-4 mt-4 border-t border-zinc-800 shrink-0">
       <div class="flex items-center justify-between text-xs px-2">
         <span class="text-zinc-400">Synchronizace:</span>
         <span id="syncStatusBadge" class="flex items-center gap-1.5 text-emerald-400 font-medium">
@@ -379,22 +592,30 @@
   </aside>
 
   <!-- Mobilní Horní Lišta -->
-  <header class="lg:hidden sticky top-0 z-30 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 px-4 py-3 flex items-center justify-between gap-2">
-    <div class="flex items-center gap-2.5 min-w-0">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-zinc-950 font-bold shrink-0">
-        <i class="fa-solid fa-dumbbell"></i>
+  <header class="lg:hidden sticky top-0 z-30 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 px-4 py-2.5 space-y-1.5">
+    <div class="flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-zinc-950 font-bold shrink-0">
+          <i class="fa-solid fa-dumbbell"></i>
+        </div>
+        <span class="font-extrabold text-lg text-white truncate">Nalo<span class="text-emerald-400">ženo</span></span>
+        <span id="mobileActiveUserBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold truncate">--</span>
       </div>
-      <span class="font-extrabold text-lg text-white truncate">Nalo<span class="text-emerald-400">ženo</span></span>
-      <span id="mobileActiveUserBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold truncate">--</span>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button type="button" onclick="logoutCurrentAccount()" class="text-xs px-2.5 py-1.5 rounded-lg bg-zinc-800 text-zinc-200 border border-zinc-700 font-semibold">
+          Odhlásit
+        </button>
+        <button type="button" onclick="confirmClearSampleData()" class="text-xs px-2.5 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 border border-zinc-700">
+          Reset
+        </button>
+      </div>
     </div>
-    <div class="flex items-center gap-1.5 shrink-0">
-      <span id="mobileSyncDot" class="w-2 h-2 rounded-full bg-emerald-400" title="Data synchronizována"></span>
-      <button type="button" onclick="logoutCurrentAccount()" class="text-xs px-2.5 py-1.5 rounded-lg bg-zinc-800 text-zinc-200 border border-zinc-700 font-semibold">
-        Odhlásit
-      </button>
-      <button type="button" onclick="confirmClearSampleData()" class="text-xs px-2.5 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 border border-zinc-700">
-        Reset
-      </button>
+    <div class="flex items-center justify-between text-xs pt-1.5 border-t border-zinc-800/80">
+      <span class="text-zinc-400">Synchronizace:</span>
+      <span id="mobileSyncStatusBadge" class="flex items-center gap-1.5 text-emerald-400 font-medium">
+        <span class="w-2 h-2 rounded-full bg-current animate-pulse"></span>
+        Připojeno
+      </span>
     </div>
   </header>
 
@@ -477,6 +698,15 @@
             </div>
           </div>
         </div>
+
+        <!-- Karta Kroky -->
+        <div id="dashboardStepsCard" class="glass-card rounded-2xl p-5 sm:p-6 space-y-4"></div>
+
+        <!-- Malá kartička Krevní tlak -->
+        <div id="dashboardBloodPressureCard" class="glass-card rounded-2xl p-4 sm:p-5 space-y-3"></div>
+
+        <!-- Karta Maximálek na 1 opakování (Bench, Squat, Deadlift) -->
+        <div id="dashboardOneRmCard" class="glass-card rounded-2xl p-5 sm:p-6 space-y-4"></div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div class="glass-card rounded-2xl p-5 sm:p-6">
@@ -2628,6 +2858,8 @@
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
         closeHlChartModal();
+        closeStepsStatsModal();
+        closeBpStatsModal();
       }
     });
 
@@ -3147,7 +3379,15 @@
         ],
         supplementLogs: {},
         pedsProtocol: [],
-        pedsLogs: {}
+        pedsLogs: {},
+        oneRepMaxes: {
+          bench: null,
+          squat: null,
+          deadlift: null
+        },
+        stepsTarget: 10000,
+        stepsByDate: {},
+        bloodPressures: []
       };
     }
 
@@ -3168,7 +3408,11 @@
           activePlanId: parsed.activePlanId || defaults.activePlanId,
           macroTargets: { ...defaults.macroTargets, ...(parsed.macroTargets || {}) },
           pedsProtocol: Array.isArray(parsed.pedsProtocol) ? parsed.pedsProtocol : [],
-          pedsLogs: parsed.pedsLogs && typeof parsed.pedsLogs === 'object' ? parsed.pedsLogs : {}
+          pedsLogs: parsed.pedsLogs && typeof parsed.pedsLogs === 'object' ? parsed.pedsLogs : {},
+          oneRepMaxes: { ...defaults.oneRepMaxes, ...(parsed.oneRepMaxes || {}) },
+          stepsTarget: Number(parsed.stepsTarget) > 0 ? Math.round(Number(parsed.stepsTarget)) : defaults.stepsTarget,
+          stepsByDate: parsed.stepsByDate && typeof parsed.stepsByDate === 'object' ? parsed.stepsByDate : {},
+          bloodPressures: Array.isArray(parsed.bloodPressures) ? parsed.bloodPressures : []
         };
       } catch (e) {
         return defaults;
@@ -3314,7 +3558,11 @@
                   ? remoteData.trainingPlans
                   : defaults.trainingPlans,
               activePlanId: remoteData.activePlanId || defaults.activePlanId,
-              macroTargets: { ...defaults.macroTargets, ...(remoteData.macroTargets || {}) }
+              macroTargets: { ...defaults.macroTargets, ...(remoteData.macroTargets || {}) },
+              oneRepMaxes: { ...defaults.oneRepMaxes, ...(remoteData.oneRepMaxes || {}) },
+              stepsTarget: Number(remoteData.stepsTarget) > 0 ? Math.round(Number(remoteData.stepsTarget)) : defaults.stepsTarget,
+              stepsByDate: remoteData.stepsByDate && typeof remoteData.stepsByDate === 'object' ? remoteData.stepsByDate : {},
+              bloodPressures: Array.isArray(remoteData.bloodPressures) ? remoteData.bloodPressures : []
             };
             saveToLocalStorage();
             renderAll();
@@ -3360,6 +3608,11 @@
       if (badge) {
         badge.className = `flex items-center gap-1.5 font-medium ${colorClass}`;
         badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-current"></span> ${text}`;
+      }
+      const mobileBadge = document.getElementById('mobileSyncStatusBadge');
+      if (mobileBadge) {
+        mobileBadge.className = `flex items-center gap-1.5 font-medium ${colorClass}`;
+        mobileBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-current"></span> ${text}`;
       }
     }
 
@@ -3955,6 +4208,7 @@
       } else if (tabName === 'nutrition') renderNutritionTab();
       else if (tabName === 'physique') renderPhysiqueTab();
       else if (tabName === 'peds') renderPedsTab();
+      else if (tabName === 'peds-analysis') renderPedsAnalysisTab();
     };
 
     function getActivePlan() {
@@ -6141,6 +6395,1685 @@
       `;
     }
 
+    const ONE_RM_DISCIPLINES = [
+      {
+        key: 'bench',
+        label: 'Bench Press',
+        subtitle: 'Tlak na lavici',
+        icon: 'fa-dumbbell',
+        accentText: 'text-emerald-400',
+        accentBg: 'bg-emerald-500/15',
+        accentBorder: 'border-emerald-500/30',
+        matchFn: (name) => {
+          const n = name.toLowerCase();
+          return n.includes('bench press') && !n.includes('smith') && !n.includes('incline') && !n.includes('úzký') && !n.includes('close-grip');
+        }
+      },
+      {
+        key: 'squat',
+        label: 'Squat',
+        subtitle: 'Dřep s velkou činkou',
+        icon: 'fa-person-walking',
+        accentText: 'text-sky-400',
+        accentBg: 'bg-sky-500/15',
+        accentBorder: 'border-sky-500/30',
+        matchFn: (name) => {
+          const n = name.toLowerCase();
+          return (n.includes('back squat') || n.includes('dřep s velkou činkou')) && !n.includes('čelní') && !n.includes('front') && !n.includes('bulharsk');
+        }
+      },
+      {
+        key: 'deadlift',
+        label: 'Deadlift',
+        subtitle: 'Mrtvý tah',
+        icon: 'fa-weight-hanging',
+        accentText: 'text-amber-400',
+        accentBg: 'bg-amber-500/15',
+        accentBorder: 'border-amber-500/30',
+        matchFn: (name) => {
+          const n = name.toLowerCase();
+          return (n.includes('mrtvý tah') || n.includes('deadlift')) && !n.includes('rumunsk') && !n.includes('rdl');
+        }
+      }
+    ];
+
+    let isEditingOneRm = false;
+
+    function getEstimatedOneRmFromWorkouts(discipline) {
+      let bestEst = 0;
+      (appState.workouts || []).forEach((w) => {
+        (w.exercises || []).forEach((ex) => {
+          if (!ex || !ex.name || !discipline.matchFn(ex.name)) return;
+          (ex.sets || []).forEach((s) => {
+            const weightVal = parseFloat(s.weight) || 0;
+            const repsVal = parseInt(s.reps, 10) || 0;
+            if (weightVal <= 0 || repsVal <= 0) return;
+            const est = repsVal === 1 ? weightVal : weightVal * (1 + repsVal / 30);
+            if (est > bestEst) bestEst = est;
+          });
+        });
+      });
+      return bestEst > 0 ? Math.round(bestEst * 2) / 2 : null;
+    }
+
+    window.toggleOneRmEditMode = function () {
+      isEditingOneRm = !isEditingOneRm;
+      renderDashboardOneRmCard();
+    };
+
+    window.applyEstimatedOneRm = async function (disciplineKey, estKg) {
+      const val = parseFloat(estKg);
+      if (isNaN(val) || val <= 0) return;
+      if (!appState.oneRepMaxes || typeof appState.oneRepMaxes !== 'object') {
+        appState.oneRepMaxes = { bench: null, squat: null, deadlift: null };
+      }
+      appState.oneRepMaxes[disciplineKey] = {
+        weight: Math.round(val * 10) / 10,
+        date: todayStr
+      };
+      renderDashboardOneRmCard();
+      await persistState();
+      showToast('Odhadovaná maximálka byla uložena.');
+    };
+
+    window.saveDashboardOneRepMaxes = async function (event) {
+      event.preventDefault();
+      if (!appState.oneRepMaxes || typeof appState.oneRepMaxes !== 'object') {
+        appState.oneRepMaxes = { bench: null, squat: null, deadlift: null };
+      }
+
+      ONE_RM_DISCIPLINES.forEach((d) => {
+        const rawVal = document.getElementById(`oneRmInput_${d.key}`)?.value ?? '';
+        const trimmed = String(rawVal).trim();
+        if (trimmed === '') {
+          appState.oneRepMaxes[d.key] = null;
+          return;
+        }
+        const num = parseFloat(trimmed.replace(',', '.'));
+        if (!isNaN(num) && num > 0) {
+          const rounded = Math.round(num * 10) / 10;
+          const prev = appState.oneRepMaxes[d.key];
+          const prevWeight = prev && typeof prev === 'object' ? prev.weight : null;
+          appState.oneRepMaxes[d.key] = {
+            weight: rounded,
+            date: prevWeight === rounded && prev?.date ? prev.date : todayStr
+          };
+        }
+      });
+
+      isEditingOneRm = false;
+      renderDashboardOneRmCard();
+      await persistState();
+      showToast('Maximálky 1RM byly uloženy.');
+    };
+
+    function renderDashboardOneRmCard() {
+      const cardEl = document.getElementById('dashboardOneRmCard');
+      if (!cardEl) return;
+
+      const maxes = appState.oneRepMaxes && typeof appState.oneRepMaxes === 'object'
+        ? appState.oneRepMaxes
+        : { bench: null, squat: null, deadlift: null };
+
+      const latestWeightObj = Array.isArray(appState.weights) && appState.weights.length > 0
+        ? appState.weights[appState.weights.length - 1]
+        : null;
+      const bodyWeight = latestWeightObj && latestWeightObj.weight > 0 ? latestWeightObj.weight : null;
+
+      const totalKg = ONE_RM_DISCIPLINES.reduce((sum, d) => {
+        const entry = maxes[d.key];
+        const w = entry && typeof entry === 'object' ? parseFloat(entry.weight) || 0 : 0;
+        return sum + w;
+      }, 0);
+      const roundedTotal = Math.round(totalKg * 10) / 10;
+      const totalBwRatio = bodyWeight && roundedTotal > 0 ? (roundedTotal / bodyWeight).toFixed(2) : null;
+
+      const cardsHtml = ONE_RM_DISCIPLINES.map((d) => {
+        const entry = maxes[d.key];
+        const weightVal = entry && typeof entry === 'object' && entry.weight > 0 ? entry.weight : null;
+        const dateStr = entry && typeof entry === 'object' && entry.date ? formatDateCz(entry.date) : null;
+        const bwRatio = bodyWeight && weightVal ? (weightVal / bodyWeight).toFixed(2) : null;
+        const estFromLog = getEstimatedOneRmFromWorkouts(d);
+
+        return `
+          <div class="rounded-xl bg-zinc-900/85 border ${weightVal ? d.accentBorder : 'border-zinc-800'} p-4 flex flex-col justify-between gap-3">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-wider ${d.accentText}">${d.label}</p>
+                <p class="text-[11px] text-zinc-500">${d.subtitle}</p>
+              </div>
+              <div class="w-9 h-9 rounded-lg ${d.accentBg} ${d.accentText} flex items-center justify-center text-sm shrink-0">
+                <i class="fa-solid ${d.icon}"></i>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-baseline gap-2">
+                <span class="text-2xl sm:text-3xl font-extrabold text-white tabular-nums">
+                  ${weightVal !== null ? `${weightVal.toLocaleString('cs-CZ')} kg` : '-- kg'}
+                </span>
+                ${bwRatio ? `<span class="text-xs font-semibold ${d.accentText} tabular-nums">${bwRatio}× BW</span>` : ''}
+              </div>
+              <p class="text-[11px] text-zinc-400 mt-1">
+                ${dateStr ? `Zapsáno: ${dateStr}` : 'Zatím nezapsáno'}
+              </p>
+            </div>
+
+            ${
+              estFromLog
+                ? `<div class="pt-2 border-t border-zinc-800/80 flex items-center justify-between gap-2 text-[11px]">
+                    <span class="text-zinc-400">Odhad z deníku: <strong class="text-zinc-200">${estFromLog.toLocaleString('cs-CZ')} kg</strong></span>
+                    <button type="button" onclick="applyEstimatedOneRm('${d.key}', ${estFromLog})"
+                      class="px-2 py-0.5 rounded-md bg-zinc-800 hover:bg-zinc-700 ${d.accentText} font-semibold transition shrink-0">
+                      Použít
+                    </button>
+                  </div>`
+                : ''
+            }
+          </div>
+        `;
+      }).join('');
+
+      const editFormHtml = isEditingOneRm
+        ? `
+          <form onsubmit="saveDashboardOneRepMaxes(event)" class="bg-zinc-900/90 border border-emerald-500/30 rounded-xl p-4 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              ${ONE_RM_DISCIPLINES.map((d) => {
+                const entry = maxes[d.key];
+                const val = entry && typeof entry === 'object' && entry.weight > 0 ? entry.weight : '';
+                return `
+                  <div>
+                    <label for="oneRmInput_${d.key}" class="block text-xs font-semibold ${d.accentText} mb-1">${d.label} – 1RM (kg)</label>
+                    <input type="number" id="oneRmInput_${d.key}" step="0.5" min="0" max="600" value="${escapeHtmlAttr(String(val))}" placeholder="Např. 120"
+                      class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-emerald-500" />
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            <div class="flex items-center justify-end gap-2">
+              <button type="button" onclick="toggleOneRmEditMode()" class="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition">
+                Zrušit
+              </button>
+              <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-extrabold transition">
+                Uložit maximálky
+              </button>
+            </div>
+          </form>
+        `
+        : '';
+
+      cardEl.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold text-white flex items-center gap-2">
+              <i class="fa-solid fa-medal text-amber-400"></i>
+              <span>Maximálky na 1 opakování (1RM)</span>
+            </h3>
+            <p class="text-xs text-zinc-400 mt-0.5">Osobní rekordy v základní trojce: Bench Press, Squat a Deadlift</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <span class="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-200 tabular-nums">
+              SBD Total: <strong class="text-emerald-400">${roundedTotal > 0 ? `${roundedTotal.toLocaleString('cs-CZ')} kg` : '-- kg'}</strong>${totalBwRatio ? ` <span class="text-zinc-400 font-medium">(${totalBwRatio}× BW)</span>` : ''}
+            </span>
+            <button type="button" onclick="toggleOneRmEditMode()" class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-emerald-300 border border-zinc-700 text-xs font-bold transition flex items-center gap-1.5">
+              <i class="fa-solid ${isEditingOneRm ? 'fa-xmark' : 'fa-pen'}"></i>
+              <span>${isEditingOneRm ? 'Zavřít' : 'Upravit 1RM'}</span>
+            </button>
+          </div>
+        </div>
+
+        ${editFormHtml}
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          ${cardsHtml}
+        </div>
+      `;
+    }
+
+    let isEditingSteps = false;
+    let stepsModalRange = '30d';
+    let stepsHistoryChartInstance = null;
+    let stepsWeekdayChartInstance = null;
+
+    function formatIsoLocalDate(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function parseIsoLocalDate(isoStr) {
+      const parts = String(isoStr || '').split('-').map((n) => parseInt(n, 10));
+      if (parts.length !== 3 || parts.some((n) => isNaN(n))) return new Date();
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function isStepsModalOpen() {
+      const modal = document.getElementById('stepsStatsModal');
+      return Boolean(modal && !modal.classList.contains('hidden'));
+    }
+
+    window.openStepsStatsModal = function () {
+      const modal = document.getElementById('stepsStatsModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      const dateInp = document.getElementById('stepsHistoryDateInput');
+      if (dateInp && !dateInp.value) {
+        dateInp.value = todayStr;
+      }
+      renderStepsStatsModal();
+    };
+
+    window.closeStepsStatsModal = function () {
+      const modal = document.getElementById('stepsStatsModal');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      if (stepsHistoryChartInstance) {
+        stepsHistoryChartInstance.destroy();
+        stepsHistoryChartInstance = null;
+      }
+      if (stepsWeekdayChartInstance) {
+        stepsWeekdayChartInstance.destroy();
+        stepsWeekdayChartInstance = null;
+      }
+    };
+
+    window.handleStepsModalBackdropClick = function (event) {
+      if (event.target && event.target.id === 'stepsStatsModal') {
+        closeStepsStatsModal();
+      }
+    };
+
+    window.setStepsModalRange = function (rangeKey) {
+      stepsModalRange = rangeKey || '30d';
+      renderStepsStatsModal();
+    };
+
+    window.saveHistoricalStepsEntry = async function (event) {
+      event.preventDefault();
+      const dateVal = document.getElementById('stepsHistoryDateInput')?.value || todayStr;
+      const countVal = Math.max(0, Math.min(200000, parseInt(document.getElementById('stepsHistoryCountInput')?.value, 10) || 0));
+
+      if (!appState.stepsByDate || typeof appState.stepsByDate !== 'object') {
+        appState.stepsByDate = {};
+      }
+      appState.stepsByDate[dateVal] = countVal;
+
+      const countInp = document.getElementById('stepsHistoryCountInput');
+      if (countInp) countInp.value = '';
+
+      renderDashboardStepsCard();
+      if (isStepsModalOpen()) renderStepsStatsModal();
+      await persistState();
+      showToast(`Kroky pro ${formatDateCz(dateVal)} uloženy (${countVal.toLocaleString('cs-CZ')}).`);
+    };
+
+    window.prefillStepsHistoryEdit = function (dateIso, count) {
+      const dateInp = document.getElementById('stepsHistoryDateInput');
+      const countInp = document.getElementById('stepsHistoryCountInput');
+      if (dateInp) dateInp.value = dateIso;
+      if (countInp) {
+        countInp.value = String(count);
+        countInp.focus();
+      }
+    };
+
+    window.deleteHistoricalStepsEntry = async function (dateIso) {
+      if (!appState.stepsByDate || typeof appState.stepsByDate !== 'object') return;
+      delete appState.stepsByDate[dateIso];
+      renderDashboardStepsCard();
+      if (isStepsModalOpen()) renderStepsStatsModal();
+      await persistState();
+      showToast(`Záznam kroků ze dne ${formatDateCz(dateIso)} byl smazán.`);
+    };
+
+    function computeStepsStreaks(stepsMap, target) {
+      const todayDate = parseIsoLocalDate(todayStr);
+      let currentStreak = 0;
+      const cursor = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate());
+      const todayCount = Math.max(0, parseInt(stepsMap[todayStr], 10) || 0);
+      // Pokud dnešek ještě není splněný, kontrolujeme sérii od včerejška
+      if (todayCount < target) {
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      for (let i = 0; i < 3650; i++) {
+        const iso = formatIsoLocalDate(cursor);
+        const val = Math.max(0, parseInt(stepsMap[iso], 10) || 0);
+        if (val >= target) {
+          currentStreak++;
+          cursor.setDate(cursor.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+
+      const qualifyingDates = Object.entries(stepsMap)
+        .filter(([, v]) => (parseInt(v, 10) || 0) >= target)
+        .map(([k]) => k)
+        .sort();
+
+      let bestStreak = 0;
+      let run = 0;
+      let prevTime = null;
+      qualifyingDates.forEach((iso) => {
+        const dt = parseIsoLocalDate(iso);
+        const curTime = Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate());
+        if (prevTime !== null && curTime - prevTime === 86400000) {
+          run++;
+        } else {
+          run = 1;
+        }
+        if (run > bestStreak) bestStreak = run;
+        prevTime = curTime;
+      });
+
+      return { currentStreak, bestStreak };
+    }
+
+    function renderStepsStatsModal() {
+      const modal = document.getElementById('stepsStatsModal');
+      if (!modal || modal.classList.contains('hidden')) return;
+
+      const stepsMap = appState.stepsByDate && typeof appState.stepsByDate === 'object' ? appState.stepsByDate : {};
+      const target = Math.max(500, parseInt(appState.stepsTarget, 10) || 10000);
+
+      const targetPill = document.getElementById('stepsModalTargetPill');
+      if (targetPill) targetPill.textContent = `Cíl: ${target.toLocaleString('cs-CZ')} / den`;
+
+      document.querySelectorAll('.steps-range-btn').forEach((btn) => {
+        if (btn.dataset.stepsRange === stepsModalRange) {
+          btn.className = 'steps-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40 transition';
+        } else {
+          btn.className = 'steps-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition';
+        }
+      });
+
+      const allRecordedEntries = Object.entries(stepsMap)
+        .map(([date, val]) => ({ date, count: Math.max(0, parseInt(val, 10) || 0) }))
+        .filter((e) => e.date && e.count > 0)
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      const todayDate = parseIsoLocalDate(todayStr);
+      const monthNamesShort = ['Led', 'Úno', 'Bře', 'Dub', 'Kvě', 'Čvn', 'Čvc', 'Srp', 'Zář', 'Říj', 'Lis', 'Pro'];
+
+      let isMonthlyMode = false;
+      let chartLabels = [];
+      let chartValues = [];
+      let chartTargetLine = [];
+      let chartTrendLine = [];
+      let periodDailyEntries = [];
+      let chartTitle = '';
+      let chartSubtitle = '';
+
+      if (stepsModalRange === '12m') {
+        isMonthlyMode = true;
+        chartTitle = 'Měsíční denní průměr kroků (posledních 12 měsíců)';
+        chartSubtitle = 'Sloupce ukazují průměr kroků za zapsané dny v daném měsíci oproti dennímu cíli';
+
+        for (let mOffset = 11; mOffset >= 0; mOffset--) {
+          const d = new Date(todayDate.getFullYear(), todayDate.getMonth() - mOffset, 1);
+          const ymPrefix = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          const monthEntries = allRecordedEntries.filter((e) => e.date.startsWith(ymPrefix));
+          const monthSum = monthEntries.reduce((s, e) => s + e.count, 0);
+          const avg = monthEntries.length > 0 ? Math.round(monthSum / monthEntries.length) : 0;
+
+          chartLabels.push(`${monthNamesShort[d.getMonth()]} ${String(d.getFullYear()).slice(-2)}`);
+          chartValues.push(avg);
+          chartTargetLine.push(target);
+          periodDailyEntries.push(...monthEntries);
+        }
+      } else {
+        let spanDays = 30;
+        if (stepsModalRange === '14d') {
+          spanDays = 14;
+          chartTitle = 'Vývoj kroků za posledních 14 dní';
+        } else if (stepsModalRange === '30d') {
+          spanDays = 30;
+          chartTitle = 'Vývoj kroků za posledních 30 dní';
+        } else if (stepsModalRange === '90d') {
+          spanDays = 90;
+          chartTitle = 'Vývoj kroků za posledních 90 dní';
+        } else {
+          if (allRecordedEntries.length > 0) {
+            const firstDate = parseIsoLocalDate(allRecordedEntries[0].date);
+            const diffDays = Math.max(14, Math.round((todayDate - firstDate) / 86400000) + 1);
+            spanDays = Math.min(365, diffDays);
+          } else {
+            spanDays = 30;
+          }
+          chartTitle = `Kompletní vývoj kroků (${spanDays} dní)`;
+        }
+        chartSubtitle = 'Zelené sloupce = splněný denní cíl, přerušovaná čára = cíl, oranžová = 7denní průměr';
+
+        const seriesCounts = [];
+        for (let offset = spanDays - 1; offset >= 0; offset--) {
+          const dt = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate() - offset);
+          const iso = formatIsoLocalDate(dt);
+          const count = Math.max(0, parseInt(stepsMap[iso], 10) || 0);
+          chartLabels.push(formatShortDate(iso));
+          chartValues.push(count);
+          chartTargetLine.push(target);
+          seriesCounts.push(count);
+          if (count > 0) {
+            periodDailyEntries.push({ date: iso, count });
+          }
+        }
+
+        // 7denní klouzavý průměr ze zapsaných (nenulových) dnů v okně
+        for (let i = 0; i < seriesCounts.length; i++) {
+          const windowSlice = seriesCounts.slice(Math.max(0, i - 6), i + 1).filter((v) => v > 0);
+          chartTrendLine.push(
+            windowSlice.length > 0 ? Math.round(windowSlice.reduce((a, b) => a + b, 0) / windowSlice.length) : null
+          );
+        }
+      }
+
+      const periodTotal = periodDailyEntries.reduce((s, e) => s + e.count, 0);
+      const periodActiveDays = periodDailyEntries.length;
+      const periodAvg = periodActiveDays > 0 ? Math.round(periodTotal / periodActiveDays) : 0;
+      const periodGoalDays = periodDailyEntries.filter((e) => e.count >= target).length;
+      const periodGoalRate = periodActiveDays > 0 ? Math.round((periodGoalDays / periodActiveDays) * 100) : 0;
+      const periodKm = ((periodTotal * 0.75) / 1000).toFixed(1).replace('.', ',');
+      const periodKcal = Math.round(periodTotal * 0.04);
+
+      let bestEntry = null;
+      periodDailyEntries.forEach((e) => {
+        if (!bestEntry || e.count > bestEntry.count) bestEntry = e;
+      });
+
+      const streaks = computeStepsStreaks(stepsMap, target);
+
+      const summaryEl = document.getElementById('stepsModalPeriodSummary');
+      if (summaryEl) {
+        summaryEl.textContent = `Zapsáno ${periodActiveDays} aktivních dnů • Cíl splněn ${periodGoalDays}× (${periodGoalRate} %)`;
+      }
+
+      const titleEl = document.getElementById('stepsModalChartTitle');
+      const subEl = document.getElementById('stepsModalChartSubtitle');
+      if (titleEl) titleEl.textContent = chartTitle;
+      if (subEl) subEl.textContent = chartSubtitle;
+
+      const kpiGrid = document.getElementById('stepsModalKpiGrid');
+      if (kpiGrid) {
+        kpiGrid.innerHTML = `
+          <div class="rounded-xl bg-zinc-900/85 border border-zinc-800 p-3.5">
+            <span class="block text-[10px] uppercase tracking-wider text-zinc-400">Celkem za období</span>
+            <span class="block text-xl sm:text-2xl font-extrabold text-white mt-0.5">${periodTotal.toLocaleString('cs-CZ')}</span>
+            <span class="block text-[11px] text-sky-400 mt-1">${periodKm} km • ~${periodKcal.toLocaleString('cs-CZ')} kcal</span>
+          </div>
+          <div class="rounded-xl bg-zinc-900/85 border border-zinc-800 p-3.5">
+            <span class="block text-[10px] uppercase tracking-wider text-zinc-400">Denní průměr</span>
+            <span class="block text-xl sm:text-2xl font-extrabold text-sky-400 mt-0.5">${periodAvg.toLocaleString('cs-CZ')}</span>
+            <span class="block text-[11px] text-zinc-400 mt-1">${periodAvg >= target ? 'Nad denním cílem' : `Do cíle: ${(target - periodAvg).toLocaleString('cs-CZ')}`}</span>
+          </div>
+          <div class="rounded-xl bg-zinc-900/85 border border-zinc-800 p-3.5">
+            <span class="block text-[10px] uppercase tracking-wider text-zinc-400">Rekordní den</span>
+            <span class="block text-xl sm:text-2xl font-extrabold text-amber-400 mt-0.5">${bestEntry ? bestEntry.count.toLocaleString('cs-CZ') : '--'}</span>
+            <span class="block text-[11px] text-zinc-400 mt-1">${bestEntry ? formatDateCz(bestEntry.date) : 'Zatím bez záznamů'}</span>
+          </div>
+          <div class="rounded-xl bg-zinc-900/85 border border-zinc-800 p-3.5">
+            <span class="block text-[10px] uppercase tracking-wider text-zinc-400">Série splněného cíle</span>
+            <span class="block text-xl sm:text-2xl font-extrabold text-emerald-400 mt-0.5">${streaks.currentStreak} ${streaks.currentStreak === 1 ? 'den' : streaks.currentStreak >= 2 && streaks.currentStreak <= 4 ? 'dny' : 'dní'}</span>
+            <span class="block text-[11px] text-zinc-400 mt-1">Nejdelší série: <strong class="text-zinc-200">${streaks.bestStreak} d</strong> • Úspěšnost ${periodGoalRate} %</span>
+          </div>
+        `;
+      }
+
+      // Hlavní Chart.js graf
+      const mainCanvas = document.getElementById('stepsHistoryChartCanvas');
+      if (mainCanvas) {
+        if (stepsHistoryChartInstance) {
+          stepsHistoryChartInstance.destroy();
+        }
+        const barColors = chartValues.map((v) =>
+          v >= target ? 'rgba(16, 185, 129, 0.85)' : v > 0 ? 'rgba(56, 189, 248, 0.72)' : 'rgba(63, 63, 70, 0.35)'
+        );
+        const datasets = [
+          {
+            type: 'bar',
+            label: isMonthlyMode ? 'Průměr kroků / den' : 'Kroky',
+            data: chartValues,
+            backgroundColor: barColors,
+            borderRadius: 6,
+            maxBarThickness: 28,
+            order: 3
+          },
+          {
+            type: 'line',
+            label: `Denní cíl (${target.toLocaleString('cs-CZ')})`,
+            data: chartTargetLine,
+            borderColor: 'rgba(16, 185, 129, 0.65)',
+            borderDash: [6, 4],
+            borderWidth: 1.5,
+            pointRadius: 0,
+            fill: false,
+            order: 2
+          }
+        ];
+
+        if (!isMonthlyMode) {
+          datasets.push({
+            type: 'line',
+            label: '7denní trend',
+            data: chartTrendLine,
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.3,
+            spanGaps: true,
+            order: 1
+          });
+        }
+
+        stepsHistoryChartInstance = new Chart(mainCanvas.getContext('2d'), {
+          data: {
+            labels: chartLabels,
+            datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: 'rgba(24, 24, 27, 0.96)',
+                titleColor: '#f4f4f5',
+                bodyColor: '#e4e4e7',
+                borderColor: 'rgba(63, 63, 70, 0.9)',
+                borderWidth: 1,
+                callbacks: {
+                  label: (ctxItem) => {
+                    const val = Number(ctxItem.parsed.y ?? 0);
+                    return `${ctxItem.dataset.label}: ${Math.round(val).toLocaleString('cs-CZ')} kroků`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: 'rgba(255,255,255,0.04)' },
+                ticks: { color: '#a1a1aa', font: { size: 10 }, maxTicksLimit: 12 }
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                ticks: {
+                  color: '#a1a1aa',
+                  font: { size: 10 },
+                  callback: (val) => (val >= 1000 ? `${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}k` : val)
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Sekundární graf: průměr podle dne v týdnu (ze všech zapsaných dnů)
+      const weekdayBuckets = WEEK_DAYS.map((d) => ({ ...d, sum: 0, count: 0 }));
+      allRecordedEntries.forEach((entry) => {
+        const dt = parseIsoLocalDate(entry.date);
+        const jsDay = dt.getDay();
+        const bucket = weekdayBuckets.find((b) => b.jsDay === jsDay);
+        if (bucket) {
+          bucket.sum += entry.count;
+          bucket.count += 1;
+        }
+      });
+      const weekdayAvgs = weekdayBuckets.map((b) => (b.count > 0 ? Math.round(b.sum / b.count) : 0));
+
+      const weekdayCanvas = document.getElementById('stepsWeekdayChartCanvas');
+      if (weekdayCanvas) {
+        if (stepsWeekdayChartInstance) {
+          stepsWeekdayChartInstance.destroy();
+        }
+        stepsWeekdayChartInstance = new Chart(weekdayCanvas.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: weekdayBuckets.map((b) => b.short),
+            datasets: [
+              {
+                label: 'Průměr kroků',
+                data: weekdayAvgs,
+                backgroundColor: weekdayAvgs.map((v) =>
+                  v >= target ? 'rgba(16, 185, 129, 0.85)' : v > 0 ? 'rgba(56, 189, 248, 0.7)' : 'rgba(63, 63, 70, 0.4)'
+                ),
+                borderRadius: 6
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (ctxItem) => `Ø ${Math.round(ctxItem.parsed.y || 0).toLocaleString('cs-CZ')} kroků`
+                }
+              }
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#d4d4d8', font: { size: 11, weight: 'bold' } } },
+              y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                ticks: {
+                  color: '#a1a1aa',
+                  font: { size: 10 },
+                  callback: (val) => (val >= 1000 ? `${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}k` : val)
+                }
+              }
+            }
+          }
+        });
+      }
+
+      const insightEl = document.getElementById('stepsModalWeekdayInsight');
+      if (insightEl) {
+        const nonZeroDays = weekdayBuckets
+          .map((b, i) => ({ name: b.name, avg: weekdayAvgs[i] }))
+          .filter((d) => d.avg > 0);
+        if (nonZeroDays.length === 0) {
+          insightEl.textContent = 'Zatím nemáš dostatek dat pro porovnání dnů v týdnu.';
+        } else {
+          nonZeroDays.sort((a, b) => b.avg - a.avg);
+          const strongest = nonZeroDays[0];
+          const weakest = nonZeroDays[nonZeroDays.length - 1];
+          insightEl.innerHTML =
+            nonZeroDays.length > 1
+              ? `Nejaktivnější den: <strong class="text-emerald-400">${strongest.name}</strong> (Ø ${strongest.avg.toLocaleString('cs-CZ')}) • Nejslabší: <strong class="text-zinc-200">${weakest.name}</strong> (Ø ${weakest.avg.toLocaleString('cs-CZ')})`
+              : `Nejaktivnější den: <strong class="text-emerald-400">${strongest.name}</strong> (Ø ${strongest.avg.toLocaleString('cs-CZ')} kroků)`;
+        }
+      }
+
+      // Historie zapsaných dnů
+      const totalDaysEl = document.getElementById('stepsModalTotalDaysCount');
+      if (totalDaysEl) {
+        totalDaysEl.textContent = `${allRecordedEntries.length} ${allRecordedEntries.length === 1 ? 'záznam' : allRecordedEntries.length >= 2 && allRecordedEntries.length <= 4 ? 'záznamy' : 'záznamů'}`;
+      }
+
+      const historyListEl = document.getElementById('stepsModalHistoryList');
+      if (historyListEl) {
+        const reversed = [...allRecordedEntries].reverse();
+        if (reversed.length === 0) {
+          historyListEl.innerHTML = `<div class="text-center py-6 text-xs text-zinc-500 border border-dashed border-zinc-800 rounded-xl">Zatím nejsou zapsány žádné kroky. Přidej dnešní nebo starší den výše.</div>`;
+        } else {
+          historyListEl.innerHTML = reversed
+            .slice(0, 60)
+            .map((entry) => {
+              const reached = entry.count >= target;
+              const pct = Math.round((entry.count / target) * 100);
+              const km = ((entry.count * 0.75) / 1000).toFixed(1).replace('.', ',');
+              return `
+                <div class="flex items-center justify-between gap-2 bg-zinc-900/80 border border-zinc-800/90 rounded-xl px-3 py-2 text-xs">
+                  <div class="flex flex-wrap items-center gap-2 tabular-nums min-w-0">
+                    <span class="font-bold text-zinc-300">${formatDateCz(entry.date)}</span>
+                    <span class="font-extrabold ${reached ? 'text-emerald-400' : 'text-white'}">${entry.count.toLocaleString('cs-CZ')} kroků</span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                      reached ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400'
+                    }">${pct} %</span>
+                    <span class="text-[11px] text-zinc-500">${km} km</span>
+                  </div>
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" onclick="prefillStepsHistoryEdit('${escapeHtmlAttr(entry.date)}', ${entry.count})" class="p-1.5 rounded-lg text-zinc-400 hover:text-sky-300 hover:bg-zinc-800 transition" title="Upravit tento den">
+                      <i class="fa-solid fa-pen text-[11px]"></i>
+                    </button>
+                    <button type="button" onclick="deleteHistoricalStepsEntry('${escapeHtmlAttr(entry.date)}')" class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-950/40 transition" title="Smazat záznam">
+                      <i class="fa-solid fa-trash-can text-[11px]"></i>
+                    </button>
+                  </div>
+                </div>
+              `;
+            })
+            .join('');
+        }
+      }
+    }
+
+    window.toggleStepsEditMode = function () {
+      isEditingSteps = !isEditingSteps;
+      renderDashboardStepsCard();
+    };
+
+    window.addQuickSteps = async function (delta) {
+      if (!appState.stepsByDate || typeof appState.stepsByDate !== 'object') {
+        appState.stepsByDate = {};
+      }
+      const current = Math.max(0, parseInt(appState.stepsByDate[todayStr], 10) || 0);
+      const nextVal = Math.max(0, current + (parseInt(delta, 10) || 0));
+      appState.stepsByDate[todayStr] = nextVal;
+      renderDashboardStepsCard();
+      if (isStepsModalOpen()) renderStepsStatsModal();
+      await persistState();
+      if (delta > 0) {
+        showToast(`Přidáno +${delta.toLocaleString('cs-CZ')} kroků (dnes celkem ${nextVal.toLocaleString('cs-CZ')}).`);
+      } else {
+        showToast(`Kroky upraveny na ${nextVal.toLocaleString('cs-CZ')}.`);
+      }
+    };
+
+    window.saveDashboardSteps = async function (event) {
+      event.preventDefault();
+      const stepsRaw = document.getElementById('stepsTodayInput')?.value ?? '';
+      const targetRaw = document.getElementById('stepsTargetInput')?.value ?? '';
+
+      const parsedSteps = Math.max(0, Math.min(200000, parseInt(stepsRaw, 10) || 0));
+      const parsedTarget = Math.max(500, Math.min(100000, parseInt(targetRaw, 10) || 10000));
+
+      if (!appState.stepsByDate || typeof appState.stepsByDate !== 'object') {
+        appState.stepsByDate = {};
+      }
+      appState.stepsByDate[todayStr] = parsedSteps;
+      appState.stepsTarget = parsedTarget;
+      isEditingSteps = false;
+
+      renderDashboardStepsCard();
+      if (isStepsModalOpen()) renderStepsStatsModal();
+      await persistState();
+      showToast(`Dnešní kroky uloženy (${parsedSteps.toLocaleString('cs-CZ')} / ${parsedTarget.toLocaleString('cs-CZ')}).`);
+    };
+
+    function renderDashboardStepsCard() {
+      const cardEl = document.getElementById('dashboardStepsCard');
+      if (!cardEl) return;
+
+      const stepsMap = appState.stepsByDate && typeof appState.stepsByDate === 'object' ? appState.stepsByDate : {};
+      const target = Math.max(500, parseInt(appState.stepsTarget, 10) || 10000);
+      const todaySteps = Math.max(0, parseInt(stepsMap[todayStr], 10) || 0);
+      const pct = Math.min(100, Math.round((todaySteps / target) * 100));
+      const goalReached = todaySteps >= target;
+
+      // Orientační výpočet vzdálenosti (~0,75 m / krok) a spálené energie (~0,04 kcal / krok)
+      const estKm = ((todaySteps * 0.75) / 1000).toFixed(1).replace('.', ',');
+      const estKcal = Math.round(todaySteps * 0.04);
+
+      const weekDates = getCurrentWeekDatesMap();
+      const todayId = getTodayWeekDayId();
+      const weekEntries = WEEK_DAYS.map((d) => {
+        const iso = weekDates[d.id];
+        const count = Math.max(0, parseInt(stepsMap[iso], 10) || 0);
+        return { ...d, iso, count, isToday: d.id === todayId };
+      });
+
+      const weekTotal = weekEntries.reduce((sum, item) => sum + item.count, 0);
+      const daysWithData = weekEntries.filter((item) => item.count > 0).length;
+      const weekAvg = daysWithData > 0 ? Math.round(weekTotal / daysWithData) : 0;
+      const maxBarRef = Math.max(target, ...weekEntries.map((item) => item.count), 1000);
+
+      const weekBarsHtml = weekEntries
+        .map((item) => {
+          const heightPct = item.count > 0 ? Math.max(12, Math.round((item.count / maxBarRef) * 100)) : 8;
+          const reached = item.count >= target;
+          const barColor = reached
+            ? 'bg-emerald-400'
+            : item.isToday
+            ? 'bg-sky-400'
+            : item.count > 0
+            ? 'bg-sky-500/50'
+            : 'bg-zinc-800';
+          const shortCount =
+            item.count >= 1000 ? `${(item.count / 1000).toFixed(1).replace('.0', '').replace('.', ',')}k` : item.count > 0 ? String(item.count) : '0';
+
+          return `
+            <div class="flex flex-col items-center gap-1.5 min-w-0" title="${item.name} (${formatDateCz(item.iso)}): ${item.count.toLocaleString('cs-CZ')} kroků">
+              <span class="text-[11px] font-semibold tabular-nums leading-none ${item.isToday ? 'text-white' : 'text-zinc-500'}">${shortCount}</span>
+              <div class="w-full max-w-[44px] h-14 sm:h-16 bg-zinc-950/90 border border-zinc-800/90 rounded-lg p-1 flex items-end overflow-hidden">
+                <div class="w-full rounded transition-all duration-300 ${barColor}" style="height: ${heightPct}%"></div>
+              </div>
+              <span class="text-[11px] uppercase tracking-wider leading-none ${item.isToday ? 'text-amber-400 font-extrabold' : 'text-zinc-400 font-semibold'}">${item.short}</span>
+            </div>
+          `;
+        })
+        .join('');
+
+      const editFormHtml = isEditingSteps
+        ? `
+          <form onsubmit="saveDashboardSteps(event)" class="bg-zinc-900/90 border border-sky-500/30 rounded-xl p-4 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="stepsTodayInput" class="block text-xs font-semibold text-sky-400 mb-1">Dnešní počet kroků</label>
+                <input type="number" id="stepsTodayInput" min="0" max="200000" step="1" value="${todaySteps}" placeholder="Např. 8500"
+                  class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-sky-400" />
+              </div>
+              <div>
+                <label for="stepsTargetInput" class="block text-xs font-semibold text-emerald-400 mb-1">Denní cíl (kroků)</label>
+                <input type="number" id="stepsTargetInput" min="500" max="100000" step="500" value="${target}" placeholder="10000"
+                  class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-emerald-500" />
+              </div>
+            </div>
+            <div class="flex items-center justify-end gap-2">
+              <button type="button" onclick="toggleStepsEditMode()" class="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition">
+                Zrušit
+              </button>
+              <button type="submit" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-zinc-950 text-xs font-extrabold transition">
+                Uložit kroky
+              </button>
+            </div>
+          </form>
+        `
+        : '';
+
+      cardEl.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 min-w-0">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center text-base shrink-0">
+                <i class="fa-solid fa-shoe-prints"></i>
+              </div>
+              <h3 class="text-base sm:text-lg font-extrabold text-white">Kroky</h3>
+            </div>
+            <div class="flex items-baseline gap-1.5 tabular-nums">
+              <span class="text-2xl sm:text-3xl font-extrabold text-white">${todaySteps.toLocaleString('cs-CZ')}</span>
+              <span class="text-sm font-semibold text-zinc-400">/ ${target.toLocaleString('cs-CZ')}</span>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg text-xs font-extrabold tabular-nums ${
+              goalReached
+                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/35'
+                : 'bg-sky-500/15 text-sky-300 border border-sky-500/35'
+            }">
+              ${pct} %
+            </span>
+            <span class="hidden sm:inline text-xs sm:text-sm text-zinc-400 tabular-nums">
+              <i class="fa-solid fa-route text-sky-400 mr-1"></i>${estKm} km
+              <span class="mx-1.5 text-zinc-700">•</span>
+              <i class="fa-solid fa-fire text-amber-400 mr-1"></i>${estKcal.toLocaleString('cs-CZ')} kcal
+            </span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <button type="button" onclick="openStepsStatsModal()" class="px-3 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/35 text-xs font-bold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-column"></i>
+              <span>Detail & Grafy</span>
+            </button>
+            <button type="button" onclick="toggleStepsEditMode()" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold transition flex items-center gap-1.5">
+              <i class="fa-solid ${isEditingSteps ? 'fa-xmark' : 'fa-pen'}"></i>
+              <span>${isEditingSteps ? 'Zavřít' : 'Zapsat / Cíl'}</span>
+            </button>
+          </div>
+        </div>
+
+        ${editFormHtml}
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+          <div class="lg:col-span-5 rounded-xl bg-zinc-900/75 border ${goalReached ? 'border-emerald-500/35' : 'border-zinc-800/90'} p-4 flex flex-col justify-between gap-3.5">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-xs text-zinc-400 tabular-nums">
+                <span>Plnění denního cíle</span>
+                <span class="font-bold ${goalReached ? 'text-emerald-400' : 'text-sky-400'}">${goalReached ? 'Splněno!' : `Zbývá ${(target - todaySteps).toLocaleString('cs-CZ')}`}</span>
+              </div>
+              <div class="w-full h-2.5 bg-zinc-950 rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500 ${goalReached ? 'bg-emerald-400' : 'bg-sky-400'}" style="width: ${pct}%"></div>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <button type="button" onclick="addQuickSteps(500)" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold transition">+500</button>
+                <button type="button" onclick="addQuickSteps(1000)" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-sky-300 border border-sky-500/30 text-xs font-bold transition">+1 000</button>
+                <button type="button" onclick="addQuickSteps(2500)" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition">+2 500</button>
+                ${
+                  todaySteps > 0
+                    ? `<button type="button" onclick="addQuickSteps(-500)" class="px-2.5 py-1.5 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 text-xs font-semibold transition">-500</button>`
+                    : ''
+                }
+              </div>
+              <span class="sm:hidden text-xs text-zinc-400 tabular-nums">${estKm} km • ${estKcal} kcal</span>
+            </div>
+          </div>
+
+          <div onclick="openStepsStatsModal()" title="Kliknutím zobrazíš dlouhodobé statistiky a grafy" class="lg:col-span-7 rounded-xl bg-zinc-900/75 border border-zinc-800/90 hover:border-sky-500/40 cursor-pointer transition p-4 flex flex-col sm:flex-row sm:items-center gap-4 group">
+            <div class="sm:w-36 shrink-0 flex sm:flex-col items-center sm:items-start justify-between gap-1.5">
+              <span class="text-xs sm:text-sm font-bold text-zinc-200 group-hover:text-sky-300 transition flex items-center gap-1.5">
+                <span>Týden (Po–Ne)</span>
+                <i class="fa-solid fa-up-right-from-square text-[11px] text-zinc-500 group-hover:text-sky-400 transition"></i>
+              </span>
+              <div class="text-xs text-zinc-400 tabular-nums space-y-0.5">
+                <div>Celkem: <strong class="text-sky-400">${weekTotal.toLocaleString('cs-CZ')}</strong></div>
+                ${weekAvg > 0 ? `<div>Průměr: <strong class="text-zinc-200">${weekAvg.toLocaleString('cs-CZ')}</strong></div>` : ''}
+              </div>
+            </div>
+            <div class="grid grid-cols-7 gap-2 items-end flex-1">
+              ${weekBarsHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    let isEditingBloodPressure = false;
+    let isShowingBpHistory = false;
+    let bpModalRange = '30d';
+    let bpHistoryChartInstance = null;
+    let bpCategoryChartInstance = null;
+
+    function getBloodPressureCategory(sys, dia) {
+      if (sys >= 140 || dia >= 90) {
+        return {
+          key: 'high',
+          label: 'Vysoký',
+          color: '#fb7185',
+          badgeClass: 'bg-rose-500/15 text-rose-300 border-rose-500/35'
+        };
+      }
+      if (sys >= 130 || dia >= 85) {
+        return {
+          key: 'elevated',
+          label: 'Vyšší normální',
+          color: '#f59e0b',
+          badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/35'
+        };
+      }
+      if (sys < 90 || dia < 60) {
+        return {
+          key: 'low',
+          label: 'Nízký',
+          color: '#38bdf8',
+          badgeClass: 'bg-sky-500/15 text-sky-300 border-sky-500/35'
+        };
+      }
+      if (sys < 120 && dia < 80) {
+        return {
+          key: 'optimal',
+          label: 'Optimální',
+          color: '#10b981',
+          badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/35'
+        };
+      }
+      return {
+        key: 'normal',
+        label: 'Normální',
+        color: '#34d399',
+        badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/35'
+      };
+    }
+
+    function isBpModalOpen() {
+      const modal = document.getElementById('bpStatsModal');
+      return Boolean(modal && !modal.classList.contains('hidden'));
+    }
+
+    window.openBpStatsModal = function () {
+      const modal = document.getElementById('bpStatsModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      const dateInp = document.getElementById('bpModalDateInput');
+      const timeInp = document.getElementById('bpModalTimeInput');
+      if (dateInp && !dateInp.value) dateInp.value = todayStr;
+      if (timeInp && !timeInp.value) {
+        const now = new Date();
+        timeInp.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      }
+      renderBpStatsModal();
+    };
+
+    window.closeBpStatsModal = function () {
+      const modal = document.getElementById('bpStatsModal');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      if (bpHistoryChartInstance) {
+        bpHistoryChartInstance.destroy();
+        bpHistoryChartInstance = null;
+      }
+      if (bpCategoryChartInstance) {
+        bpCategoryChartInstance.destroy();
+        bpCategoryChartInstance = null;
+      }
+    };
+
+    window.handleBpModalBackdropClick = function (event) {
+      if (event.target && event.target.id === 'bpStatsModal') {
+        closeBpStatsModal();
+      }
+    };
+
+    window.setBpModalRange = function (rangeKey) {
+      bpModalRange = rangeKey || '30d';
+      renderBpStatsModal();
+    };
+
+    function sortBloodPressuresDesc(list) {
+      return list.sort((a, b) => {
+        if (b.date !== a.date) return String(b.date || '').localeCompare(String(a.date || ''));
+        if ((b.time || '') !== (a.time || '')) return String(b.time || '').localeCompare(String(a.time || ''));
+        return String(b.id || '').localeCompare(String(a.id || ''));
+      });
+    }
+
+    window.toggleBpEditMode = function () {
+      isEditingBloodPressure = !isEditingBloodPressure;
+      renderDashboardBloodPressureCard();
+    };
+
+    window.toggleBpHistoryMode = function () {
+      isShowingBpHistory = !isShowingBpHistory;
+      renderDashboardBloodPressureCard();
+    };
+
+    window.saveDashboardBloodPressure = async function (event) {
+      event.preventDefault();
+      const sys = parseInt(document.getElementById('bpSysInput')?.value, 10);
+      const dia = parseInt(document.getElementById('bpDiaInput')?.value, 10);
+      const pulseRaw = (document.getElementById('bpPulseInput')?.value || '').trim();
+      const pulse = pulseRaw ? parseInt(pulseRaw, 10) : null;
+      const date = document.getElementById('bpDateInput')?.value || todayStr;
+
+      if (isNaN(sys) || isNaN(dia) || sys < 60 || sys > 260 || dia < 30 || dia > 180) {
+        showToast('Zadej platné hodnoty krevního tlaku (např. 120 / 80).', 'error');
+        return;
+      }
+
+      if (!Array.isArray(appState.bloodPressures)) {
+        appState.bloodPressures = [];
+      }
+
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      appState.bloodPressures.unshift({
+        id: 'bp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        date,
+        time: timeStr,
+        sys,
+        dia,
+        pulse: pulse && !isNaN(pulse) && pulse > 25 && pulse < 240 ? pulse : null,
+        note: ''
+      });
+
+      sortBloodPressuresDesc(appState.bloodPressures);
+
+      isEditingBloodPressure = false;
+      renderDashboardBloodPressureCard();
+      if (isBpModalOpen()) renderBpStatsModal();
+      await persistState();
+      showToast(`Krevní tlak ${sys}/${dia} mmHg byl uložen.`);
+    };
+
+    window.saveModalBloodPressure = async function (event) {
+      event.preventDefault();
+      const sys = parseInt(document.getElementById('bpModalSysInput')?.value, 10);
+      const dia = parseInt(document.getElementById('bpModalDiaInput')?.value, 10);
+      const pulseRaw = (document.getElementById('bpModalPulseInput')?.value || '').trim();
+      const pulse = pulseRaw ? parseInt(pulseRaw, 10) : null;
+      const date = document.getElementById('bpModalDateInput')?.value || todayStr;
+      const timeRaw = (document.getElementById('bpModalTimeInput')?.value || '').trim();
+      const note = (document.getElementById('bpModalNoteInput')?.value || '').trim();
+
+      if (isNaN(sys) || isNaN(dia) || sys < 60 || sys > 260 || dia < 30 || dia > 180) {
+        showToast('Zadej platné hodnoty krevního tlaku (např. 120 / 80).', 'error');
+        return;
+      }
+
+      if (!Array.isArray(appState.bloodPressures)) {
+        appState.bloodPressures = [];
+      }
+
+      const now = new Date();
+      const fallbackTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      appState.bloodPressures.unshift({
+        id: 'bp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        date,
+        time: timeRaw || fallbackTime,
+        sys,
+        dia,
+        pulse: pulse && !isNaN(pulse) && pulse > 25 && pulse < 240 ? pulse : null,
+        note
+      });
+
+      sortBloodPressuresDesc(appState.bloodPressures);
+
+      const noteInp = document.getElementById('bpModalNoteInput');
+      const pulseInp = document.getElementById('bpModalPulseInput');
+      if (noteInp) noteInp.value = '';
+      if (pulseInp) pulseInp.value = '';
+
+      renderDashboardBloodPressureCard();
+      if (isBpModalOpen()) renderBpStatsModal();
+      await persistState();
+      showToast(`Měření tlaku ${sys}/${dia} mmHg uloženo.`);
+    };
+
+    window.deleteBloodPressureEntry = async function (id) {
+      appState.bloodPressures = (appState.bloodPressures || []).filter((item) => item.id !== id);
+      if (appState.bloodPressures.length === 0) {
+        isShowingBpHistory = false;
+      }
+      renderDashboardBloodPressureCard();
+      if (isBpModalOpen()) renderBpStatsModal();
+      await persistState();
+      showToast('Záznam krevního tlaku smazán.');
+    };
+
+    function renderBpStatsModal() {
+      const modal = document.getElementById('bpStatsModal');
+      if (!modal || modal.classList.contains('hidden')) return;
+
+      const allList = Array.isArray(appState.bloodPressures) ? [...appState.bloodPressures] : [];
+      sortBloodPressuresDesc(allList);
+
+      document.querySelectorAll('.bp-range-btn').forEach((btn) => {
+        if (btn.dataset.bpRange === bpModalRange) {
+          btn.className = 'bp-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 transition';
+        } else {
+          btn.className = 'bp-range-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 transition';
+        }
+      });
+
+      const todayDate = parseIsoLocalDate(todayStr);
+      const monthNamesShort = ['Led', 'Úno', 'Bře', 'Dub', 'Kvě', 'Čvn', 'Čvc', 'Srp', 'Zář', 'Říj', 'Lis', 'Pro'];
+
+      let cutoffIso = null;
+      let chartTitle = 'Vývoj krevního tlaku za posledních 30 dní';
+      let chartSubtitle = 'Systolický (SYS) a diastolický (DIA) tlak s referenční hranicí 140/90 mmHg a tepovou frekvencí';
+
+      if (bpModalRange === '14d') {
+        const d = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate() - 13);
+        cutoffIso = formatIsoLocalDate(d);
+        chartTitle = 'Vývoj krevního tlaku za posledních 14 dní';
+      } else if (bpModalRange === '30d') {
+        const d = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate() - 29);
+        cutoffIso = formatIsoLocalDate(d);
+        chartTitle = 'Vývoj krevního tlaku za posledních 30 dní';
+      } else if (bpModalRange === '90d') {
+        const d = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate() - 89);
+        cutoffIso = formatIsoLocalDate(d);
+        chartTitle = 'Vývoj krevního tlaku za posledních 90 dní';
+      } else if (bpModalRange === '12m') {
+        const d = new Date(todayDate.getFullYear(), todayDate.getMonth() - 11, 1);
+        cutoffIso = formatIsoLocalDate(d);
+        chartTitle = 'Měsíční průměry krevního tlaku (posledních 12 měsíců)';
+        chartSubtitle = 'Průměrný systolický a diastolický tlak i tep v jednotlivých měsících';
+      } else {
+        chartTitle = 'Kompletní vývoj krevního tlaku (všechna měření)';
+      }
+
+      const periodDesc = cutoffIso ? allList.filter((item) => String(item.date || '') >= cutoffIso) : allList;
+      const periodChrono = [...periodDesc].reverse();
+
+      const count = periodChrono.length;
+      const avgSys = count > 0 ? Math.round(periodChrono.reduce((s, r) => s + (r.sys || 0), 0) / count) : null;
+      const avgDia = count > 0 ? Math.round(periodChrono.reduce((s, r) => s + (r.dia || 0), 0) / count) : null;
+      const avgCat = avgSys !== null && avgDia !== null ? getBloodPressureCategory(avgSys, avgDia) : null;
+
+      const minSys = count > 0 ? Math.min(...periodChrono.map((r) => r.sys)) : null;
+      const maxSys = count > 0 ? Math.max(...periodChrono.map((r) => r.sys)) : null;
+      const minDia = count > 0 ? Math.min(...periodChrono.map((r) => r.dia)) : null;
+      const maxDia = count > 0 ? Math.max(...periodChrono.map((r) => r.dia)) : null;
+      const avgPulsePressure = avgSys !== null && avgDia !== null ? avgSys - avgDia : null;
+
+      const pulseItems = periodChrono.filter((r) => typeof r.pulse === 'number' && r.pulse > 0);
+      const avgPulse = pulseItems.length > 0 ? Math.round(pulseItems.reduce((s, r) => s + r.pulse, 0) / pulseItems.length) : null;
+      const minPulse = pulseItems.length > 0 ? Math.min(...pulseItems.map((r) => r.pulse)) : null;
+      const maxPulse = pulseItems.length > 0 ? Math.max(...pulseItems.map((r) => r.pulse)) : null;
+
+      const categoryCounts = {
+        optimal: 0,
+        normal: 0,
+        elevated: 0,
+        high: 0,
+        low: 0
+      };
+      periodChrono.forEach((item) => {
+        const c = getBloodPressureCategory(item.sys, item.dia);
+        if (categoryCounts[c.key] !== undefined) categoryCounts[c.key]++;
+      });
+      const inNormCount = categoryCounts.optimal + categoryCounts.normal;
+      const inNormPct = count > 0 ? Math.round((inNormCount / count) * 100) : 0;
+
+      const pillEl = document.getElementById('bpModalCategoryPill');
+      if (pillEl) {
+        if (avgCat) {
+          pillEl.className = `text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${avgCat.badgeClass}`;
+          pillEl.textContent = `Průměr: ${avgCat.label} (${avgSys}/${avgDia})`;
+        } else {
+          pillEl.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700';
+          pillEl.textContent = 'Zatím bez měření';
+        }
+      }
+
+      const summaryEl = document.getElementById('bpModalPeriodSummary');
+      if (summaryEl) {
+        summaryEl.textContent =
+          count > 0
+            ? `${count} ${count === 1 ? 'měření' : 'měření'} za období • Průměrný pulzní tlak (PP): ${avgPulsePressure} mmHg`
+            : 'Za zvolené období nejsou zapsána žádná měření';
+      }
+
+      const titleEl = document.getElementById('bpModalChartTitle');
+      const subEl = document.getElementById('bpModalChartSubtitle');
+      if (titleEl) titleEl.textContent = chartTitle;
+      if (subEl) subEl.textContent = chartSubtitle;
+
+      const kpiGrid = document.getElementById('bpModalKpiGrid');
+      if (kpiGrid) {
+        kpiGrid.innerHTML = `
+          <div class="rounded-xl bg-zinc-900/85 border border-zinc-800 p-3.5">
+            <span class="block text-[10px] uppercase tracking-wider text-zinc-400">Průměrný tlak</span>
+            <span class="block text-xl sm:text-2xl font-extrabold text-white mt-0.5">${avgSys !== null ? `${avgSys}/${avgDia}` : '--/--'} <span class="text-xs font-medium text-zinc-400">mmHg</span></span>
+            <span class="block text-[11px] mt-1 ${avgCat ? 'text-zinc-300' : 'text-zinc-500'}">${avgCat ? `Kategorie: <strong style="color:${avgCat.color}">${avgCat.label}</strong>` : 'Bez záznamů'}</span>
+          </div>
+          <div class="rounded-xl bg-zinc-900/85 border border-zinc-800 p-3.5">
+            <span class="block text-[10px] uppercase tracking-wider text-zinc-400">Rozsah (Min – Max)</span>
+            <span class="block text-sm sm:text-base font-extrabold text-rose-300 mt-1">SYS: ${minSys !== null ? `${minSys}–${maxSys}` : '--'}</span>
+            <span class="block text-xs font-bold text-sky-300 mt-0.5">DIA: ${minDia !== null ? `${minDia}–${maxDia}` : '--'} <span class="text-zinc-500 font-normal">• PP ${avgPulsePressure !== null ? avgPulsePressure : '--'}</span></span>
+          </div>
+          <div class="rounded-xl bg-zinc-900/85 border border-zinc-800 p-3.5">
+            <span class="block text-[10px] uppercase tracking-wider text-zinc-400">Tepová frekvence</span>
+            <span class="block text-xl sm:text-2xl font-extrabold text-amber-400 mt-0.5">${avgPulse !== null ? `${avgPulse} bpm` : '-- bpm'}</span>
+            <span class="block text-[11px] text-zinc-400 mt-1">${minPulse !== null ? `Rozsah: ${minPulse}–${maxPulse} bpm (${pulseItems.length}×)` : 'Tep nebyl u měření zadán'}</span>
+          </div>
+          <div class="rounded-xl bg-zinc-900/85 border border-zinc-800 p-3.5">
+            <span class="block text-[10px] uppercase tracking-wider text-zinc-400">Měření v normě</span>
+            <span class="block text-xl sm:text-2xl font-extrabold text-emerald-400 mt-0.5">${count > 0 ? `${inNormPct} %` : '-- %'}</span>
+            <span class="block text-[11px] text-zinc-400 mt-1">${count > 0 ? `${inNormCount} z ${count} pod 130/85 mmHg` : 'Zatím bez záznamů'}</span>
+          </div>
+        `;
+      }
+
+      // Příprava dat pro hlavní liniový graf
+      let chartLabels = [];
+      let sysSeries = [];
+      let diaSeries = [];
+      let pulseSeries = [];
+
+      if (bpModalRange === '12m') {
+        for (let mOffset = 11; mOffset >= 0; mOffset--) {
+          const d = new Date(todayDate.getFullYear(), todayDate.getMonth() - mOffset, 1);
+          const ymPrefix = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          const monthEntries = periodChrono.filter((e) => String(e.date || '').startsWith(ymPrefix));
+          chartLabels.push(`${monthNamesShort[d.getMonth()]} ${String(d.getFullYear()).slice(-2)}`);
+          if (monthEntries.length > 0) {
+            sysSeries.push(Math.round(monthEntries.reduce((s, e) => s + e.sys, 0) / monthEntries.length));
+            diaSeries.push(Math.round(monthEntries.reduce((s, e) => s + e.dia, 0) / monthEntries.length));
+            const mPulses = monthEntries.filter((e) => typeof e.pulse === 'number' && e.pulse > 0);
+            pulseSeries.push(mPulses.length > 0 ? Math.round(mPulses.reduce((s, e) => s + e.pulse, 0) / mPulses.length) : null);
+          } else {
+            sysSeries.push(null);
+            diaSeries.push(null);
+            pulseSeries.push(null);
+          }
+        }
+      } else {
+        chartLabels = periodChrono.map((item) =>
+          item.time ? `${formatShortDate(item.date)} ${item.time}` : formatShortDate(item.date)
+        );
+        sysSeries = periodChrono.map((item) => item.sys);
+        diaSeries = periodChrono.map((item) => item.dia);
+        pulseSeries = periodChrono.map((item) => (typeof item.pulse === 'number' && item.pulse > 0 ? item.pulse : null));
+      }
+
+      const mainCanvas = document.getElementById('bpHistoryChartCanvas');
+      if (mainCanvas) {
+        if (bpHistoryChartInstance) {
+          bpHistoryChartInstance.destroy();
+        }
+        const ref140 = chartLabels.map(() => 140);
+        const ref90 = chartLabels.map(() => 90);
+        const hasPulseData = pulseSeries.some((v) => v !== null);
+
+        const datasets = [
+          {
+            label: 'Systolický (SYS)',
+            data: sysSeries,
+            borderColor: '#fb7185',
+            backgroundColor: 'rgba(251, 113, 133, 0.14)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#fb7185',
+            pointRadius: count <= 35 ? 3.5 : 2,
+            fill: false,
+            tension: 0.28,
+            spanGaps: true
+          },
+          {
+            label: 'Diastolický (DIA)',
+            data: diaSeries,
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56, 189, 248, 0.14)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#38bdf8',
+            pointRadius: count <= 35 ? 3.5 : 2,
+            fill: false,
+            tension: 0.28,
+            spanGaps: true
+          }
+        ];
+
+        if (hasPulseData) {
+          datasets.push({
+            label: 'Tep (bpm)',
+            data: pulseSeries,
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            borderWidth: 2,
+            borderDash: [4, 3],
+            pointBackgroundColor: '#f59e0b',
+            pointRadius: count <= 35 ? 3 : 1.5,
+            fill: false,
+            tension: 0.28,
+            spanGaps: true
+          });
+        }
+
+        if (chartLabels.length > 0) {
+          datasets.push(
+            {
+              label: 'Hranice SYS (140)',
+              data: ref140,
+              borderColor: 'rgba(244, 63, 94, 0.4)',
+              borderDash: [6, 5],
+              borderWidth: 1.2,
+              pointRadius: 0,
+              fill: false
+            },
+            {
+              label: 'Hranice DIA (90)',
+              data: ref90,
+              borderColor: 'rgba(56, 189, 248, 0.35)',
+              borderDash: [6, 5],
+              borderWidth: 1.2,
+              pointRadius: 0,
+              fill: false
+            }
+          );
+        }
+
+        bpHistoryChartInstance = new Chart(mainCanvas.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: chartLabels,
+            datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: 'rgba(24, 24, 27, 0.96)',
+                titleColor: '#f4f4f5',
+                bodyColor: '#e4e4e7',
+                borderColor: 'rgba(63, 63, 70, 0.9)',
+                borderWidth: 1,
+                filter: (item) => !String(item.dataset?.label || '').startsWith('Hranice'),
+                callbacks: {
+                  label: (ctxItem) => {
+                    const val = ctxItem.parsed.y;
+                    if (val === null || val === undefined) return '';
+                    const isPulse = String(ctxItem.dataset.label || '').includes('Tep');
+                    return `${ctxItem.dataset.label}: ${Math.round(val)} ${isPulse ? 'bpm' : 'mmHg'}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: 'rgba(255,255,255,0.04)' },
+                ticks: { color: '#a1a1aa', font: { size: 10 }, maxTicksLimit: 10 }
+              },
+              y: {
+                suggestedMin: 50,
+                suggestedMax: 155,
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                ticks: { color: '#a1a1aa', font: { size: 10 } }
+              }
+            }
+          }
+        });
+      }
+
+      // Doughnut graf kategorií
+      const catMeta = [
+        { key: 'optimal', label: 'Optimální (<120/80)', color: '#10b981', textClass: 'text-emerald-400' },
+        { key: 'normal', label: 'Normální (120–129 / 80–84)', color: '#34d399', textClass: 'text-emerald-300' },
+        { key: 'elevated', label: 'Vyšší normální (130–139 / 85–89)', color: '#f59e0b', textClass: 'text-amber-400' },
+        { key: 'high', label: 'Vysoký (≥140 / ≥90)', color: '#fb7185', textClass: 'text-rose-400' },
+        { key: 'low', label: 'Nízký (<90 / <60)', color: '#38bdf8', textClass: 'text-sky-400' }
+      ];
+
+      const catCanvas = document.getElementById('bpCategoryChartCanvas');
+      if (catCanvas) {
+        if (bpCategoryChartInstance) {
+          bpCategoryChartInstance.destroy();
+        }
+        const countsArr = catMeta.map((m) => categoryCounts[m.key]);
+        const hasAny = countsArr.some((v) => v > 0);
+
+        bpCategoryChartInstance = new Chart(catCanvas.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: catMeta.map((m) => m.label),
+            datasets: [
+              {
+                data: hasAny ? countsArr : [1],
+                backgroundColor: hasAny ? catMeta.map((m) => m.color) : ['rgba(63,63,70,0.4)'],
+                borderWidth: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '66%',
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                enabled: hasAny,
+                callbacks: {
+                  label: (ctxItem) => {
+                    const v = ctxItem.parsed || 0;
+                    const p = count > 0 ? Math.round((v / count) * 100) : 0;
+                    return `${ctxItem.label}: ${v}× (${p} %)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      const breakdownEl = document.getElementById('bpModalCategoryBreakdown');
+      if (breakdownEl) {
+        if (count === 0) {
+          breakdownEl.innerHTML = `<div class="text-zinc-500 text-center py-2 text-[11px]">Zatím bez měření ve zvoleném období.</div>`;
+        } else {
+          breakdownEl.innerHTML = catMeta
+            .map((m) => {
+              const cVal = categoryCounts[m.key];
+              const pctVal = Math.round((cVal / count) * 100);
+              return `
+                <div class="flex items-center justify-between gap-2 tabular-nums">
+                  <span class="flex items-center gap-2 text-zinc-300 truncate">
+                    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${m.color}"></span>
+                    <span class="truncate">${m.label}</span>
+                  </span>
+                  <span class="font-bold shrink-0 ${cVal > 0 ? m.textClass : 'text-zinc-600'}">${cVal}× (${pctVal} %)</span>
+                </div>
+              `;
+            })
+            .join('');
+        }
+      }
+
+      // Kompletní historie měření (všechna měření ze zvoleného období)
+      const totalCountEl = document.getElementById('bpModalTotalCount');
+      if (totalCountEl) {
+        totalCountEl.textContent = `${periodDesc.length} / ${allList.length} měření`;
+      }
+
+      const historyListEl = document.getElementById('bpModalHistoryList');
+      if (historyListEl) {
+        if (periodDesc.length === 0) {
+          historyListEl.innerHTML = `<div class="text-center py-6 text-xs text-zinc-500 border border-dashed border-zinc-800 rounded-xl">Ve zvoleném období nejsou žádná měření. Zapiš první měření výše.</div>`;
+        } else {
+          historyListEl.innerHTML = periodDesc
+            .map((item) => {
+              const itemCat = getBloodPressureCategory(item.sys, item.dia);
+              const pp = (item.sys || 0) - (item.dia || 0);
+              return `
+                <div class="flex items-start sm:items-center justify-between gap-2 bg-zinc-900/80 border border-zinc-800/90 rounded-xl px-3 py-2 text-xs">
+                  <div class="min-w-0 space-y-0.5">
+                    <div class="flex flex-wrap items-center gap-2 tabular-nums">
+                      <span class="font-extrabold text-white">${item.sys}/${item.dia} <span class="text-[10px] font-normal text-zinc-400">mmHg</span></span>
+                      ${item.pulse ? `<span class="text-amber-300 font-semibold"><i class="fa-solid fa-heart-pulse mr-1 text-[10px]"></i>${item.pulse} bpm</span>` : ''}
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${itemCat.badgeClass}">${itemCat.label}</span>
+                      <span class="text-[10px] text-zinc-500">PP ${pp}</span>
+                    </div>
+                    <div class="text-[11px] text-zinc-500">
+                      ${formatDateCz(item.date)}${item.time ? ` • ${escapeHtmlAttr(item.time)}` : ''}${item.note ? ` • <span class="text-zinc-300">${escapeHtmlAttr(item.note)}</span>` : ''}
+                    </div>
+                  </div>
+                  <button type="button" onclick="deleteBloodPressureEntry('${escapeHtmlAttr(item.id)}')" class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-950/40 transition shrink-0" title="Smazat měření">
+                    <i class="fa-solid fa-trash-can text-[11px]"></i>
+                  </button>
+                </div>
+              `;
+            })
+            .join('');
+        }
+      }
+    }
+
+    function renderDashboardBloodPressureCard() {
+      const cardEl = document.getElementById('dashboardBloodPressureCard');
+      if (!cardEl) return;
+
+      const list = Array.isArray(appState.bloodPressures) ? appState.bloodPressures : [];
+      const latest = list.length > 0 ? list[0] : null;
+      const cat = latest ? getBloodPressureCategory(latest.sys, latest.dia) : null;
+
+      let avgHtml = '';
+      if (list.length >= 2) {
+        const recent = list.slice(0, 7);
+        const avgSys = Math.round(recent.reduce((s, r) => s + (r.sys || 0), 0) / recent.length);
+        const avgDia = Math.round(recent.reduce((s, r) => s + (r.dia || 0), 0) / recent.length);
+        avgHtml = `<span class="text-[11px] text-zinc-400 tabular-nums">Ø posl. ${recent.length}: <strong class="text-zinc-200">${avgSys}/${avgDia}</strong></span>`;
+      }
+
+      const editFormHtml = isEditingBloodPressure
+        ? `
+          <form onsubmit="saveDashboardBloodPressure(event)" class="bg-zinc-900/90 border border-rose-500/30 rounded-xl p-3.5 space-y-3">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div>
+                <label for="bpSysInput" class="block text-[11px] font-semibold text-rose-300 mb-1">Systolický (SYS)</label>
+                <input type="number" id="bpSysInput" required min="60" max="260" step="1" placeholder="120" value="${latest ? latest.sys : ''}"
+                  class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-1.5 text-sm font-bold text-white focus:outline-none focus:border-rose-400" />
+              </div>
+              <div>
+                <label for="bpDiaInput" class="block text-[11px] font-semibold text-rose-300 mb-1">Diastolický (DIA)</label>
+                <input type="number" id="bpDiaInput" required min="30" max="180" step="1" placeholder="80" value="${latest ? latest.dia : ''}"
+                  class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-1.5 text-sm font-bold text-white focus:outline-none focus:border-rose-400" />
+              </div>
+              <div>
+                <label for="bpPulseInput" class="block text-[11px] font-semibold text-zinc-400 mb-1">Tep (bpm, vol.)</label>
+                <input type="number" id="bpPulseInput" min="30" max="220" step="1" placeholder="65"
+                  class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-1.5 text-sm font-bold text-white focus:outline-none focus:border-rose-400" />
+              </div>
+              <div>
+                <label for="bpDateInput" class="block text-[11px] font-semibold text-zinc-400 mb-1">Datum</label>
+                <input type="date" id="bpDateInput" value="${todayStr}" required
+                  class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-white focus:outline-none focus:border-rose-400" />
+              </div>
+            </div>
+            <div class="flex items-center justify-end gap-2">
+              <button type="button" onclick="toggleBpEditMode()" class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition">
+                Zrušit
+              </button>
+              <button type="submit" class="px-4 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-zinc-950 text-xs font-extrabold transition">
+                Uložit měření
+              </button>
+            </div>
+          </form>
+        `
+        : '';
+
+      const historyHtml =
+        isShowingBpHistory && list.length > 0
+          ? `
+            <div class="pt-2.5 border-t border-zinc-800/80 space-y-1.5 max-h-48 overflow-y-auto pr-1">
+              ${list
+                .slice(0, 10)
+                .map((item) => {
+                  const itemCat = getBloodPressureCategory(item.sys, item.dia);
+                  return `
+                    <div class="flex items-center justify-between gap-2 bg-zinc-900/80 border border-zinc-800/80 rounded-xl px-3 py-2 text-xs">
+                      <div class="flex flex-wrap items-center gap-2 tabular-nums">
+                        <span class="font-extrabold text-white">${item.sys}/${item.dia} <span class="text-[10px] font-normal text-zinc-400">mmHg</span></span>
+                        ${item.pulse ? `<span class="text-rose-300 font-semibold"><i class="fa-solid fa-heart-pulse mr-1 text-[10px]"></i>${item.pulse} bpm</span>` : ''}
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${itemCat.badgeClass}">${itemCat.label}</span>
+                        <span class="text-[11px] text-zinc-500">${formatDateCz(item.date)}${item.time ? ` • ${escapeHtmlAttr(item.time)}` : ''}</span>
+                      </div>
+                      <button type="button" onclick="deleteBloodPressureEntry('${escapeHtmlAttr(item.id)}')" class="p-1 text-zinc-500 hover:text-rose-400 transition shrink-0" title="Smazat měření">
+                        <i class="fa-solid fa-trash-can text-[11px]"></i>
+                      </button>
+                    </div>
+                  `;
+                })
+                .join('')}
+            </div>
+          `
+          : '';
+
+      cardEl.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div onclick="openBpStatsModal()" title="Kliknutím zobrazíš podrobnosti, grafy a historii měření" class="flex items-center gap-3.5 min-w-0 cursor-pointer group">
+            <div class="w-10 h-10 rounded-xl bg-rose-500/15 text-rose-400 flex items-center justify-center text-base shrink-0">
+              <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="text-sm font-extrabold text-white group-hover:text-rose-300 transition flex items-center gap-1.5">
+                  <span>Krevní tlak</span>
+                  <i class="fa-solid fa-up-right-from-square text-[10px] text-zinc-500 group-hover:text-rose-400 transition"></i>
+                </h3>
+                ${
+                  cat
+                    ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${cat.badgeClass}">${cat.label}</span>`
+                    : `<span class="text-[11px] text-zinc-500">Zatím nezapsáno</span>`
+                }
+              </div>
+              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mt-0.5 tabular-nums">
+                <span class="text-xl sm:text-2xl font-extrabold text-white">
+                  ${latest ? `${latest.sys}/${latest.dia}` : '--/--'} <span class="text-xs font-medium text-zinc-400">mmHg</span>
+                </span>
+                ${
+                  latest && latest.pulse
+                    ? `<span class="text-xs font-bold text-amber-300"><i class="fa-solid fa-heart text-[10px] mr-1"></i>${latest.pulse} bpm</span>`
+                    : ''
+                }
+                ${
+                  latest
+                    ? `<span class="text-[11px] text-zinc-500">${formatDateCz(latest.date)}${latest.time ? ` ${escapeHtmlAttr(latest.time)}` : ''}</span>`
+                    : ''
+                }
+                ${avgHtml}
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
+            <button type="button" onclick="openBpStatsModal()" class="px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/35 text-xs font-bold transition flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>Detail & Grafy${list.length > 0 ? ` (${list.length})` : ''}</span>
+            </button>
+            <button type="button" onclick="toggleBpEditMode()" class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-bold transition flex items-center gap-1.5">
+              <i class="fa-solid ${isEditingBloodPressure ? 'fa-xmark' : 'fa-plus'}"></i>
+              <span>${isEditingBloodPressure ? 'Zavřít' : 'Zapsat tlak'}</span>
+            </button>
+          </div>
+        </div>
+
+        ${editFormHtml}
+        ${historyHtml}
+      `;
+    }
+
     function renderDashboard() {
       const plan = getActivePlan();
       const todayId = getTodayWeekDayId();
@@ -6329,7 +8262,11 @@
           </div>
         `;
       }
-
+      renderDashboardOneRmCard();
+      renderDashboardStepsCard();
+      if (isStepsModalOpen()) renderStepsStatsModal();
+      renderDashboardBloodPressureCard();
+      if (isBpModalOpen()) renderBpStatsModal();
       renderVolumeChart();
       renderWeightChart();
       populateExerciseChartSelect();
