@@ -1083,6 +1083,172 @@
               <div id="pedsLogsHistoryList" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
             </div>
           </div>
+
+          <!-- KALKULAČKA HALF-LIFE, NASYCENÍ & VÝKYVŮ -->
+          <div id="pedsHalfLifeCalculatorCard" class="glass-card rounded-2xl p-5 sm:p-6 space-y-5 w-full border border-emerald-500/25">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="text-lg sm:text-xl font-extrabold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-chart-area text-emerald-400"></i> Half-Life & Nasycení Kalkulačka
+                  </h3>
+                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                    Farmakokinetický model
+                  </span>
+                </div>
+                <p class="text-xs text-zinc-400 mt-1">
+                  Simulace nasycení účinné látky v těle, výkyvů (peak / trough) a doby vymizení po ukončení podle poločasu rozpadu.
+                </p>
+              </div>
+              <button type="button" onclick="syncCalcFromProtocolForm()" class="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-emerald-300 border border-emerald-500/35 text-xs font-bold transition flex items-center gap-1.5 self-start sm:self-auto shrink-0">
+                <i class="fa-solid fa-arrows-rotate"></i> Převzít látku z formuláře
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+              <!-- Ovládací panel kalkulačky -->
+              <div class="lg:col-span-5 space-y-4 bg-zinc-900/75 p-4 rounded-xl border border-zinc-800">
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Látka (Compound)</label>
+                  <select id="hlCalcCompoundSelect" onchange="onHlCalcCompoundChange()"
+                    class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500"></select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Režim dávkování</label>
+                  <div class="grid grid-cols-2 gap-1.5 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+                    <button type="button" id="hlModeSteadyBtn" onclick="setHlCalcMode('steady')"
+                      class="py-2 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition">
+                      Pravidelně (Steady state)
+                    </button>
+                    <button type="button" id="hlModeSingleBtn" onclick="setHlCalcMode('single')"
+                      class="py-2 rounded-lg text-xs font-bold text-zinc-400 hover:text-white border border-transparent transition">
+                      Jednorázová dávka
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-1.5">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400">Velikost dávky</label>
+                    <div class="flex items-center gap-1 bg-zinc-950 p-0.5 rounded-lg border border-zinc-800">
+                      <button type="button" id="hlDoseBasisPerDoseBtn" onclick="setHlCalcDoseBasis('per_dose')"
+                        class="px-2 py-1 rounded-md text-[11px] font-bold text-zinc-400 hover:text-white transition">
+                        Za dávku
+                      </button>
+                      <button type="button" id="hlDoseBasisPerWeekBtn" onclick="setHlCalcDoseBasis('per_week')"
+                        class="px-2 py-1 rounded-md text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition">
+                        Za týden
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <input type="number" id="hlCalcDoseInput" value="250" min="0.1" step="any" oninput="updateHalfLifeCalculator()"
+                      class="flex-1 bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-emerald-500" />
+                    <select id="hlCalcUnitSelect" onchange="updateHalfLifeCalculator()"
+                      class="w-24 bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-sm font-bold text-emerald-300 focus:outline-none focus:border-emerald-500">
+                      <option value="mg" selected>mg</option>
+                      <option value="mcg">mcg</option>
+                    </select>
+                  </div>
+                  <p id="hlCalcDoseConversionHint" class="text-[11px] text-zinc-400 mt-1.5">
+                    Odpovídá 35,7 mg na jednu aplikaci (250 mg / týden).
+                  </p>
+                </div>
+
+                <div id="hlCalcFrequencyWrapper" class="space-y-3">
+                  <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-1.5">Frekvence aplikace</label>
+                    <select id="hlCalcFrequencySelect" onchange="onHlCalcFrequencyChange()"
+                      class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+                      <option value="twice_daily">2× denně (každých 12 hodin)</option>
+                      <option value="daily" selected>Denně (každých 24 hodin)</option>
+                      <option value="eod">Obden (každý 2. den)</option>
+                      <option value="twice_weekly">2× týdně (každé 3,5 dne)</option>
+                      <option value="weekly">1× týdně (každých 7 dní)</option>
+                      <option value="every_10d">Každých 10 dní</option>
+                      <option value="every_14d">Každé 2 týdny (14 dní)</option>
+                      <option value="by_days">Podle dnů v týdnu (Po–Ne)...</option>
+                      <option value="custom">Vlastní interval ve dnech...</option>
+                    </select>
+                  </div>
+
+                  <div id="hlCalcCustomDaysBox" class="hidden">
+                    <label class="block text-[11px] text-zinc-400 mb-1">Interval mezi dávkami (dny)</label>
+                    <input type="number" id="hlCalcCustomIntervalInput" value="3" min="0.25" max="90" step="0.25" oninput="updateHalfLifeCalculator()"
+                      class="w-full bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+                  </div>
+
+                  <div id="hlCalcWeekDaysBox" class="hidden space-y-1.5">
+                    <label class="block text-[11px] text-zinc-400">Vyber dny aplikace v týdnu</label>
+                    <div id="hlCalcWeekDaysGrid" class="grid grid-cols-7 gap-1"></div>
+                  </div>
+
+                  <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                      <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-400">Délka podávání (poté washout)</label>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1.5">
+                      <button type="button" onclick="setHlCalcDurationWeeks(1)" data-hl-weeks="1" class="hl-weeks-btn py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-bold text-zinc-400 hover:text-white transition">1 týd.</button>
+                      <button type="button" onclick="setHlCalcDurationWeeks(4)" data-hl-weeks="4" class="hl-weeks-btn py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-bold text-zinc-400 hover:text-white transition">4 týd.</button>
+                      <button type="button" onclick="setHlCalcDurationWeeks(8)" data-hl-weeks="8" class="hl-weeks-btn py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-xs font-bold text-emerald-300 transition">8 týd.</button>
+                      <button type="button" onclick="setHlCalcDurationWeeks(12)" data-hl-weeks="12" class="hl-weeks-btn py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-bold text-zinc-400 hover:text-white transition">12 týd.</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Graf a metrický souhrn -->
+              <div class="lg:col-span-7 flex flex-col justify-between space-y-4">
+                <div class="bg-zinc-950/90 border border-zinc-800 rounded-xl p-4 space-y-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <span class="text-xs font-bold text-white">Odhadované množství látky v těle v čase</span>
+                      <span id="hlCalcChartSubtitle" class="block text-[11px] text-zinc-400">Testosterone Enanthate • Half-life: 6,5 dne</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-[11px]">
+                      <span class="flex items-center gap-1.5 text-emerald-300 font-semibold">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Aktuální hladina
+                      </span>
+                      <span class="flex items-center gap-1.5 text-sky-300 font-semibold">
+                        <span class="w-2.5 h-0.5 bg-sky-400"></span> Peak 1. dávky
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="relative h-64 sm:h-72 w-full">
+                    <canvas id="hlCalcChartCanvas"></canvas>
+                  </div>
+                </div>
+
+                <!-- Shrnutí metrik -->
+                <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 space-y-3">
+                  <p id="hlCalcSummarySentence" class="text-xs sm:text-sm text-zinc-200 leading-relaxed">
+                    --
+                  </p>
+
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 border-t border-zinc-800/80 tabular-nums">
+                    <div class="bg-zinc-950/90 border border-zinc-800/90 rounded-xl p-2.5">
+                      <span class="block text-[10px] uppercase tracking-wider text-zinc-500">Half-life</span>
+                      <span id="hlStatHalfLife" class="text-sm sm:text-base font-extrabold text-emerald-400 mt-0.5 block">--</span>
+                    </div>
+                    <div class="bg-zinc-950/90 border border-zinc-800/90 rounded-xl p-2.5">
+                      <span class="block text-[10px] uppercase tracking-wider text-zinc-500">Time to peak</span>
+                      <span id="hlStatTimeToPeak" class="text-sm sm:text-base font-extrabold text-sky-400 mt-0.5 block">--</span>
+                    </div>
+                    <div class="bg-zinc-950/90 border border-zinc-800/90 rounded-xl p-2.5">
+                      <span class="block text-[10px] uppercase tracking-wider text-zinc-500">Steady state</span>
+                      <span id="hlStatSteadyState" class="text-sm sm:text-base font-extrabold text-amber-400 mt-0.5 block">--</span>
+                    </div>
+                    <div class="bg-zinc-950/90 border border-zinc-800/90 rounded-xl p-2.5">
+                      <span class="block text-[10px] uppercase tracking-wider text-zinc-500">Úplné vymizení</span>
+                      <span id="hlStatClearance" class="text-sm sm:text-base font-extrabold text-purple-400 mt-0.5 block">--</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1276,6 +1442,520 @@
     let activePedSubfolder = 'injectable';
     let pedDbEntriesCache = [];
     let selectedPedFrequencyDays = [];
+
+    let hlCalcChartInstance = null;
+    let hlCalcCatalog = [];
+    let hlCalcMode = 'steady';
+    let hlCalcDoseBasis = 'per_week';
+    let hlCalcDurationWeeks = 8;
+    let hlCalcSelectedDays = ['mon', 'thu'];
+
+    function parseHalfLifeDays(halfLifeStr, category) {
+      const s = String(halfLifeStr || '').toLowerCase().replace(/,/g, '.');
+      const nums = (s.match(/\d+(?:\.\d+)?/g) || []).map(Number).filter((n) => !isNaN(n));
+      let avg = nums.length === 1 ? nums[0] : nums.length >= 2 ? (nums[0] + nums[1]) / 2 : null;
+
+      if (s.includes('minut')) {
+        return avg ? avg / (60 * 24) : 0.02;
+      }
+      if (s.includes('hodin')) {
+        return avg ? avg / 24 : 0.35;
+      }
+      if (s.includes('den') || s.includes('dny') || s.includes('dní') || s.includes('dne')) {
+        return avg || 5;
+      }
+      return category === 'oral' || category === 'peptides' ? 0.35 : 6;
+    }
+
+    function estimateTimeToPeakDays(halfLifeDays, category) {
+      if (category === 'oral' || halfLifeDays < 0.8) {
+        return Math.max(0.04, Math.min(0.25, halfLifeDays * 0.28));
+      }
+      return Math.max(0.25, Math.min(3.5, halfLifeDays * 0.36));
+    }
+
+    function formatDurationHumanCz(days) {
+      if (days < 1) {
+        const hours = Math.max(1, Math.round(days * 24));
+        return `≈ ${hours} hod`;
+      }
+      if (days < 14) {
+        const rounded = Math.round(days * 10) / 10;
+        return `≈ ${String(rounded).replace('.', ',')} d`;
+      }
+      const weeks = Math.round((days / 7) * 10) / 10;
+      return `~${String(weeks).replace('.', ',')} týd.`;
+    }
+
+    function buildHlCalcCatalog() {
+      const list = [];
+      Object.entries(PEDS_DATABASE).forEach(([catKey, groups]) => {
+        const catTitle = PED_SUBFOLDERS[catKey]?.label || catKey;
+        Object.entries(groups).forEach(([groupName, items]) => {
+          (items || []).forEach((item) => {
+            const hlDays = parseHalfLifeDays(item.halfLife, catKey);
+            const tPeakDays = estimateTimeToPeakDays(hlDays, catKey);
+            list.push({
+              id: `${catKey}_${item.compound}`,
+              category: catKey,
+              categoryLabel: catTitle,
+              groupName,
+              compound: item.compound,
+              knownName: item.knownName || '',
+              displayName: item.knownName ? `${item.compound} (${item.knownName})` : item.compound,
+              halfLifeText: item.halfLife || '',
+              halfLifeDays: hlDays,
+              timeToPeakDays: tPeakDays
+            });
+          });
+        });
+      });
+      hlCalcCatalog = list;
+      return list;
+    }
+
+    function populateHlCalcCompoundSelect() {
+      const selectEl = document.getElementById('hlCalcCompoundSelect');
+      if (!selectEl) return;
+      if (hlCalcCatalog.length === 0) buildHlCalcCatalog();
+
+      const grouped = {};
+      hlCalcCatalog.forEach((item, idx) => {
+        const key = `${item.categoryLabel} — ${item.groupName}`;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push({ item, idx });
+      });
+
+      let defaultIdx = hlCalcCatalog.findIndex((c) => c.compound === 'Testosterone Enanthate');
+      if (defaultIdx < 0) defaultIdx = 0;
+
+      selectEl.innerHTML = Object.entries(grouped)
+        .map(([grp, entries]) => {
+          const opts = entries
+            .map(({ item, idx }) => `<option value="${idx}" ${idx === defaultIdx ? 'selected' : ''}>${escapeHtmlAttr(item.displayName)}</option>`)
+            .join('');
+          return `<optgroup label="${escapeHtmlAttr(grp)}">${opts}</optgroup>`;
+        })
+        .join('');
+    }
+
+    function renderHlCalcWeekDaysSelector() {
+      const grid = document.getElementById('hlCalcWeekDaysGrid');
+      if (!grid) return;
+      grid.innerHTML = WEEK_DAYS.map((d) => {
+        const active = hlCalcSelectedDays.includes(d.id);
+        return `
+          <button type="button" onclick="toggleHlCalcWeekDay('${d.id}')"
+            class="py-1.5 rounded-lg text-[11px] font-bold border transition ${
+              active
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
+                : 'bg-zinc-950 text-zinc-400 hover:text-white border-zinc-800'
+            }">
+            ${escapeHtmlAttr(d.short)}
+          </button>
+        `;
+      }).join('');
+    }
+
+    window.toggleHlCalcWeekDay = function (dayId) {
+      const idx = hlCalcSelectedDays.indexOf(dayId);
+      if (idx > -1) {
+        if (hlCalcSelectedDays.length > 1) hlCalcSelectedDays.splice(idx, 1);
+      } else {
+        hlCalcSelectedDays.push(dayId);
+      }
+      renderHlCalcWeekDaysSelector();
+      updateHalfLifeCalculator();
+    };
+
+    window.setHlCalcMode = function (mode) {
+      hlCalcMode = mode;
+      const steadyBtn = document.getElementById('hlModeSteadyBtn');
+      const singleBtn = document.getElementById('hlModeSingleBtn');
+      const freqWrapper = document.getElementById('hlCalcFrequencyWrapper');
+
+      if (mode === 'steady') {
+        if (steadyBtn) steadyBtn.className = 'py-2 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition';
+        if (singleBtn) singleBtn.className = 'py-2 rounded-lg text-xs font-bold text-zinc-400 hover:text-white border border-transparent transition';
+        freqWrapper?.classList.remove('hidden');
+      } else {
+        if (singleBtn) singleBtn.className = 'py-2 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition';
+        if (steadyBtn) steadyBtn.className = 'py-2 rounded-lg text-xs font-bold text-zinc-400 hover:text-white border border-transparent transition';
+        freqWrapper?.classList.add('hidden');
+      }
+      updateHalfLifeCalculator();
+    };
+
+    window.setHlCalcDoseBasis = function (basis) {
+      const prevBasis = hlCalcDoseBasis;
+      if (prevBasis === basis) return;
+      const doseInp = document.getElementById('hlCalcDoseInput');
+      const dosesPerWeek = getHlCalcDosesPerWeek();
+      const curVal = parseFloat(doseInp?.value) || 0;
+
+      if (doseInp && curVal > 0 && dosesPerWeek > 0) {
+        if (basis === 'per_dose' && prevBasis === 'per_week') {
+          doseInp.value = Math.round((curVal / dosesPerWeek) * 100) / 100;
+        } else if (basis === 'per_week' && prevBasis === 'per_dose') {
+          doseInp.value = Math.round(curVal * dosesPerWeek * 100) / 100;
+        }
+      }
+
+      hlCalcDoseBasis = basis;
+      const perDoseBtn = document.getElementById('hlDoseBasisPerDoseBtn');
+      const perWeekBtn = document.getElementById('hlDoseBasisPerWeekBtn');
+      if (basis === 'per_dose') {
+        if (perDoseBtn) perDoseBtn.className = 'px-2 py-1 rounded-md text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition';
+        if (perWeekBtn) perWeekBtn.className = 'px-2 py-1 rounded-md text-[11px] font-bold text-zinc-400 hover:text-white transition';
+      } else {
+        if (perWeekBtn) perWeekBtn.className = 'px-2 py-1 rounded-md text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 transition';
+        if (perDoseBtn) perDoseBtn.className = 'px-2 py-1 rounded-md text-[11px] font-bold text-zinc-400 hover:text-white transition';
+      }
+      updateHalfLifeCalculator();
+    };
+
+    window.setHlCalcDurationWeeks = function (weeks) {
+      hlCalcDurationWeeks = weeks;
+      document.querySelectorAll('.hl-weeks-btn').forEach((btn) => {
+        const w = parseInt(btn.dataset.hlWeeks, 10);
+        if (w === weeks) {
+          btn.className = 'hl-weeks-btn py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-xs font-bold text-emerald-300 transition';
+        } else {
+          btn.className = 'hl-weeks-btn py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-bold text-zinc-400 hover:text-white transition';
+        }
+      });
+      updateHalfLifeCalculator();
+    };
+
+    window.onHlCalcFrequencyChange = function () {
+      const freq = document.getElementById('hlCalcFrequencySelect')?.value || 'daily';
+      const customBox = document.getElementById('hlCalcCustomDaysBox');
+      const daysBox = document.getElementById('hlCalcWeekDaysBox');
+
+      if (freq === 'custom') customBox?.classList.remove('hidden');
+      else customBox?.classList.add('hidden');
+
+      if (freq === 'by_days') {
+        daysBox?.classList.remove('hidden');
+        renderHlCalcWeekDaysSelector();
+      } else {
+        daysBox?.classList.add('hidden');
+      }
+      updateHalfLifeCalculator();
+    };
+
+    window.onHlCalcCompoundChange = function () {
+      const selectEl = document.getElementById('hlCalcCompoundSelect');
+      const unitEl = document.getElementById('hlCalcUnitSelect');
+      const idx = parseInt(selectEl?.value || '0', 10);
+      const item = hlCalcCatalog[idx];
+      if (item && unitEl) {
+        unitEl.value = item.category === 'peptides' ? 'mcg' : 'mg';
+      }
+      updateHalfLifeCalculator();
+    };
+
+    window.syncCalcFromProtocolForm = function () {
+      const formName = (document.getElementById('pedsNameInput')?.value || '').trim().toLowerCase();
+      const formDoseRaw = (document.getElementById('pedsDoseInput')?.value || '').trim();
+      const formSched = (document.getElementById('pedsScheduleInput')?.value || '').trim().toLowerCase();
+
+      if (hlCalcCatalog.length === 0) buildHlCalcCatalog();
+      const selectEl = document.getElementById('hlCalcCompoundSelect');
+      if (formName && selectEl) {
+        const matchIdx = hlCalcCatalog.findIndex(
+          (c) =>
+            formName.includes(c.compound.toLowerCase()) ||
+            (c.knownName && formName.includes(c.knownName.toLowerCase().split(',')[0].trim()))
+        );
+        if (matchIdx >= 0) {
+          selectEl.value = String(matchIdx);
+        }
+      }
+
+      const numMatch = formDoseRaw.replace(',', '.').match(/\d+(?:\.\d+)?/);
+      if (numMatch) {
+        const doseInp = document.getElementById('hlCalcDoseInput');
+        if (doseInp) doseInp.value = numMatch[0];
+        if (activePedSubfolder === 'oral') {
+          setHlCalcDoseBasis('per_dose');
+        } else {
+          setHlCalcDoseBasis('per_week');
+        }
+      }
+
+      const freqSel = document.getElementById('hlCalcFrequencySelect');
+      if (freqSel) {
+        if (activePedSubfolder === 'oral' || formSched.includes('denně') || formSched.includes('každý den')) {
+          freqSel.value = 'daily';
+        } else if (formSched.includes('obden') || formSched.includes('eod')) {
+          freqSel.value = 'eod';
+        } else if (formSched.includes('2× týdně') || formSched.includes('po / čt')) {
+          freqSel.value = 'twice_weekly';
+        } else if (formSched.includes('1× týdně')) {
+          freqSel.value = 'weekly';
+        }
+        onHlCalcFrequencyChange();
+      }
+
+      updateHalfLifeCalculator();
+      showToast('Kalkulačka aktualizována podle zadaného protokolu.');
+    };
+
+    function getHlCalcDosesPerWeek() {
+      const freq = document.getElementById('hlCalcFrequencySelect')?.value || 'daily';
+      if (freq === 'twice_daily') return 14;
+      if (freq === 'daily') return 7;
+      if (freq === 'eod') return 3.5;
+      if (freq === 'twice_weekly') return 2;
+      if (freq === 'weekly') return 1;
+      if (freq === 'every_10d') return 0.7;
+      if (freq === 'every_14d') return 0.5;
+      if (freq === 'by_days') return Math.max(1, hlCalcSelectedDays.length);
+      if (freq === 'custom') {
+        const interval = Math.max(0.25, parseFloat(document.getElementById('hlCalcCustomIntervalInput')?.value) || 3);
+        return 7 / interval;
+      }
+      return 7;
+    }
+
+    function generateDoseTimestampsDays(totalDosingDays) {
+      if (hlCalcMode === 'single') return [0];
+      const freq = document.getElementById('hlCalcFrequencySelect')?.value || 'daily';
+      const times = [];
+
+      if (freq === 'by_days') {
+        const dayOffsets = WEEK_DAYS.map((d, i) => (hlCalcSelectedDays.includes(d.id) ? i : -1)).filter((i) => i >= 0);
+        if (dayOffsets.length === 0) dayOffsets.push(0);
+        for (let week = 0; week * 7 < totalDosingDays; week++) {
+          dayOffsets.forEach((offset) => {
+            const t = week * 7 + offset;
+            if (t < totalDosingDays) times.push(t);
+          });
+        }
+        return times.length > 0 ? times : [0];
+      }
+
+      let intervalDays = 1;
+      if (freq === 'twice_daily') intervalDays = 0.5;
+      else if (freq === 'daily') intervalDays = 1;
+      else if (freq === 'eod') intervalDays = 2;
+      else if (freq === 'twice_weekly') intervalDays = 3.5;
+      else if (freq === 'weekly') intervalDays = 7;
+      else if (freq === 'every_10d') intervalDays = 10;
+      else if (freq === 'every_14d') intervalDays = 14;
+      else if (freq === 'custom') {
+        intervalDays = Math.max(0.25, parseFloat(document.getElementById('hlCalcCustomIntervalInput')?.value) || 3);
+      }
+
+      for (let t = 0; t < totalDosingDays - 1e-9; t += intervalDays) {
+        times.push(Math.round(t * 1000) / 1000);
+      }
+      return times.length > 0 ? times : [0];
+    }
+
+    function solveAbsorptionRate(ke, tPeak) {
+      const safeTPeak = Math.max(0.01, tPeak);
+      let low = ke * 1.02;
+      let high = Math.max(low * 5, 250 / safeTPeak);
+      for (let i = 0; i < 45; i++) {
+        const mid = (low + high) / 2;
+        const calcPeak = Math.log(mid / ke) / (mid - ke);
+        if (calcPeak > safeTPeak) low = mid;
+        else high = mid;
+      }
+      return (low + high) / 2;
+    }
+
+    function batemanAmountAtTime(dt, dose, ke, ka) {
+      if (dt <= 0) return 0;
+      const scale = ka / (ka - ke);
+      const val = dose * scale * (Math.exp(-ke * dt) - Math.exp(-ka * dt));
+      return val > 0 ? val : 0;
+    }
+
+    window.updateHalfLifeCalculator = function () {
+      const canvas = document.getElementById('hlCalcChartCanvas');
+      if (!canvas) return;
+      if (hlCalcCatalog.length === 0) buildHlCalcCatalog();
+
+      const idx = parseInt(document.getElementById('hlCalcCompoundSelect')?.value || '0', 10);
+      const compound = hlCalcCatalog[idx] || hlCalcCatalog[0];
+      if (!compound) return;
+
+      const rawDoseInput = Math.max(0.01, parseFloat(document.getElementById('hlCalcDoseInput')?.value) || 250);
+      const unit = document.getElementById('hlCalcUnitSelect')?.value || 'mg';
+      const dosesPerWeek = getHlCalcDosesPerWeek();
+
+      let perDose = rawDoseInput;
+      let perWeek = rawDoseInput * dosesPerWeek;
+
+      if (hlCalcMode === 'steady' && hlCalcDoseBasis === 'per_week') {
+        perWeek = rawDoseInput;
+        perDose = rawDoseInput / Math.max(0.1, dosesPerWeek);
+      }
+
+      const convHintEl = document.getElementById('hlCalcDoseConversionHint');
+      if (convHintEl) {
+        if (hlCalcMode === 'single') {
+          convHintEl.textContent = `Jednorázová aplikace: ${Math.round(perDose * 100) / 100} ${unit}.`;
+        } else {
+          const perDoseFmt = (Math.round(perDose * 10) / 10).toLocaleString('cs-CZ');
+          const perWeekFmt = (Math.round(perWeek * 10) / 10).toLocaleString('cs-CZ');
+          convHintEl.textContent = `Odpovídá ${perDoseFmt} ${unit} na jednu dávku (${perWeekFmt} ${unit} / týden).`;
+        }
+      }
+
+      const hlDays = Math.max(0.02, compound.halfLifeDays);
+      const tPeakDays = Math.max(0.01, compound.timeToPeakDays);
+      const ke = Math.LN2 / hlDays;
+      const ka = solveAbsorptionRate(ke, tPeakDays);
+
+      const steadyStateDays = hlDays * 4.5;
+      const washoutDays = hlDays * 5;
+
+      const dosingSpanDays = hlCalcMode === 'single' ? 0 : hlCalcDurationWeeks * 7;
+      const doseTimes = generateDoseTimestampsDays(dosingSpanDays);
+      const lastDoseTime = doseTimes[doseTimes.length - 1] || 0;
+      const totalHorizonDays = Math.max(hlDays * 6, lastDoseTime + washoutDays);
+
+      const numSteps = 220;
+      const dtStep = totalHorizonDays / numSteps;
+
+      const labels = [];
+      const activeSeries = [];
+      const singlePeakSeries = [];
+      const singleDosePeak = batemanAmountAtTime(tPeakDays, perDose, ke, ka);
+
+      let steadyTrough = Infinity;
+      let steadyPeak = 0;
+
+      for (let i = 0; i <= numSteps; i++) {
+        const t = i * dtStep;
+        let totalAmount = 0;
+        for (let d = 0; d < doseTimes.length; d++) {
+          const dt = t - doseTimes[d];
+          if (dt > 0) {
+            totalAmount += batemanAmountAtTime(dt, perDose, ke, ka);
+          } else {
+            break;
+          }
+        }
+
+        const roundedVal = Math.round(totalAmount * 100) / 100;
+        activeSeries.push(roundedVal);
+        singlePeakSeries.push(Math.round(singleDosePeak * 100) / 100);
+
+        if (totalHorizonDays <= 5) {
+          labels.push(`${Math.round(t * 24)} h`);
+        } else {
+          labels.push(`${Math.round(t * 10) / 10} d`);
+        }
+
+        if (hlCalcMode === 'steady' && t >= Math.min(lastDoseTime * 0.65, steadyStateDays) && t <= lastDoseTime + 0.01) {
+          if (totalAmount > steadyPeak) steadyPeak = totalAmount;
+          if (totalAmount < steadyTrough) steadyTrough = totalAmount;
+        }
+      }
+
+      if (!isFinite(steadyTrough) || steadyPeak === 0) {
+        const preWashoutSlice = activeSeries.filter((_, idxStep) => idxStep * dtStep <= lastDoseTime + tPeakDays);
+        steadyPeak = Math.max(...preWashoutSlice, singleDosePeak);
+        steadyTrough = Math.min(...preWashoutSlice.slice(Math.floor(preWashoutSlice.length / 2)), steadyPeak);
+      }
+
+      const subtitleEl = document.getElementById('hlCalcChartSubtitle');
+      if (subtitleEl) {
+        subtitleEl.textContent = `${compound.displayName} • Half-life: ${compound.halfLifeText}`;
+      }
+
+      const statHl = document.getElementById('hlStatHalfLife');
+      const statPeak = document.getElementById('hlStatTimeToPeak');
+      const statSteady = document.getElementById('hlStatSteadyState');
+      const statClear = document.getElementById('hlStatClearance');
+
+      if (statHl) statHl.textContent = formatDurationHumanCz(hlDays);
+      if (statPeak) statPeak.textContent = formatDurationHumanCz(tPeakDays);
+      if (statSteady) statSteady.textContent = hlCalcMode === 'single' ? 'Jednorázově' : formatDurationHumanCz(steadyStateDays);
+      if (statClear) statClear.textContent = formatDurationHumanCz(washoutDays);
+
+      const summaryEl = document.getElementById('hlCalcSummarySentence');
+      if (summaryEl) {
+        if (hlCalcMode === 'single') {
+          summaryEl.innerHTML = `Jednorázová dávka <strong class="text-white">${Math.round(perDose * 10) / 10} ${unit}</strong> dosáhne maxima <strong class="text-emerald-400">${Math.round(singleDosePeak * 10) / 10} ${unit}</strong> za ${formatDurationHumanCz(tPeakDays)} a z těla vymizí přibližně za <strong class="text-purple-300">${formatDurationHumanCz(washoutDays)}</strong>.`;
+        } else {
+          const ratio = singleDosePeak > 0 ? Math.round((steadyPeak / singleDosePeak) * 10) / 10 : 1;
+          const minFmt = Math.round(steadyTrough).toLocaleString('cs-CZ');
+          const maxFmt = Math.round(steadyPeak).toLocaleString('cs-CZ');
+          summaryEl.innerHTML = `Při tomto protokolu se hladina v těle ustálí přibližně v rozmezí <strong class="text-emerald-400">${minFmt} až ${maxFmt} ${unit}</strong> (cca <strong class="text-sky-300">${ratio}×</strong> více než vrchol jedné dávky). Ustáleného stavu (steady state) dosáhneš za <strong class="text-amber-300">${formatDurationHumanCz(steadyStateDays)}</strong> a úplné vymizení po poslední dávce trvá <strong class="text-purple-300">${formatDurationHumanCz(washoutDays)}</strong>.`;
+        }
+      }
+
+      const ctx = canvas.getContext('2d');
+      if (hlCalcChartInstance) {
+        hlCalcChartInstance.destroy();
+      }
+
+      hlCalcChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: `Množství v těle (${unit})`,
+              data: activeSeries,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.16)',
+              borderWidth: 2.5,
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              fill: true,
+              tension: 0.25
+            },
+            {
+              label: `Peak 1 dávky (${unit})`,
+              data: singlePeakSeries,
+              borderColor: '#38bdf8',
+              borderDash: [5, 5],
+              borderWidth: 1.5,
+              pointRadius: 0,
+              fill: false,
+              tension: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(24, 24, 27, 0.95)',
+              titleColor: '#f4f4f5',
+              bodyColor: '#34d399',
+              borderColor: 'rgba(63, 63, 70, 0.8)',
+              borderWidth: 1
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: { color: '#a1a1aa', font: { size: 10 }, maxTicksLimit: 9 }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: {
+                color: '#a1a1aa',
+                font: { size: 10 },
+                callback: (val) => `${val} ${unit}`
+              }
+            }
+          }
+        }
+      });
+    };
 
     function renderPedFrequencyDaysSelector() {
       const grid = document.getElementById('pedsFrequencyDaysGrid');
@@ -5077,6 +5757,8 @@
       document.getElementById('pedsDate').value = todayStr;
       renderPedFrequencyDaysSelector();
       selectPedSubfolder('injectable');
+      populateHlCalcCompoundSelect();
+      updateHalfLifeCalculator();
 
       renderAll();
       initFirebase();
